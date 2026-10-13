@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big O / Time Complexity — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle light or dark theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Practices</span>
+                <span class="sep">/</span>
+                <span>Big O</span>
+                <span class="sep">/</span>
+                <span>Time Complexity</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Big O / Time Complexity</h1>
+                <p class="subtitle">How the amount of work grows as input grows — every complexity class, the operation tables, space complexity, and where Big O matters in a MERN app.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Practices</span>
+                    <span class="badge b-purple">Complexity classes</span>
+                    <span class="badge b-teal">Performance reasoning</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="what-big-o-means">What Big O means</h2>
+                <p>Big O tells us: "How does the amount of work grow when the input gets bigger?" It analyzes the efficiency of algorithms.</p>
+                <aside class="callout key"><span class="ct">Key point</span><p>Big O does not mean exact seconds. <code>O(n)</code> does not mean "10 seconds"; it means "if n increases, the work grows roughly linearly."</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="what-is-n">What is "n"?</h2>
+                <p><code>n</code> is the size of the input.</p>
+                <pre class="code-block" data-lang="javascript"><code>const numbers = [10, 20, 30, 40, 50];      // n = 5
+const more    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // n = 10</code></pre>
+                <p>So <code>O(n)</code> means the work grows with the size of n.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="constant">O(1) — constant</h2>
+                <p>The work does not depend on the size of the input.</p>
+                <pre class="code-block" data-lang="javascript"><code>const first = array[0];   // still ONE access for 10 or 1,000,000 items
+
+function getFirst(array) {
+    return array[0];
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="linear">O(n) — linear</h2>
+                <p>The work grows directly with the number of items.</p>
+                <pre class="code-block" data-lang="javascript"><code>function printItems(array) {
+    for (const item of array) {
+        console.log(item);
+    }
+}
+// n = 5 -> 5 runs; n = 100 -> 100 runs; n = 1,000 -> 1,000 runs</code></pre>
+                <p>Array helpers are also <code>O(n)</code> because they touch every element:</p>
+                <pre class="code-block" data-lang="javascript"><code>const expensiveProducts = products.filter(p =&gt; p.price &gt; 100); // O(n)
+const names             = users.map(u =&gt; u.name);              // O(n)
+const total             = products.reduce((sum, p) =&gt; sum + p.price, 0); // O(n)</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="quadratic">O(n²) — quadratic</h2>
+                <p>Usually a loop inside another loop.</p>
+                <pre class="code-block" data-lang="javascript"><code>function printPairs(array) {
+    for (const a of array) {
+        for (const b of array) {
+            console.log(a, b);
+        }
+    }
+}
+// n = 5   -> 5 x 5 = 25
+// n = 100 -> 100 x 100 = 10,000</code></pre>
+                <p>Three nested loops become <code>O(n³)</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="logarithmic">O(log n) — logarithmic</h2>
+                <p>The algorithm reduces the problem significantly at each step. The classic example is binary search.</p>
+                <pre class="flow">[1, 2, 3, 4, 5, 6, 7, 8]
+          ^ check middle, eliminate half
+[5, 6, 7, 8]
+[7, 8]
+[8]</pre>
+                <p>Very efficient — the work grows slowly even as n explodes.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="n-log-n">O(n log n)</h2>
+                <p>Common in efficient sorting algorithms: merge sort, quicksort (average), and heap sort.</p>
+                <pre class="code-block" data-lang="javascript"><code>array.sort();   // many efficient sorts are approximately O(n log n)</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="exponential">O(2ⁿ) — exponential</h2>
+                <p>The work doubles as the input increases — for example, naive recursive Fibonacci, which repeats calculations.</p>
+                <pre class="code-block" data-lang="javascript"><code>function fibonacci(n) {
+    if (n &lt;= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+// Approximate complexity: O(2ⁿ) — extremely slow as n grows</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="factorial">O(n!) — factorial</h2>
+                <p>Generating every possible arrangement or permutation.</p>
+                <pre class="code-block" data-lang="text"><code>n = 3  -> 3! = 6
+n = 5  -> 5! = 120
+n = 10 -> 10! = 3,628,800   // extremely expensive</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="growth-order">Complexity order</h2>
+                <p>From best to worst:</p>
+                <pre class="flow">O(1) -> O(log n) -> O(n) -> O(n log n) -> O(n²) -> O(2ⁿ) -> O(n!)</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="array-operation-complexities">Array operation complexities</h2>
+                <p>Array methods are not equal: direct indexing is instant, but anything that reorders or searches scales with the array. <strong>Why:</strong> reaching element <code>5</code> is one jump, while <code>shift()</code> must move every remaining element down a slot. <strong>When:</strong> choose operations by what dominates your code — a queue built on <code>shift()</code> inside a loop becomes <code>O(n²)</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const item = products[5];   // O(1) direct index access
+array.push("apple");        // O(1) amortized (add to the end)
+array.pop();                // O(1)
+array.shift();              // O(n) remaining elements may move
+array.unshift("A");         // O(n) existing elements need to move
+array.find(fn);             // O(n) worst case
+array.includes("apple");    // O(n) worst case
+array.sort();               // O(n log n) typical</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p><code>shift()</code>/<code>unshift()</code> look harmless but re-index the whole array on every call. For a true queue, prefer a deque library or a <code>Map</code>/linked structure.</p></aside>
+                <pre class="flow">[ A ][ B ][ C ][ D ]   shift A -> [ B ][ C ][ D ]  (elements shift)</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="object-map-set-complexities">Object, Map &amp; Set complexities</h2>
+                <p>Objects, Maps, and Sets are hash-based: a key resolves to a memory slot directly, so lookups, inserts, and deletes are <code>O(1)</code> on average. <strong>Why:</strong> that is dramatically cheaper than scanning an array of n items. <strong>When:</strong> any "store by key, then look it up" need — users by id, frequencies, seen/visited sets.</p>
+                <pre class="code-block" data-lang="javascript"><code>// object
+user.name;                  // O(1) average
+user.email = "a@b.com";     // O(1) average
+delete user.email;          // O(1) average
+
+// Map
+users.set(123, { name: "Alice" });  // set    -> O(1) average
+users.get(123);                     // get    -> O(1) average
+users.delete(123);                  // delete -> O(1) average
+
+// Set
+numbers.add(10);   // add    -> O(1) average
+numbers.has(10);   // has    -> O(1) average (why duplicate checks are fast)
+numbers.delete(10); // delete -> O(1) average</code></pre>
+                <p>"Average" assumes good hashing; worst-case collisions can degrade a lookup toward <code>O(n)</code>, which is rare in practice.</p>
+                <p>This is why choosing the right data structure matters: array search is <code>O(n)</code>, but a Map lookup is <code>O(1)</code> average.</p>
+                <pre class="code-block" data-lang="javascript"><code>users.find(u =&gt; u.id === 123);   // Array: O(n)
+usersMap.get(123);               // Map:   O(1) average</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="recursion-and-space">Recursion &amp; space complexity</h2>
+                <p>A function calling itself runs once per input, so simple recursion is <code>O(n)</code>. But branching recursion creates a recursion tree and can explode into <code>O(2ⁿ)</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>// simple recursion -> O(n)
+function countdown(n) {
+    if (n === 0) {
+        return;
+    }
+    console.log(n);
+    countdown(n - 1);
+}</code></pre>
+                <p>Big O also describes memory usage. An array that grows with n costs <code>O(n)</code> space; a few variables cost <code>O(1)</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>function createArray(n) {
+    const result = [];
+    for (let i = 0; i &lt; n; i++) {
+        result.push(i);
+    }
+    return result;         // space: O(n)
+}
+
+function sum(a, b) {
+    const result = a + b;
+    return result;         // space: O(1)
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="time-vs-space">Time vs space</h2>
+                <p>Complexity is measured on two axes — how much time the work takes and how much extra memory it needs. <strong>Why:</strong> a fast algorithm that consumes the whole dataset can be worse than a slightly slower one that fits in memory. <strong>When:</strong> report both after solving any problem.</p>
+                <ul>
+                    <li><strong>Time complexity</strong> — how much work?</li>
+                    <li><strong>Space complexity</strong> — how much additional memory?</li>
+                </ul>
+                <pre class="code-block" data-lang="javascript"><code>for (const item of array) {
+    console.log(item);
+}
+// Time:  O(n)
+// Space: O(1)</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="drop-constants-dominant">Drop constants &amp; keep the dominant term</h2>
+                <p>Big O focuses on the dominant growth and ignores constant factors.</p>
+                <pre class="code-block" data-lang="text"><code>O(2n)        -> O(n)
+O(5n)        -> O(n)
+O(100n)      -> O(n)
+O(3n)        -> O(n)
+O(2n + 10)   -> O(n)
+O(5n² + 3n + 10) -> O(n²)
+O(n² + n)    -> O(n²)   (n² dominates n)</code></pre>
+                <p>Two separate loops are <code>O(n) + O(n) = O(2n)</code>, which simplifies to <code>O(n)</code>. A loop plus a nested loop is <code>O(n) + O(n²) = O(n²)</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>if (user.isAdmin) {
+    console.log("Admin");
+}
+// Usually O(1): one comparison</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="practical-example">Practical example: O(n²) vs O(n)</h2>
+                <p>The brute-force duplicate finder compares every pair:</p>
+                <pre class="code-block" data-lang="javascript"><code>function findDuplicates(array) {
+    const duplicates = [];
+
+    for (let i = 0; i &lt; array.length; i++) {
+        for (let j = i + 1; j &lt; array.length; j++) {
+            if (array[i] === array[j]) {
+                duplicates.push(array[i]);
+            }
+        }
+    }
+
+    return duplicates;
+}
+// nested loops -> O(n²)</code></pre>
+                <p>Using a Set collapses it to a single pass:</p>
+                <pre class="code-block" data-lang="javascript"><code>function findDuplicates(array) {
+    const seen = new Set();
+    const duplicates = new Set();
+
+    for (const item of array) {
+        if (seen.has(item)) {
+            duplicates.add(item);
+        }
+        seen.add(item);
+    }
+
+    return [...duplicates];
+}
+// loop O(n) + Set lookup O(1) average -> overall O(n)</code></pre>
+                <p>This is a major reason Big O matters — the same result, dramatically different growth.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="big-o-in-mern">Big O in MERN</h2>
+                <p>Complexity thinking is not only for interviews. It shows up at every layer:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Layer</th><th>Where complexity appears</th></tr></thead>
+                        <tbody>
+                            <tr><td>Frontend</td><td>Array filtering, searching, sorting, rendering lists</td></tr>
+                            <tr><td>Backend</td><td>Database queries, loops, data processing, search, pagination</td></tr>
+                            <tr><td>Database</td><td>Indexes, queries, sorting, filtering</td></tr>
+                            <tr><td>API</td><td>Large responses, data transformation</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Database index example</h3>
+                <p>Without an appropriate index, finding a user by email may require scanning many documents — potentially <code>O(n)</code>. With a suitable index, the lookup can be dramatically faster, often modeled around <code>O(log n)</code>. The exact behavior depends on the database and query.</p>
+                <aside class="callout info"><span class="ct">Note</span><p>Designing indexes and writing efficient queries is covered in <a href="../06-database/mongodb-basics.html">MongoDB Basics</a> and <a href="mern-architecture.html">MERN Architecture</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="questions-to-ask">Big O questions to ask</h2>
+                <p>When looking at code, ask:</p>
+                <ol>
+                    <li>How many times does this loop run?</li>
+                    <li>Is there a loop inside another loop?</li>
+                    <li>Am I searching an array?</li>
+                    <li>Am I using an object / Map / Set?</li>
+                    <li>Am I sorting?</li>
+                    <li>Am I creating another large array?</li>
+                    <li>Is there recursion?</li>
+                    <li>Can I reduce the number of operations?</li>
+                </ol>
+            </section>
+
+            <section class="section">
+                <h2 id="quick-reference">Quick reference table</h2>
+                <p>Every common operation on one line — bookmark this for interviews and for choosing data structures.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Operation</th><th>Complexity</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>array[index]</code></td><td><code>O(1)</code></td></tr>
+                            <tr><td><code>object[key]</code></td><td><code>O(1)</code> average</td></tr>
+                            <tr><td><code>Map.get()</code></td><td><code>O(1)</code> average</td></tr>
+                            <tr><td><code>Map.set()</code></td><td><code>O(1)</code> average</td></tr>
+                            <tr><td><code>Set.has()</code></td><td><code>O(1)</code> average</td></tr>
+                            <tr><td><code>array.push()</code></td><td><code>O(1)</code> amortized</td></tr>
+                            <tr><td><code>array.pop()</code></td><td><code>O(1)</code></td></tr>
+                            <tr><td><code>array.shift()</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td><code>array.unshift()</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td><code>array.includes()</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td><code>array.find()</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td><code>array.filter()</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td><code>array.map()</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td><code>array.reduce()</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td><code>array.sort()</code></td><td><code>O(n log n)</code> typical</td></tr>
+                            <tr><td>nested loops</td><td><code>O(n²)</code></td></tr>
+                            <tr><td>binary search</td><td><code>O(log n)</code></td></tr>
+                            <tr><td>simple loop</td><td><code>O(n)</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="easy-to-remember">Easy way to remember</h2>
+                <p>A mnemonic name for every class, so you can attach a mental picture to the math.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Class</th><th>Name</th><th>Memory hook</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>O(1)</code></td><td>Constant</td><td>"One operation."</td></tr>
+                            <tr><td><code>O(log n)</code></td><td>Logarithmic</td><td>"Cut the problem down."</td></tr>
+                            <tr><td><code>O(n)</code></td><td>Linear</td><td>"Check everything once."</td></tr>
+                            <tr><td><code>O(n log n)</code></td><td>Linearithmic</td><td>"Efficient sorting."</td></tr>
+                            <tr><td><code>O(n²)</code></td><td>Quadratic</td><td>"Loop inside a loop."</td></tr>
+                            <tr><td><code>O(2ⁿ)</code></td><td>Exponential</td><td>"Branches multiply."</td></tr>
+                            <tr><td><code>O(n!)</code></td><td>Factorial</td><td>"Every possible arrangement."</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout key"><span class="ct">Key point</span><p>Don't just ask "Does this code work?" Also ask "How does it behave when the data becomes 10x, 100x, or 1,000x larger?" That's where Big O becomes important.</p></aside>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Big O describes how work grows as input grows, not exact seconds</li>
+                    <li>n is the input size</li>
+                    <li>Classes: <code>O(1)</code>, <code>O(log n)</code>, <code>O(n)</code>, <code>O(n log n)</code>, <code>O(n²)</code>, <code>O(2ⁿ)</code>, <code>O(n!)</code></li>
+                    <li>Order from best to worst: constant → log → linear → n log n → quadratic → exponential → factorial</li>
+                    <li>Array index, object/Map/Set lookups are <code>O(1)</code> average; <code>shift</code>/<code>unshift</code>/<code>find</code>/<code>includes</code> are <code>O(n)</code></li>
+                    <li>Simple recursion is <code>O(n)</code>; branching recursion can be <code>O(2ⁿ)</code></li>
+                    <li>Track time and space complexity separately</li>
+                    <li>Drop constants and keep the dominant term</li>
+                    <li>Swapping a nested loop for a Set turned <code>O(n²)</code> into <code>O(n)</code></li>
+                    <li>Database indexes move lookups from roughly <code>O(n)</code> toward <code>O(log n)</code></li>
+                    <li>Ask how code behaves at 10x, 100x, and 1,000x the data</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="problem-solving.html"><span class="rt">→ Problem Solving</span><span class="rc">Design a solution, then check its complexity</span></a>
+                    <a href="programming-principles.html"><span class="rt">→ Programming Principles</span><span class="rc">Where performance fits in the priority order</span></a>
+                    <a href="../03-javascript/javascript-data-structures.html"><span class="rt">→ JavaScript Data Structures</span><span class="rc">Array, Object, Set, and Map in code</span></a>
+                    <a href="mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">Indexes, pagination, and caching in a real app</span></a>
+                    <a href="../03-javascript/javascript-basics.html"><span class="rt">→ JavaScript Basics</span><span class="rc">The array methods these costs come from</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

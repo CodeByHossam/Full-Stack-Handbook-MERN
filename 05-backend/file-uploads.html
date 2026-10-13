@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Uploads — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Backend</span>
+                <span class="sep">/</span>
+                <span>File Uploads</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>File Uploads</h1>
+                <p class="subtitle">Getting a file from a React input, through FormData, into Express with Multer, and safely into cloud storage — the client-side and generic server mechanics.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Backend</span>
+                    <span class="badge b-purple">Multer</span>
+                    <span class="badge b-teal">FormData · Validation</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="upload-flow">The upload flow</h2>
+                <p>An upload travels from a React file input, through <code>FormData</code>, into Express, where Multer parses the bytes and hands them to storage. Only the resulting URL or key is saved in MongoDB, never the bytes themselves.</p>
+                <pre class="flow">React
+  ↓
+&lt;input type="file"&gt;
+  ↓
+FormData
+  ↓
+POST /api/upload
+  ↓
+Express
+  ↓
+Multer
+  ↓
+Storage
+  ↓
+Database stores file URL/path</pre>
+                <aside class="callout info"><span class="ct">Note</span><p>This page covers the client input, FormData, Multer, validation, and storage strategy. Provider-specific setup for Cloudinary and AWS S3 is owned by <a href="file-storage-s3-cloudinary.html">File Storage: S3 &amp; Cloudinary</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="how-http-carries-data">How HTTP carries text and binary</h2>
+                <p>Every byte a computer stores or sends is <strong>binary</strong>. Text (like the letters in a form) is binary interpreted through a character encoding such as ASCII or UTF-8, so text and files alike travel inside an HTTP message body. HTTP/1.x uses a textual message format while HTTP/2 and HTTP/3 use binary framing, but in every version the <em>body</em> may hold text or raw bytes.</p>
+                <p>A <code>Content-Type</code> header tells the server how to interpret that body. There are three practical ways to send a file:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Format</th><th>Body is</th><th>Use when</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>multipart/form-data</code></td><td>Raw bytes + text fields, separated by a boundary</td><td>Uploading files together with form fields (default choice)</td></tr>
+                            <tr><td>Base64 inside JSON</td><td>A text string that encodes the bytes</td><td>The API only accepts JSON / text and the file is small</td></tr>
+                            <tr><td>Raw binary body</td><td>The file bytes directly</td><td>A single file with no extra fields (for example <code>PUT /files/image.png</code>)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Multipart wraps each part with a boundary and its own headers, so one request can carry several fields and files:</p>
+                <pre class="code-block" data-lang="text"><code>POST /upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=----XYZ123
+
+------XYZ123
+Content-Disposition: form-data; name="file"; filename="image.png"
+Content-Type: image/png
+
+(binary file bytes here)
+------XYZ123--</code></pre>
+                <p>Base64 turns the same bytes into ASCII text so they can sit inside a JSON field — at the cost of about 33% more size:</p>
+                <pre class="code-block" data-lang="json"><code>{
+    "filename": "image.png",
+    "data": "iVBORw0KGgoAAAANSUhEUgAA..."
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>HTTP can send binary directly, so use <code>multipart/form-data</code> for file uploads and reach for Base64 only when a text-only interface (JSON, email) forces it. Base64 is an encoding, not compression or encryption.</p></aside>
+                <p>For continuous binary streams (live media, long transfers) WebSockets can move raw frames without re-encoding: set <code>ws.binaryType = "arraybuffer"</code> and send a <code>Uint8Array</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="react-file-input">File input in React</h2>
+                <p>A file input stays uncontrolled in practice: you read the chosen file from <code>e.target.files</code> in the change handler instead of binding a <code>value</code> prop.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;input
+    type="file"
+    onChange={handleFileChange}
+/&gt;</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>const handleFileChange = (e) =&gt; {
+    const file = e.target.files[0]; // first chosen file
+    console.log(file);
+};</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="file-object">The file object</h2>
+                <p>A selected file carries metadata about itself.</p>
+                <pre class="code-block" data-lang="javascript"><code>file.name;
+file.size;
+file.type;
+file.lastModified;
+
+console.log(file.name);
+console.log(file.size);
+console.log(file.type);</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="multiple-files">Multiple files</h2>
+                <p>Add the <code>multiple</code> attribute so the user can pick several files at once; <code>e.target.files</code> then holds a list you can iterate.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;input
+    type="file"
+    multiple
+    onChange={handleFiles}
+/&gt;</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>const files = e.target.files; // a FileList, not a plain array
+
+files[0];
+files[1];
+files[2];</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="formdata">FormData</h2>
+                <p><code>FormData</code> encodes files for transport over HTTP as <code>multipart/form-data</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const formData = new FormData();
+
+formData.append("image", file);
+
+fetch("/api/upload", {
+    method: "POST",
+    body: formData
+});</code></pre>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Do not manually set <code>Content-Type: multipart/form-data</code>. The browser adds the correct <code>boundary</code> automatically; setting it yourself breaks the request.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="send-file-plus-data">Send a file plus other data</h2>
+                <p>Because <code>FormData</code> is a key/value container, you can attach text fields alongside the file in one request. The server splits them into <code>req.file</code> (the file) and <code>req.body</code> (the rest).</p>
+                <pre class="code-block" data-lang="javascript"><code>const formData = new FormData();
+
+formData.append("image", file); // file goes under the "image" field
+formData.append("name", "Laptop"); // text fields are fine too
+formData.append("price", "1000");
+
+// server receives: image, name, price</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="axios-and-fetch">Sending with fetch or axios</h2>
+                <p>The same <code>FormData</code> object works with either HTTP client. With axios you pass it directly as the body and the multipart headers are set for you.</p>
+                <pre class="code-block" data-lang="javascript"><code>// fetch
+await fetch("/api/products", {
+    method: "POST",
+    body: formData // no Content-Type header needed
+});
+
+// axios
+const formData = new FormData();
+formData.append("image", file);
+formData.append("name", name);
+
+await axios.post("/api/products", formData); // axios detects FormData</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="form-submission-types">Form submission types and enctype</h2>
+                <p>The <code>enctype</code> attribute (or the <code>Content-Type</code> when you build the request yourself) decides how form fields are encoded before they are sent. Picking the wrong one is why file inputs arrive empty on the server.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Type</th><th>Used for</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>application/x-www-form-urlencoded</code></td><td>Default for simple text forms</td></tr>
+                            <tr><td><code>multipart/form-data</code></td><td>Required when the form includes a file</td></tr>
+                            <tr><td><code>text/plain</code></td><td>Rarely used</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Plain HTML form (no JavaScript)</h3>
+                <p>A normal form submits itself using its <code>action</code> URL and <code>method</code>. Set <code>enctype="multipart/form-data"</code> whenever a file input is present.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;form action="/plain" method="POST"&gt;
+    &lt;input type="text" name="username" required /&gt;
+    &lt;input type="email" name="email" required /&gt;
+    &lt;button type="submit"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+                <p>On the server, url-encoded bodies are parsed with <code>express.urlencoded()</code> (JSON bodies with <code>express.json()</code>).</p>
+                <pre class="code-block" data-lang="javascript"><code>app.use(express.urlencoded({ extended: true })); // parses application/x-www-form-urlencoded
+
+app.post("/plain", (req, res) =&gt; {
+    res.json({ message: "Form received", data: req.body });
+});</code></pre>
+                <h3>Fetch submission with JSON</h3>
+                <p>When you submit with JavaScript you must serialize the payload yourself. The <code>fetch</code> body has to be a string, so a plain object fails — wrap it in <code>JSON.stringify</code> and send a matching <code>Content-Type</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const data = { username: "Alice", email: "alice@example.com" };
+
+await fetch("/js", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }, // server needs express.json()
+    body: JSON.stringify(data)                        // body must be a string, not an object
+});</code></pre>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Passing a plain object as <code>body</code> sends <code>"[object Object]"</code>. Always use <code>JSON.stringify</code> for JSON, or pass a <code>FormData</code> object untouched for multipart.</p></aside>
+                <p><code>FormData</code> is iterable, so you can read or convert its entries. This is handy to move values between a multipart form and a JSON API:</p>
+                <pre class="code-block" data-lang="javascript"><code>const formData = new FormData(formEl);
+
+// iterate every field
+for (const [key, value] of formData.entries()) {
+    console.log(key, value);
+}
+
+// convert to a plain object, then send as JSON
+const values = Object.fromEntries(formData.entries());
+// values =&gt; { name: "Alice", email: "alice@example.com" }</code></pre>
+                <p>The file-upload variant (a form with <code>enctype="multipart/form-data"</code> posted through <code>FormData</code> and parsed by Multer) is covered above in <a href="#multer">Multer</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="express-does-not-parse-files">Express does not parse files</h2>
+                <p><code>express.json()</code> does <strong>not</strong> process <code>multipart/form-data</code> files. For files you need Multer.</p>
+                <pre class="code-block" data-lang="javascript"><code>const express = require("express");
+const app = express();
+
+app.use(express.json());
+// JSON only — files still need Multer</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="multer">Multer</h2>
+                <p>Multer is Express middleware that reads <code>multipart/form-data</code> bodies and writes uploaded files to disk, memory, or your own handler. Without it, <code>req.file</code> never appears and file fields are dropped.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install multer</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>const multer = require("multer");
+
+// basic usage with a destination folder
+const upload = multer({ dest: "uploads/" }); // temp folder, random filenames
+
+app.post("/upload", upload.single("image"), (req, res) =&gt; {
+    console.log(req.file);
+    res.json({ message: "Uploaded" });
+});</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>The field name <code>"image"</code> must match <code>formData.append("image", file)</code>. A mismatch causes a Multer error.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="req-file">req.file</h2>
+                <p>After <code>upload.single("image")</code>, the uploaded file is on <code>req.file</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>req.file.originalname; // client's filename (untrusted)
+req.file.mimetype;     // e.g. "image/png" (also untrusted)
+req.file.size;         // bytes
+req.file.path;         // where disk storage wrote it
+req.file.filename;     // the (often random) stored name</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="req-body">req.body</h2>
+                <p>Non-file fields land on <code>req.body</code>, so the server receives both.</p>
+                <pre class="code-block" data-lang="javascript"><code>// formData.append("name", "Laptop")
+req.body.name;
+
+// req.file = the uploaded file
+// req.body = the other form data</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="multiple-files-array">Multiple files with upload.array</h2>
+                <p><code>upload.array</code> accepts many files under a single field name and exposes them as an array on <code>req.files</code>. The second argument caps how many are accepted.</p>
+                <pre class="code-block" data-lang="javascript"><code>upload.array("images", 5); // up to 5 files, all under "images"
+
+app.post("/upload", upload.array("images", 5), (req, res) =&gt; {
+    console.log(req.files); // an array
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="fields">Different file fields with upload.fields</h2>
+                <p><code>upload.fields</code> handles several differently-named file fields in one request, each with its own limit. Access them by name on <code>req.files</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>upload.fields([
+    { name: "avatar", maxCount: 1 },
+    { name: "documents", maxCount: 5 }
+]);
+
+// then:
+req.files.avatar;    // array (maxCount 1)
+req.files.documents; // array (maxCount 5)</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="memory-storage">Memory storage</h2>
+                <p>Keeps the file in RAM as a Buffer — ideal when forwarding straight to a cloud provider.</p>
+                <pre class="code-block" data-lang="javascript"><code>const storage = multer.memoryStorage();
+
+const upload = multer({ storage });
+
+// req.file.buffer contains the file bytes</code></pre>
+                <p>Use memory storage with Cloudinary, AWS S3, or other cloud storage — see <a href="file-storage-s3-cloudinary.html">File Storage: S3 &amp; Cloudinary</a>.</p>
+                <aside class="callout warn"><span class="ct">Watch out</span><p>Memory storage holds the entire file in RAM. Large files or many concurrent uploads can exhaust server memory, so always pair it with a size limit.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="disk-storage">Disk storage</h2>
+                <p>Writes the file to a local folder with a controlled filename.</p>
+                <pre class="code-block" data-lang="javascript"><code>const storage = multer.diskStorage({
+    destination: "uploads/",
+    filename: (req, file, cb) =&gt; {
+        cb(null, Date.now() + "-" + file.originalname); // prefix keeps names unique
+    }
+});
+
+const upload = multer({ storage });</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p>Two files with the same original name overwrite each other unless you generate a unique filename (as above) or a random key.</p></aside>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Middleware</th><th>File lives</th><th>Best for</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>memoryStorage()</code></td><td>RAM as <code>req.file.buffer</code></td><td>Forwarding straight to S3 / Cloudinary</td></tr>
+                            <tr><td><code>diskStorage()</code></td><td>Local disk at <code>req.file.path</code></td><td>Serving local files or later processing</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="file-type-validation">File type validation</h2>
+                <p>Do not accept every file type. Validate by MIME type in a <code>fileFilter</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const fileFilter = (req, file, cb) =&gt; {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true); // accept
+    } else {
+        cb(new Error("Only images allowed")); // reject -> surfaces as an error
+    }
+};</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="file-size-limit">File size limit</h2>
+                <p>An unlimited upload endpoint is a denial-of-service risk. Setting <code>limits.fileSize</code> rejects oversized files before they exhaust memory or disk.</p>
+                <pre class="code-block" data-lang="javascript"><code>const upload = multer({
+    storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5 MB maximum, in bytes
+    }
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="upload-security">Security</h2>
+                <p>Never blindly trust <code>file.originalname</code> or <code>file.mimetype</code>. Validate files on the server.</p>
+                <ul>
+                    <li>File size limits</li>
+                    <li>Allowed MIME types</li>
+                    <li>Extension validation when appropriate</li>
+                    <li>Authentication and authorization</li>
+                    <li>Safe generated filenames (avoid the raw original name)</li>
+                    <li>Virus/malware scanning where appropriate</li>
+                    <li>Rate limiting for public upload endpoints</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="store-url-not-blobs">Store URLs and metadata, not blobs</h2>
+                <p>Avoid storing large files directly inside MongoDB unless there is a specific reason. Store the file in cloud storage and keep a reference in the database.</p>
+                <pre class="flow">MongoDB
+   ↓
+stores metadata + URL
+
+Cloud Storage
+   ↓
+stores actual file</pre>
+                <pre class="code-block" data-lang="javascript"><code>{
+    name: "Laptop",
+    imageUrl: "https://cloud.example/image.jpg"
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="direct-cloud-upload">Direct-to-cloud upload</h2>
+                <p>For large files, the browser can upload directly to cloud storage using a signed URL, so the file never passes through Express.</p>
+                <pre class="flow">React
+   ↓
+Request upload permission
+   ↓
+Backend
+   ↓
+Signed URL
+   ↓
+React
+   ↓
+Cloud Storage</pre>
+                <ul>
+                    <li>Less server bandwidth</li>
+                    <li>Better for large files</li>
+                    <li>Better scalability</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="database-model">Database model</h2>
+                <p>The schema stores the file's URL and provider id, not the file itself. Keeping the <code>publicId</code>/key lets you delete or replace the remote file later.</p>
+                <pre class="code-block" data-lang="javascript"><code>const productSchema = new mongoose.Schema({
+    name: String,
+    imageUrl: String,     // public URL the frontend displays
+    imagePublicId: String // provider id needed to delete/replace
+});</code></pre>
+                <p>Storing <code>publicId</code> lets you later delete or replace the cloud file. Schema basics are owned by <a href="../06-database/mongodb-basics.html">MongoDB Basics</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="replace-image">Replace an image</h2>
+                <p>Replacing means deleting the old cloud asset, uploading the new one, and updating the stored URL — otherwise orphaned files accumulate and cost money.</p>
+                <pre class="flow">Old image:
+Cloudinary
+  ↓
+delete old image
+
+New image:
+Upload new image
+  ↓
+save new URL
+
+Database:
+imageUrl = new URL</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="delete-image">Delete an image</h2>
+                <p>When deleting a product:</p>
+                <ol>
+                    <li>Delete the cloud file.</li>
+                    <li>Delete the database document.</li>
+                </ol>
+                <p>Do not leave unused files behind in cloud storage.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="file-download">File download</h2>
+                <p><code>res.download</code> streams a local file as an attachment with a <code>Content-Disposition</code> header. Files held in cloud storage are fetched by URL instead.</p>
+                <pre class="code-block" data-lang="javascript"><code>res.download(filePath); // sets Content-Disposition: attachment</code></pre>
+                <p>Or redirect/provide a URL to cloud storage. For private files, use signed URLs.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="public-private-files">Public vs private files, signed URLs</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Type</th><th>Access</th><th>Examples</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Public</td><td>Anyone with the URL</td><td>Product images, avatars</td></tr>
+                            <tr><td>Private</td><td>Authorized users only</td><td>Invoices, certificates, user documents, paid course PDFs</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>A signed URL is generated after the backend verifies the user, and it expires.</p>
+                <pre class="flow">User
+  ↓
+GET /api/document/123
+  ↓
+Authentication
+  ↓
+Authorization
+  ↓
+Generate signed URL
+  ↓
+Return URL
+  ↓
+User downloads</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="basic-mern-example">Full basic MERN upload example</h2>
+                <p>A minimal end-to-end example: the frontend posts <code>FormData</code> and the backend parses it with Multer before forwarding the buffer to cloud storage.</p>
+                <h3>Frontend</h3>
+                <p>Build the <code>FormData</code> from the selected file and POST it; the browser fills in the multipart headers.</p>
+                <pre class="code-block" data-lang="javascript"><code>const formData = new FormData();
+formData.append("image", selectedFile);
+
+await fetch("/api/products", {
+    method: "POST",
+    body: formData
+});</code></pre>
+                <h3>Backend</h3>
+                <p>The route uses memory storage so the file arrives as <code>req.file.buffer</code>, ready to stream to a provider, then saves the returned URL.</p>
+                <pre class="code-block" data-lang="javascript"><code>const upload = multer({ storage: multer.memoryStorage() });
+
+app.post(
+    "/api/products",
+    upload.single("image"),
+    async (req, res) =&gt; {
+        console.log(req.file);
+        console.log(req.body);
+
+        // Upload req.file.buffer to cloud storage
+
+        // Save URL in MongoDB
+    }
+);</code></pre>
+                <pre class="flow">             React
+               |
+            FormData
+               |
+               v
+             Express
+               |
+               v
+             Multer
+               |
+        ┌──────┴──────┐
+        v             v
+    Cloudinary       S3
+        |             |
+        └──────┬──────┘
+               v
+              URL
+               v
+            MongoDB</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="upload-error-handling">Error handling</h2>
+                <p>Uploads fail for many reasons, so wrap the work in <code>try/catch</code> and forward errors to Express. Handle at least: file too large, invalid type, missing file, and storage or database failure.</p>
+                <pre class="code-block" data-lang="javascript"><code>try {
+    const result = await uploadFile(file);
+} catch (error) {
+    console.error(error); // or next(error) to reach the error handler
+}</code></pre>
+                <p>The server should handle: file too large, invalid type, missing file, upload failure, cloud storage failure, and database failure. Forward errors to the Express error handler from <a href="express.html#error-handling-middleware">Express · Error-handling middleware</a>.</p>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>React <code>&lt;input type="file"&gt;</code> → <code>e.target.files</code></li>
+                    <li>File object: <code>name</code>, <code>size</code>, <code>type</code>, <code>lastModified</code></li>
+                    <li>Wrap files in <code>FormData</code>; never set <code>Content-Type</code> manually</li>
+                    <li>HTTP bodies carry text or binary; multipart for uploads, Base64 only for text-only APIs</li>
+                    <li><code>enctype</code> selects the encoding; <code>express.urlencoded()</code> parses plain forms, <code>express.json()</code> parses JSON</li>
+                    <li>Multer is required for <code>multipart/form-data</code></li>
+                    <li><code>single</code> / <code>array</code> / <code>fields</code> → <code>req.file</code> / <code>req.files</code> / <code>req.body</code></li>
+                    <li>memoryStorage gives <code>req.file.buffer</code>; diskStorage writes to disk</li>
+                    <li>Validate MIME type and enforce a size limit</li>
+                    <li>Store file in cloud storage; store URL + <code>publicId</code> in MongoDB</li>
+                    <li>Replace/delete both the cloud file and the document</li>
+                    <li>Private files use authentication + signed URLs</li>
+                    <li>Provider setup → File Storage: S3 &amp; Cloudinary</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="file-storage-s3-cloudinary.html"><span class="rt">→ File Storage: S3 &amp; Cloudinary</span><span class="rc">Provider setup, presigned URLs, and full guide</span></a>
+                    <a href="express.html"><span class="rt">→ Express</span><span class="rc">Routes, middleware, and error handling</span></a>
+                    <a href="authentication-jwt.html"><span class="rt">→ Authentication &amp; JWT</span><span class="rc">Authorize uploads and signed-URL requests</span></a>
+                    <a href="rest-api.html"><span class="rt">→ REST API</span><span class="rc">Design the upload endpoint and responses</span></a>
+                    <a href="../06-database/mongodb-basics.html"><span class="rt">→ MongoDB Basics</span><span class="rc">Store file metadata in a schema</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

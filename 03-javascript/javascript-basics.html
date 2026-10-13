@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Basics — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>JavaScript</span>
+                <span class="sep">/</span>
+                <span>JavaScript Basics</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>JavaScript Basics</h1>
+                <p class="subtitle">Core JavaScript concepts, arrays, objects, modern syntax, functions, DOM, events, async, and JSON.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">JavaScript</span>
+                    <span class="badge b-purple">Core Language</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="part-1-core-language">Part 1: Core language</h2>
+                <h3>Variables</h3>
+                <p>Variables store values in named slots. Default to <code>const</code> (cannot be reassigned), use <code>let</code> when the value must change, and avoid <code>var</code> (function-scoped, hoisted, legacy).</p>
+                <pre class="code-block" data-lang="javascript"><code>let name = "Alice";       // can be changed
+const age = 30;           // cannot be reassigned
+var oldWay = "avoid";     // old style
+
+let score = 10;
+score = 20;               // reassignment is allowed with let</code></pre>
+
+                <h3>Data types</h3>
+                <p>JavaScript is dynamically typed: a variable can hold any value and the type is decided at runtime. The primitives are string, number, boolean, null, undefined (plus symbol/bigint); arrays and objects are reference types.</p>
+                <pre class="code-block" data-lang="javascript"><code>let text = "Hello";        // String
+let number = 25;           // Number
+let isActive = true;       // Boolean
+let nothing = null;        // Null (intentional "no value")
+let notDefined;            // Undefined (declared but not assigned)
+
+let fruits = ["apple", "banana"];     // Array
+let user = { name: "Alice", age: 30 }; // Object
+console.log(typeof fruits);            // "object" — arrays are objects</code></pre>
+
+                <h3>Strings</h3>
+                <p>Strings are immutable sequences of characters with many built-in helpers. Use template literals (backticks) to combine text and values cleanly.</p>
+                <pre class="code-block" data-lang="javascript"><code>let firstName = "Alice";
+
+firstName.length;                 // length
+firstName.toUpperCase();          // ALICE
+firstName.toLowerCase();          // alice
+firstName.includes("lic");        // true
+firstName.startsWith("A");        // true
+firstName.endsWith("e");          // true
+
+// Template literal
+let message = `Hello ${firstName}`;
+console.log(message);</code></pre>
+
+                <h3>Numbers &amp; Math</h3>
+                <p>All numbers are 64-bit floats (there is no separate integer type). <code>Math</code> provides rounding, min/max and random helpers; <code>%</code> gives the remainder and <code>**</code> is power.</p>
+                <pre class="code-block" data-lang="javascript"><code>let x = 10;
+
+x + 5;       // addition
+x - 5;       // subtraction
+x * 5;       // multiplication
+x / 5;       // division
+x % 3;       // remainder
+x ** 2;      // power
+
+Math.round(4.6);    // 5
+Math.floor(4.9);    // 4
+Math.ceil(4.1);     // 5
+Math.max(10, 20);   // 20
+Math.min(10, 20);   // 10
+Math.random();      // random number 0-1</code></pre>
+
+                <h3>Comparison operators</h3>
+                <p>Comparisons return booleans. Prefer <code>===</code>/<code>!==</code> (strict: compares value and type) over <code>==</code>/<code>!=</code> (loose: coerces types and produces surprises like <code>"" == 0</code>).</p>
+                <pre class="code-block" data-lang="javascript"><code>5 === 5;       // true
+5 !== 3;       // true
+5 &gt; 3;         // true
+5 &lt; 3;         // false
+5 &gt;= 5;        // true
+5 &lt;= 5;        // true
+
+// Prefer === over ==
+5 === "5";     // false
+5 == "5";      // true</code></pre>
+
+                <h3>Logical operators</h3>
+                <p>Logical operators combine booleans: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT). They short-circuit, so the right side is only evaluated when needed.</p>
+                <pre class="code-block" data-lang="javascript"><code>true &amp;&amp; true;     // AND
+true || false;    // OR
+!true;            // NOT
+
+if (age &gt;= 18 &amp;&amp; isActive) {
+    console.log("Allowed");
+}</code></pre>
+
+                <h3>If / Else &amp; Ternary</h3>
+                <p><code>if</code>/<code>else</code> runs a block based on a condition; the ternary (<code>? :</code>) is the expression form for choosing a value inline. See <a href="#part-4-modern-syntax">Part 4</a> for more on the ternary.</p>
+                <pre class="code-block" data-lang="javascript"><code>if (age &gt;= 18) {
+    console.log("Adult");
+} else {
+    console.log("Minor");
+}
+
+// Ternary operator
+let result = age &gt;= 18 ? "Adult" : "Minor";</code></pre>
+
+                <h3>Switch</h3>
+                <p><code>switch</code> compares one value against several cases. Each <code>case</code> needs a <code>break</code> — without it, execution "falls through" to the next case (a common bug).</p>
+                <pre class="code-block" data-lang="javascript"><code>let day = "Monday";
+
+switch (day) {
+    case "Monday":
+        console.log("Start");
+        break; // stop here; otherwise it falls through to "Friday"
+    case "Friday":
+        console.log("Weekend");
+        break;
+    default:
+        console.log("Normal day");
+}</code></pre>
+
+                <h3>Loops</h3>
+                <p>Loops repeat work. Use <code>for</code> when you need the index, <code>for...of</code> to iterate values, and <code>for...in</code> to iterate object keys.</p>
+                <pre class="code-block" data-lang="javascript"><code>// for loop
+for (let i = 0; i &lt; 5; i++) {
+    console.log(i);
+}
+
+// while loop
+let i = 0;
+while (i &lt; 5) {
+    console.log(i);
+    i++;
+}
+
+// for...of → values
+for (const fruit of fruits) {
+    console.log(fruit);
+}
+
+// for...in → object keys
+for (const key in user) {
+    console.log(key);
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="part-2-arrays">Part 2: Arrays</h2>
+                <h3>Array basics</h3>
+                <p>Arrays are ordered, zero-indexed lists. Reading an index and <code>length</code> is O(1); assigning to an index mutates the array in place.</p>
+                <pre class="code-block" data-lang="javascript"><code>const fruits = ["apple", "banana", "cherry"];
+
+fruits[0];             // apple (indexing starts at 0)
+fruits[1];             // banana
+fruits.length;         // 3
+
+fruits[0] = "orange";  // change item — mutates the original array</code></pre>
+
+                <h3>Array methods</h3>
+                <p>Arrays ship with powerful built-in methods. The key distinction is mutation: <code>push</code>/<code>splice</code>/<code>sort</code>/<code>reverse</code> change the original array, while <code>map</code>/<code>filter</code>/<code>slice</code> return new ones (preferred in React).</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Method</th><th>Description</th><th>Mutates</th><th>Example</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>push</code></td><td>Add to end</td><td>Yes</td><td><code>fruits.push("mango")</code></td></tr>
+                            <tr><td><code>pop</code></td><td>Remove from end</td><td>Yes</td><td><code>fruits.pop()</code></td></tr>
+                            <tr><td><code>unshift</code></td><td>Add to beginning</td><td>Yes</td><td><code>fruits.unshift("kiwi")</code></td></tr>
+                            <tr><td><code>shift</code></td><td>Remove from beginning</td><td>Yes</td><td><code>fruits.shift()</code></td></tr>
+                            <tr><td><code>forEach</code></td><td>Loop over each item</td><td>No</td><td><code>fruits.forEach(f =&gt; console.log(f))</code></td></tr>
+                            <tr><td><code>map</code></td><td>Transform - returns new array</td><td>No</td><td><code>[1,2,3].map(n =&gt; n*2)</code></td></tr>
+                            <tr><td><code>filter</code></td><td>Select matching - new array</td><td>No</td><td><code>[1,2,3,4].filter(n =&gt; n%2===0)</code></td></tr>
+                            <tr><td><code>find</code></td><td>First matching item</td><td>No</td><td><code>users.find(u =&gt; u.age===30)</code></td></tr>
+                            <tr><td><code>findIndex</code></td><td>Index of first match</td><td>No</td><td><code>users.findIndex(u =&gt; u.age===30)</code></td></tr>
+                            <tr><td><code>includes</code></td><td>Check existence (boolean)</td><td>No</td><td><code>fruits.includes("apple")</code></td></tr>
+                            <tr><td><code>some</code></td><td>At least one matches</td><td>No</td><td><code>users.some(u =&gt; u.age&gt;=18)</code></td></tr>
+                            <tr><td><code>every</code></td><td>All match</td><td>No</td><td><code>users.every(u =&gt; u.age&gt;=18)</code></td></tr>
+                            <tr><td><code>reduce</code></td><td>Array to single value</td><td>No</td><td><code>[1,2,3,4].reduce((s,n)=&gt;s+n,0)</code></td></tr>
+                            <tr><td><code>sort</code></td><td>Sort array</td><td>Yes</td><td><code>[10,2,5,1].sort((a,b)=&gt;a-b)</code></td></tr>
+                            <tr><td><code>reverse</code></td><td>Reverse array</td><td>Yes</td><td><code>["A","B","C"].reverse()</code></td></tr>
+                            <tr><td><code>slice</code></td><td>Extract portion (copy)</td><td>No</td><td><code>items.slice(1,3)</code></td></tr>
+                            <tr><td><code>splice</code></td><td>Add/remove elements</td><td>Yes</td><td><code>colors.splice(1,1,"yellow")</code></td></tr>
+                            <tr><td><code>concat</code></td><td>Combine arrays</td><td>No</td><td><code>a.concat(b)</code></td></tr>
+                            <tr><td><code>join</code></td><td>Array to string</td><td>No</td><td><code>names.join(", ")</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Short examples</h3>
+                <p>These examples show the methods above in action. Note which calls mutate (<code>sort</code>, <code>splice</code>) and which return new arrays (<code>map</code>, <code>filter</code>, <code>slice</code>, <code>concat</code>).</p>
+                <pre class="code-block" data-lang="javascript"><code>// forEach
+fruits.forEach((fruit) =&gt; {
+    console.log(fruit);
+});
+
+// map
+const numbers = [1, 2, 3, 4];
+const doubled = numbers.map((num) =&gt; num * 2); // [2,4,6,8]
+
+// filter
+const evenNumbers = numbers.filter((num) =&gt; num % 2 === 0); // [2,4]
+
+// find &amp; findIndex
+const users = [{ name: "Alice", age: 20 }, { name: "Bob", age: 30 }];
+const person = users.find((u) =&gt; u.age === 30);
+const personIndex = users.findIndex((u) =&gt; u.age === 30);
+
+// some &amp; every
+const hasAdult = users.some((u) =&gt; u.age &gt;= 18);
+const allAdults = users.every((u) =&gt; u.age &gt;= 18);
+
+// reduce
+const total = numbers.reduce((sum, num) =&gt; sum + num, 0); // 10
+
+// sort
+const nums3 = [10, 2, 5, 1];
+nums3.sort((a,b) =&gt; a-b); // ascending
+nums3.sort((a,b) =&gt; b-a); // descending
+
+// slice vs splice
+const items = ["A","B","C","D"];
+const part = items.slice(1,3); // ["B","C"] - no mutation
+const colors = ["red","blue","green"];
+colors.splice(1,1); // removes "blue" - mutates
+colors.splice(1,0,"yellow"); // insert
+
+// concat &amp; join
+const combined = [1,2].concat([3,4]); // [1,2,3,4]
+const names = ["Alice","Bob","Charlie"];
+names.join(", "); // "Alice, Bob, Charlie"</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="part-3-objects-destructuring-spread-rest">Part 3: Objects, destructuring, spread/rest</h2>
+                <h3>Objects basics</h3>
+                <p>Objects store key-value pairs and are the workhorse for records and config. Access known keys with dot notation and dynamic keys with bracket notation.</p>
+                <pre class="code-block" data-lang="javascript"><code>const person = {
+    name: "Alice",
+    age: 30,
+    job: "Engineer"
+};
+
+// Access
+person.name;
+person["name"];
+
+// Modify/add/delete
+person.age = 31;
+person.country = "UAE";
+delete person.job;
+
+// Object methods
+Object.keys(person);      // keys
+Object.values(person);    // values
+Object.entries(person);   // [key,value] pairs</code></pre>
+
+                <h3>Destructuring</h3>
+                <p>Destructuring pulls values out of arrays/objects into named variables in one line. Object destructuring matches by key (rename with <code>:</code>); array destructuring matches by position.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Object
+const student = { name: "Alice", age: 25 };
+const { name: studentName, age: studentAge } = student; // rename while destructuring
+
+// Array — position-based, skipping is possible
+const colors = ["red", "green", "blue"];
+const [first, second, third] = colors;
+const [, , last] = colors; // "blue"</code></pre>
+
+                <h3>Spread operator (...)</h3>
+                <p>Spread (<code>...</code>) expands an iterable or object into individual elements. Its main MERN use is immutable copies and updates — building a new array/object instead of mutating the original (required by React state).</p>
+                <pre class="code-block" data-lang="javascript"><code>// Copy array
+const original = [1,2,3];
+const copy = [...original];
+
+// Combine arrays
+const arr1 = [1,2], arr2 = [3,4];
+const combined = [...arr1, ...arr2];
+
+// Copy object
+const userCopy = { ...student };
+
+// Update object
+const updatedUser = { ...student, age: 26 };</code></pre>
+
+                <h3>Rest operator (...)</h3>
+                <p>Rest (<code>...</code>) collects multiple arguments (or remaining items) into a single array. Same syntax as spread, opposite job: gather instead of expand.</p>
+                <pre class="code-block" data-lang="javascript"><code>function addAll(...numbers) {
+    return numbers.reduce((sum, num) =&gt; sum + num, 0);
+}
+addAll(1,2,3,4); // 10</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="part-4-modern-syntax">Part 4: Modern syntax</h2>
+
+                <h3>Template literals</h3>
+                <p>Template literals use backticks and <code>${}</code> interpolation to build strings from variables and expressions. They replace error-prone <code>+</code> concatenation and allow multi-line text directly.</p>
+                <pre class="code-block" data-lang="javascript"><code>const name = "Alice";
+const msg = `Hello ${name}, welcome!`;
+
+// Any expression works inside ${ }, and newlines are preserved
+const total = 3;
+const report = `Items: ${total}
+Cost: $${(total * 2).toFixed(2)}`;</code></pre>
+
+                <h3>Ternary</h3>
+                <p>The ternary operator is a compact <code>if/else</code> that <em>returns a value</em>. Use it to choose between two values inline (for example a label or an element); because it is an expression, you can assign or return its result.</p>
+                <pre class="code-block" data-lang="javascript"><code>const age = 20;
+const status = age &gt;= 18 ? "Adult" : "Minor"; // "Adult"
+// nested — use sparingly, prefer readable code
+const grade = score &gt;= 90 ? "A" : score &gt;= 80 ? "B" : score &gt;= 70 ? "C" : "F";</code></pre>
+
+                <h3>Logical AND (&amp;&amp;)</h3>
+                <p>Returns the first falsy operand, or the last operand if all are truthy. The common pattern is <em>short-circuit execution</em>: run the right side only when the left is truthy (guards, and conditional rendering in React).</p>
+                <pre class="code-block" data-lang="javascript"><code>isActive &amp;&amp; console.log("Active"); // runs console.log only if isActive is truthy
+
+// React render guard
+isLoggedIn &amp;&amp; showDashboard();</code></pre>
+
+                <h3>Optional chaining (?.)</h3>
+                <p>Safely reads a nested property and short-circuits to <code>undefined</code> instead of throwing when an intermediate value is <code>null</code>/<code>undefined</code>. Use it for API data that may be missing fields.</p>
+                <pre class="code-block" data-lang="javascript"><code>const user = { profile: { name: "Alice" } };
+console.log(user.profile?.name);      // "Alice"
+console.log(user.address?.city);      // undefined (no error)
+console.log(user.greet?.());          // also guards function calls</code></pre>
+
+                <h3>Nullish coalescing (??)</h3>
+                <p>Returns the right-hand value only when the left is <code>null</code> or <code>undefined</code>. Unlike <code>||</code>, it treats <code>0</code>, <code>""</code>, and <code>false</code> as valid values, so it is the safer "default value" operator.</p>
+                <pre class="code-block" data-lang="javascript"><code>let username = null;
+let displayName = username ?? "Guest"; // "Guest"
+
+const count = 0;
+console.log(count || 10); // 10  ← wrong if 0 is a valid value
+console.log(count ?? 10); // 0   ← correct: 0 is not nullish</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p><code>??</code> cannot be mixed with <code>||</code> or <code>&amp;&amp;</code> without parentheses (<code>a ?? b || c</code> is a SyntaxError; write <code>(a ?? b) || c</code>).</p></aside>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Operator</th><th>Returns fallback when...</th><th>Common use</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>??</code></td><td>left is <code>null</code>/<code>undefined</code></td><td>safe default values</td></tr>
+                            <tr><td><code>||</code></td><td>left is any falsy value</td><td>broad fallbacks</td></tr>
+                            <tr><td><code>? :</code></td><td>always (it is a branch)</td><td>inline if/else</td></tr>
+                            <tr><td><code>&amp;&amp;</code></td><td>never (returns left if falsy)</td><td>conditional execution</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Truthy / Falsy</h3>
+                <p>Every value is coerced to a boolean in conditions. Falsy values: <code>false</code>, <code>0</code>, <code>""</code>, <code>null</code>, <code>undefined</code>, <code>NaN</code>. Everything else is truthy.</p>
+                <pre class="code-block" data-lang="javascript"><code>if (username) {
+    console.log("Has username"); // runs only when username is truthy
+}
+
+// Gotcha: empty array/object are truthy, and "0" is truthy
+Boolean([]); // true
+Boolean({}); // true
+Boolean("0"); // true
+Boolean("");  // false</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="part-5-functions-callbacks">Part 5: Functions &amp; Callbacks (deep-dive)</h2>
+                <h3>What is a function?</h3>
+                <p>A function is a reusable block of code that performs a task.</p>
+                <pre class="code-block" data-lang="javascript"><code>function greet() {
+    console.log("Hello");
+}
+greet();</code></pre>
+
+                <h3>Function declaration vs expression</h3>
+                <p>Declarations are hoisted, so they can be called before they appear in the file. Expressions assigned to a variable are not hoisted, so they must be defined before use.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Function declaration (hoisted)
+function greet() {
+    console.log("Hello");
+}
+greet();
+
+// Function expression
+const greetExpr = function() {
+    console.log("Hello");
+};
+greetExpr();</code></pre>
+
+                <h3>Arrow functions</h3>
+                <p>Arrow functions are a shorter syntax that do not bind their own <code>this</code> — they inherit it from the enclosing scope, which is why they are preferred for callbacks and inside React components.</p>
+                <pre class="code-block" data-lang="javascript"><code>const greet = () =&gt; console.log("Hello");
+const greetName = (name) =&gt; `Hello ${name}`;
+const add = (a,b) =&gt; a + b;</code></pre>
+
+                <h3>Parameters vs Arguments</h3>
+                <p>Parameter is placeholder; argument is actual value.</p>
+                <pre class="code-block" data-lang="javascript"><code>function greet(name) { // parameter
+    console.log(name);
+}
+greet("Alice"); // argument</code></pre>
+
+                <h3>Return vs console.log</h3>
+                <p><code>return</code> sends a value back to the caller so it can be used; <code>console.log</code> only prints. A function with no <code>return</code> (or a bare <code>return;</code>) yields <code>undefined</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>function getValue() {
+    return 10; // returns value
+}
+const val = getValue(); // val = 10
+
+function logValue() {
+    console.log(10); // prints only
+}</code></pre>
+
+                <h3>Functions are values</h3>
+                <p>Functions are first-class: you can store them in variables, attach them to objects, and pass them around like any other value.</p>
+                <pre class="code-block" data-lang="javascript"><code>const greet = function() { console.log("Hi"); };
+const user = {
+    name: "Alice",
+    greet: function() { console.log("Hello"); }
+};
+user.greet();</code></pre>
+
+                <h3>Passing functions &amp; Callbacks</h3>
+                <p>A callback is a function passed to another function to be called by it.</p>
+                <pre class="code-block" data-lang="javascript"><code>function parent(callback) {
+    console.log("Start");
+    callback();
+    console.log("End");
+}
+function child() {
+    console.log("Child runs");
+}
+parent(child); // pass function (not child())</code></pre>
+
+                <aside class="callout callout-info">
+                    <span class="ct">Note</span>
+                    <p>Pass the function reference: <code>onClick={handleClick}</code>. Do NOT call it: <code>onClick={handleClick()}</code> (that would execute immediately).</p>
+                </aside>
+                <pre class="code-block" data-lang="javascript"><code>// Correct (React-style example)
+function handleClick() {
+    console.log("Clicked");
+}
+// &lt;button onClick={handleClick}&gt;Click&lt;/button&gt;
+
+// Incorrect
+// &lt;button onClick={handleClick()}&gt;Click&lt;/button&gt;</code></pre>
+
+                <h3>Callback can receive/return values</h3>
+                <p>Callbacks can take arguments and return values, so the parent function can pass data in and use the result that comes back.</p>
+                <pre class="code-block" data-lang="javascript"><code>function parent(callback) {
+    const result = callback();
+    console.log(result); // 10
+}
+parent(() =&gt; 10);</code></pre>
+
+                <h3>Higher-order functions</h3>
+                <p>Functions that receive or return other functions.</p>
+                <pre class="code-block" data-lang="javascript"><code>function execute(fn) { fn(); }
+execute(() =&gt; console.log("Hi"));
+
+// Built-in example
+[1,2,3].map(n =&gt; n*2);</code></pre>
+
+                <h3>Functions returning functions</h3>
+                <p>Returning a function creates a closure: the returned function keeps access to the variables of the scope it was created in, even after that scope has finished.</p>
+                <pre class="code-block" data-lang="javascript"><code>function createGreeting() {
+    return function() {
+        console.log("Hello");
+    };
+}
+const greet = createGreeting();
+greet();</code></pre>
+
+                <h3>Scope</h3>
+                <p>Scope decides where a variable is visible. <code>const</code>/<code>let</code> are block-scoped, and anything declared inside a function is not accessible from outside it.</p>
+                <pre class="code-block" data-lang="javascript"><code>function test() {
+    const name = "Alice";
+    console.log(name); // ok
+}
+test();
+// console.log(name); // error (not accessible)</code></pre>
+
+                <aside class="callout key">
+                    <span class="ct">Key point</span>
+                    <p><code>greet</code> refers to function; <code>greet()</code> executes it.</p>
+                </aside>
+            </section>
+
+            <section class="section">
+                <h2 id="part-6-dom-events">Part 6: DOM &amp; Events</h2>
+                <p>The DOM is the live, in-memory tree of the page. JavaScript selects elements, reads or changes their content, and attaches event listeners to react to user input.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Select elements
+const button = document.getElementById("myButton");
+const title = document.querySelector("h1");
+const item = document.querySelector(".item");
+
+// Change content
+const output = document.getElementById("output");
+output.textContent = "Hello";                 // safe: treats input as plain text
+output.innerHTML = "&lt;strong&gt;Hello&lt;/strong&gt;"; // parses HTML — risk of XSS with user input
+
+// Events
+button.addEventListener("click", () =&gt; {
+    console.log("Clicked!");
+});
+
+// Input
+const input = document.getElementById("name");
+console.log(input.value);
+
+// Classes
+const box = document.querySelector(".box");
+box.classList.add("active");
+box.classList.remove("active");
+box.classList.toggle("active");
+box.classList.contains("active");</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p>Never insert untrusted input with <code>innerHTML</code> — it can execute scripts (XSS). Use <code>textContent</code> for plain text.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="part-7-async">Part 7: Async (callbacks, promises, async/await, try/catch)</h2>
+                <h3>Callbacks (async timing)</h3>
+                <p>A callback scheduled with <code>setTimeout</code> runs later, not now. The delay is a minimum: the callback runs only after the current synchronous code and all microtasks finish.</p>
+                <pre class="code-block" data-lang="javascript"><code>setTimeout(() =&gt; {
+    console.log("Done");
+}, 2000);</code></pre>
+
+                <h3>Promises</h3>
+                <p>A Promise represents a value that will exist later. <code>.then</code> handles success, <code>.catch</code> handles failure, and chaining avoids deeply nested callbacks. <code>fetch</code> returns a Promise.</p>
+                <pre class="code-block" data-lang="javascript"><code>fetch("https://example.com/api")
+    .then(res =&gt; res.json())
+    .then(data =&gt; console.log(data))
+    .catch(err =&gt; console.error(err));</code></pre>
+
+                <h3>Async/Await</h3>
+                <p><code>async</code>/<code>await</code> is syntax sugar over Promises. <code>await</code> pauses the current async function until the Promise settles, so async code reads like synchronous code — but it does not block the rest of the program.</p>
+                <pre class="code-block" data-lang="javascript"><code>async function getData() {
+    const response = await fetch("https://example.com/api");
+    const data = await response.json();
+    console.log(data);
+}</code></pre>
+
+                <h3>Try/Catch</h3>
+                <p>Wrap <code>await</code> calls in <code>try</code>/<code>catch</code> to handle rejections and network errors. An uncaught rejection inside an async function otherwise propagates as a rejected Promise.</p>
+                <pre class="code-block" data-lang="javascript"><code>async function getDataSafe() {
+    try {
+        const res = await fetch("https://example.com/api");
+        const data = await res.json();
+        console.log(data);
+    } catch (error) {
+        console.log(error);
+    }
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="part-8-json">Part 8: JSON</h2>
+                <p>JSON (JavaScript Object Notation) is the text format APIs send and receive. <code>JSON.stringify</code> turns a JS value into a JSON string (for requests/storage), and <code>JSON.parse</code> turns that string back into objects.</p>
+                <pre class="code-block" data-lang="javascript"><code>const userData = { name: "Alice", age: 30 };
+
+// Object → JSON
+const json = JSON.stringify(userData);
+
+// JSON → Object
+const obj = JSON.parse(json);
+
+// Gotcha: functions and undefined are dropped by stringify
+JSON.stringify({ a: 1, b: undefined, c: () =&gt; {} }); // "{\"a\":1}"</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="misc-concepts">Misc concepts</h2>
+                <h3>Array cycling with %</h3>
+                <p>The modulo operator <code>%</code> wraps an index back to 0 once it reaches the array length — handy for carousels and rotating through options.</p>
+                <pre class="code-block" data-lang="javascript"><code>let index = 0;
+const arr = ["a","b","c"];
+index = (index + 1) % arr.length; // 0 → 1 → 2 → 0 ...</code></pre>
+
+                <h3>Array patterns</h3>
+                <p>A quick reference of the array operations you will reach for constantly in MERN code.</p>
+                <pre class="code-block" data-lang="javascript"><code>for (const item of myArray) { /* ... */ }
+const upper = myArray.map(x =&gt; x.toUpperCase());
+const filtered = myArray.filter(x =&gt; x.length &gt; 5);
+const found = myArray.find(x =&gt; x === "apple");
+const exists = myArray.includes("apple");</code></pre>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Prefer <code>const</code>/<code>let</code>; use <code>===</code> over <code>==</code>.</li>
+                    <li>Arrays: <code>map/filter/find/reduce</code> for transformations/selection; watch mutation vs non-mutation.</li>
+                    <li>Objects: destructuring, spread/rest for immutable updates.</li>
+                    <li>Modern JS: <code>?.</code>, <code>??</code>, template literals, truthy/falsy.</li>
+                    <li>Callbacks: pass function reference (<code>fn</code>), not call (<code>fn()</code>).</li>
+                    <li>Async: <code>Promise</code> + <code>async/await</code> with <code>try/catch</code>.</li>
+                    <li>JSON: <code>stringify</code> / <code>parse</code>.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="javascript-data-structures.html"><span class="rt">→ Data Structures</span><span class="rc">Arrays, Objects, Set, Map, Stack, Queue</span></a>
+                    <a href="javascript-event-loop.html"><span class="rt">→ Event Loop</span><span class="rc">Call stack, microtasks/macrotasks, async flow</span></a>
+                    <a href="../10-practices/big-o-time-complexity.html"><span class="rt">→ Big O</span><span class="rc">Time complexity fundamentals</span></a>
+                    <a href="../10-practices/problem-solving.html"><span class="rt">→ Problem Solving</span><span class="rc">Approach &amp; patterns</span></a>
+                    <a href="../04-frontend/react.html"><span class="rt">→ React</span><span class="rc">React fundamentals &amp; ecosystem</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

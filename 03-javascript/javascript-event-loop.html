@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Event Loop — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>JavaScript</span>
+                <span class="sep">/</span>
+                <span>Event Loop</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>JavaScript Event Loop</h1>
+                <p class="subtitle">Single-threaded model, call stack, Web APIs, task queue, microtasks/macrotasks, ordering, async/await, and pitfalls.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">JavaScript</span>
+                    <span class="badge b-purple">Async</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="single-threaded-model">Single-threaded model</h2>
+                <p>JavaScript runs one piece of code at a time on a single thread. It can still handle async work (fetch, timers, events, I/O) via the runtime + Event Loop.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="event-loop-diagram">Event Loop diagram</h2>
+                <p>The Event Loop is what keeps JavaScript single-threaded yet non-blocking. Synchronous code runs on the stack; async work is handed to the runtime, and its callbacks wait in queues until the stack is free.</p>
+                <pre class="flow">JavaScript
+  ↓
+Call Stack
+  ↓
+┌───────┴────────┐
+↓                ↓
+Web APIs       Callback Queues
+↓                ↓
+└──────→ Event Loop
+           ↓
+      Call Stack</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="core-components">Core components</h2>
+                <ul>
+                    <li><strong>Call Stack</strong> – Executes JS functions (LIFO). Pushes frames on call, pops on return.</li>
+                    <li><strong>Web APIs / Runtime APIs</strong> – Browser/Node APIs (timers, fetch, DOM events, I/O) run outside the JS call stack.</li>
+                    <li><strong>Task Queue (Macrotasks)</strong> – Holds callbacks from <code>setTimeout</code>, <code>setInterval</code>, DOM events, etc. Processed one per iteration.</li>
+                    <li><strong>Microtask Queue</strong> – Holds <code>Promise.then/catch/finally</code>, <code>queueMicrotask</code>. Drained completely before next macrotask.</li>
+                    <li><strong>Event Loop</strong> – Continuously checks: if call stack empty → take next eligible task (microtasks first, then macrotasks) and push to stack.</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="call-stack">Call Stack</h2>
+                <p>The call stack tracks which function is currently running: each call pushes a frame and each return pops it. Because it is LIFO, the most recent call finishes first — a call that never returns freezes everything.</p>
+                <pre class="code-block" data-lang="javascript"><code>function one() { console.log("One"); }
+function two() { one(); console.log("Two"); }
+two();
+// Order: two() → one() → console.log("One") → "One" → console.log("Two") → "Two"</code></pre>
+                <p>Works on LIFO: Last In, First Out.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="sync-vs-async">Synchronous vs Asynchronous</h2>
+                <p>Synchronous code runs top-to-bottom and blocks until it finishes. Asynchronous calls (timers, fetch, events) are handed to the runtime, so the rest of the script keeps running while their callbacks wait to run later.</p>
+                <pre class="code-block" data-lang="javascript"><code>console.log("A");
+setTimeout(() =&gt; console.log("B"), 0);
+console.log("C");
+
+// Expected: A, C, B
+// setTimeout(0) does NOT run immediately; it schedules macrotask.</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p><code>setTimeout(fn, 0)</code> means “run after the timer is ready and event loop gets to it”, not immediately.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="microtasks-vs-macrotasks">Microtasks vs Macrotasks</h2>
+                <p>Both queues hold callbacks, but microtasks get priority: after the current synchronous script, the microtask queue is fully drained before a single macrotask runs.</p>
+                <ul>
+                    <li><strong>Microtasks</strong>: <code>Promise.then/catch/finally</code>, <code>queueMicrotask</code>. Higher priority; drained until empty after current sync script completes.</li>
+                    <li><strong>Macrotasks</strong>: <code>setTimeout/setInterval</code>, I/O, UI events. One per event loop iteration (after microtask queue cleared).</li>
+                </ul>
+                <pre class="code-block" data-lang="javascript"><code>console.log("A");
+setTimeout(() =&gt; console.log("B"), 0);
+Promise.resolve().then(() =&gt; console.log("C"));
+console.log("D");
+
+// Order: A, D, C, B
+// Sync: A,D → Microtasks: C → Macrotasks: B</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Aspect</th><th>Microtasks</th><th>Macrotasks</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Examples</td><td><code>Promise.then</code>, <code>queueMicrotask</code>, <code>await</code></td><td><code>setTimeout</code>, <code>setInterval</code>, I/O, UI events</td></tr>
+                            <tr><td>Priority</td><td>High — drained completely first</td><td>One per event-loop iteration</td></tr>
+                            <tr><td>Processed per loop</td><td>All queued</td><td>One</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="ordering-example">Worked ordering example</h2>
+                <p>This example mixes all three phases in one script, so it is the canonical ordering test. To predict the output, separate the synchronous lines from the microtasks and the macrotasks, then apply the priority order.</p>
+                <pre class="code-block" data-lang="javascript"><code>console.log("1");   // sync — runs first
+
+setTimeout(() =&gt; {
+    console.log("2");   // macrotask — runs after all microtasks
+}, 0);
+
+Promise.resolve().then(() =&gt; {
+    console.log("3");   // microtask — queued now, runs after sync
+});
+
+Promise.resolve().then(() =&gt; {
+    console.log("4");   // microtask — FIFO, runs after 3
+});
+
+console.log("5");   // sync — runs before any queued callback</code></pre>
+                <p><strong>Expected output order:</strong></p>
+                <pre class="code-block" data-lang="javascript"><code>1
+5
+3
+4
+2</code></pre>
+                <aside class="callout callout-info">
+                    <span class="ct">Explanation</span>
+                    <ul>
+                        <li>Run all synchronous code first: <code>1</code>, <code>5</code>.</li>
+                        <li>Draining microtask queue (all Promises): <code>3</code>, then <code>4</code> (chained microtasks stay in microtask phase until queue empty).</li>
+                        <li>Then next macrotask: <code>2</code> from <code>setTimeout</code>.</li>
+                    </ul>
+                </aside>
+            </section>
+
+            <section class="section">
+                <h2 id="microtask-draining">Microtask draining (nested)</h2>
+                <p>A microtask can enqueue another microtask. The queue keeps draining until it is completely empty before any macrotask runs.</p>
+                <pre class="code-block" data-lang="javascript"><code>Promise.resolve().then(() =&gt; {
+    console.log("A");
+    Promise.resolve().then(() =&gt; {
+        console.log("B");
+    });
+});
+setTimeout(() =&gt; console.log("C"), 0);
+
+// Order: A, B, C
+// New microtask created inside microtask runs before moving to macrotask.</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="async-await">How async/await fits</h2>
+                <p><code>async/await</code> is built on Promises. <code>await</code> pauses execution of the current async function (its continuation is scheduled as a microtask) without blocking the entire JS runtime.</p>
+                <pre class="code-block" data-lang="javascript"><code>console.log("1");
+async function test() {
+    console.log("2");
+    await Promise.resolve();
+    console.log("3"); // continuation
+}
+test();
+console.log("4");
+
+// Order: 1, 2, 4, 3</code></pre>
+                <aside class="callout callout-info"><span class="ct">Note</span><p><code>await</code> pauses the <em>current async function</em>, not the entire runtime. Other synchronous code continues to run.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="fetch">Fetch</h2>
+                <p><code>fetch</code> is a Web API; network request happens off-thread. When response arrives, its <code>.then</code> continuations go to microtask queue (Promise-based).</p>
+                <pre class="code-block" data-lang="javascript"><code>console.log("Start");
+fetch("/api/users")
+  .then(r =&gt; r.json())
+  .then(data =&gt; console.log(data));
+console.log("End");
+
+// Order: Start, End, [data]</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="blocking">Blocking JavaScript</h2>
+                <p>Long-running synchronous loops block the call stack → Event Loop cannot process callbacks until finished → UI may feel frozen.</p>
+                <pre class="code-block" data-lang="javascript"><code>function heavyWork() {
+  for (let i = 0; i &lt; 10_000_000_000; i++) { /* busy */ }
+}
+heavyWork(); // blocks</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Avoid large synchronous blocks in UI code. Offload heavy work or chunk it.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="non-blocking-io">Non-blocking I/O (Node.js)</h2>
+                <p>Node uses event-driven model: start async I/O (fs, DB), don’t wait synchronously, continue handling other work; callback/Promise runs when I/O completes.</p>
+                <pre class="code-block" data-lang="javascript"><code>const fs = require("fs");
+console.log("Start");
+setTimeout(() =&gt; console.log("Timer"), 0);
+fs.readFile("file.txt", () =&gt; console.log("File"));
+console.log("End");</code></pre>
+                <p>Exact ordering between different async operations depends on runtime/timing (don’t memorize a fixed universal order).</p>
+            </section>
+
+            <section class="section">
+                <h2 id="callbacks-promises">Callbacks, Promises, and readability</h2>
+                <p>Callbacks are simple but can lead to nesting; Promises + <code>async/await</code> improve readability and error handling.</p>
+                <pre class="code-block" data-lang="javascript"><code>async function safeFetch() {
+  try {
+    const res = await fetch("/api");
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+  }
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="common-pitfalls">Common pitfalls</h2>
+                <ul>
+                    <li>Calling a function instead of passing reference: <code>onClick={fn()}</code> runs immediately.</li>
+                    <li>Assuming <code>setTimeout(0)</code> is synchronous.</li>
+                    <li>Expecting microtasks to wait for macrotasks or vice versa in wrong order.</li>
+                    <li>Blocking event loop with heavy sync loops (freezes UI).</li>
+                    <li>Confusing “pauses JS” with “pauses runtime” – <code>await</code> only pauses current async function.</li>
+                </ul>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>JS is single-threaded; Event Loop coordinates async via runtime.</li>
+                    <li>Call Stack (LIFO) runs sync code first.</li>
+                    <li>Microtasks (<code>Promises</code>, <code>queueMicrotask</code>) drain completely before macrotasks (<code>setTimeout</code>, events).</li>
+                    <li><code>await</code> pauses the current async function, not the whole runtime.</li>
+                    <li>Network I/O is off-thread; completions schedule Promises/microtasks.</li>
+                    <li>Avoid long sync blocks – they block the Event Loop.</li>
+                    <li>Memorize the canonical order: sync → microtasks → macrotasks.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="javascript-basics.html"><span class="rt">→ JavaScript Basics</span><span class="rc">Async, Promises, await, callbacks</span></a>
+                    <a href="javascript-data-structures.html"><span class="rt">→ Data Structures</span><span class="rc">Arrays, Map/Set, Stack/Queue</span></a>
+                    <a href="../10-practices/big-o-time-complexity.html"><span class="rt">→ Big O</span><span class="rc">Performance &amp; complexity</span></a>
+                    <a href="../10-practices/problem-solving.html"><span class="rt">→ Problem Solving</span><span class="rc">Structured approach</span></a>
+                    <a href="../04-frontend/react.html"><span class="rt">→ React</span><span class="rc">Events, state, rendering flow</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

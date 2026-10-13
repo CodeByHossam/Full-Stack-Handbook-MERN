@@ -1,0 +1,17 @@
+# OS / system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node (only if tooling is added later)
+node_modules/
+npm-debug.log*

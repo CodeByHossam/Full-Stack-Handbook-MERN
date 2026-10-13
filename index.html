@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full-Stack Handbook-MERN — Library Home</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="index.html">
+        <span class="dot">F</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+    </aside>
+
+    <main class="content">
+        <div class="doc">
+            <section class="home-hero">
+                <p class="hero-eyebrow">Full-Stack Handbook-MERN · Reference Library</p>
+                <h1>Everything you need to build the modern full stack</h1>
+                <p class="hero-sub">A curated, searchable library built from 40 cheat sheets and professional guides — cleaned, deduplicated, and organized by topic. Learn the stack, keep it open while you code.</p>
+                <div class="search-panel big-search">
+                    <span class="icon" aria-hidden="true">⌕</span>
+                    <input type="search" id="heroSearch" placeholder="Search: JWT, populate, flexbox, docker, useMemo…" autocomplete="off" aria-label="Search the library">
+                    <div id="heroResults" class="search-results"></div>
+                </div>
+                <p class="hero-meta">38 pages · 10 categories · works offline</p>
+            </section>
+
+            <h2 style="font-size:1.3rem; margin:1.5rem 0 .9rem;">Browse by category</h2>
+            <div class="category-grid" id="categoryGrid"></div>
+
+            <div class="section">
+                <h2 id="reading-path">Recommended reading path</h2>
+                <ol>
+                    <li><strong>Fundamentals</strong> — Internet &amp; Web → Networking → Data Representation.</li>
+                    <li><strong>JavaScript</strong> — Basics → Data Structures → Event Loop.</li>
+                    <li><strong>Frontend</strong> — HTML → CSS → React → State/Hooks → Tailwind/GSAP.</li>
+                    <li><strong>Backend</strong> — Node.js → Express → REST API → Authentication → File Uploads.</li>
+                    <li><strong>Database</strong> — MongoDB Basics → Mongoose Deep Dive → SQL (Prisma/RDS).</li>
+                    <li><strong>Practices</strong> — Programming Principles → Clean Code → MERN Architecture.</li>
+                    <li><strong>Deployment</strong> — Docker → Linux/Nginx/PM2 → SSH.</li>
+                    <li><strong>Testing &amp; TypeScript</strong> — harden the code you already write.</li>
+                </ol>
+                <p style="margin-top:.6rem;">Begin with the official <a href="01-getting-started/mern-roadmap.html">MERN Roadmap</a> for the full 18-skill study path.</p>
+            </div>
+
+            <footer class="doc-footer">
+                <p>Full-Stack Handbook-MERN Library — static HTML, no build tools. Built from the MERN cheat-sheet collection.</p>
+            </footer>
+        </div>
+    </main>
+</div>
+
+<script src="assets/js/nav.js"></script>
+<script>
+(function () {
+    var CATALOG_WINDOW = window.__CST_INDEX__; /* defined by nav.js */
+    var CATALOG = [
+        { name: "Getting Started", icon: "🚀", bg: "#2563eb", desc: "The full MERN learning path.", pages: [["01-getting-started/mern-roadmap.html", "MERN Roadmap", "18 skill areas across JS, React, Node, DB, deployment"]] },
+        { name: "Fundamentals", icon: "🌐", bg: "#0d9488", desc: "How the web and computers actually work.", pages: [
+            ["02-fundamentals/internet-web.html", "Internet & Web Fundamentals", "HTTP, DNS, ports, sessions, CORS"],
+            ["02-fundamentals/networking-layers.html", "Networking Layers", "TCP/IP/MAC/DHCP/ARP"],
+            ["02-fundamentals/data-representation.html", "Data Representation", "Binary → UTF-8 → Base64"],
+            ["02-fundamentals/web-request-flow.html", "Web Request Flow", "Browser → server and back"],
+            ["02-fundamentals/terminal.html", "Terminal", "Shells, Node, npm"],
+            ["02-fundamentals/git-github.html", "Git & GitHub", "Full workflow"]
+        ] },
+        { name: "JavaScript", icon: "⚡", bg: "#d97706", desc: "The language powering the whole stack.", pages: [
+            ["03-javascript/javascript-basics.html", "JavaScript Basics", "Functions, arrays, async"],
+            ["03-javascript/javascript-data-structures.html", "JS Data Structures", "Array, Set, Map, Stack"],
+            ["03-javascript/javascript-event-loop.html", "Event Loop", "Call stack, tasks & microtasks"]
+        ] },
+        { name: "Frontend", icon: "🎨", bg: "#7c3aed", desc: "HTML, CSS, animation, React & state.", pages: [
+            ["04-frontend/html.html", "HTML", "Semantic markup, forms"],
+            ["04-frontend/css.html", "CSS", "Flexbox, Grid, animation"],
+            ["04-frontend/tailwind.html", "Tailwind CSS", "Utility classes"],
+            ["04-frontend/gsap.html", "GSAP", "Tweens & ScrollTrigger"],
+            ["04-frontend/react.html", "React", "Components, JSX, hooks"],
+            ["04-frontend/react-state-hooks.html", "React State & useEffect", "State snapshot model"],
+            ["04-frontend/react-native.html", "React Native", "Mobile apps"],
+            ["04-frontend/redux-toolkit.html", "Redux Toolkit + RTK Query", "Global & server state"]
+        ] },
+        { name: "Backend", icon: "⚙️", bg: "#475569", desc: "Node, Express, APIs, auth, uploads.", pages: [
+            ["05-backend/nodejs.html", "Node.js", "Runtime & core modules"],
+            ["05-backend/express.html", "Express", "Routes & middleware"],
+            ["05-backend/rest-api.html", "REST API", "Methods & status codes"],
+            ["05-backend/authentication-jwt.html", "Authentication & JWT", "bcrypt, tokens, roles"],
+            ["05-backend/file-uploads.html", "File Uploads", "FormData + Multer"],
+            ["05-backend/file-storage-s3-cloudinary.html", "File Storage: S3 & Cloudinary", "Professional guide"]
+        ] },
+        { name: "Database", icon: "🗄️", bg: "#16a34a", desc: "MongoDB, Mongoose, and SQL.", pages: [
+            ["06-database/mongodb-basics.html", "MongoDB Basics", "Shell CRUD & operators"],
+            ["06-database/mongodb-mongoose.html", "Mongoose Deep Dive", "Populate & authorization"],
+            ["06-database/database-mongo-sql.html", "Database Complete Reference", "Mongo vs SQL vs Prisma"],
+            ["06-database/sql-rds.html", "AWS RDS MySQL", "Full provisioning guide"]
+        ] },
+        { name: "Testing", icon: "🧪", bg: "#dc2626", desc: "Vitest, RTL, and Supertest.", pages: [
+            ["07-testing/testing.html", "Testing", "Unit → E2E, API tests"]
+        ] },
+        { name: "TypeScript", icon: "🔷", bg: "#1d4ed8", desc: "Static typing for the MERN stack.", pages: [
+            ["08-typescript/typescript.html", "TypeScript", "Types, generics, TS + React/Express"]
+        ] },
+        { name: "Deployment", icon: "🚢", bg: "#0891b2", desc: "Docker, Linux servers, and SSH.", pages: [
+            ["09-deployment/docker.html", "Docker & Deployment", "Images, Compose, CI/CD"],
+            ["09-deployment/deploy-linux-nginx.html", "Deploy on Linux", "Node → PM2 → Nginx"],
+            ["09-deployment/ssh-docker.html", "SSH into Docker", "Keys & containers"]
+        ] },
+        { name: "Practices", icon: "🧭", bg: "#065f46", desc: "How to write professional code.", pages: [
+            ["10-practices/programming-principles.html", "Programming Principles", "DRY/KISS/YAGNI"],
+            ["10-practices/clean-code.html", "Clean Code", "Readability rules"],
+            ["10-practices/mern-architecture.html", "MERN Architecture", "Structure & layers"],
+            ["10-practices/problem-solving.html", "Problem Solving", "Algorithm patterns"],
+            ["10-practices/big-o-time-complexity.html", "Big O", "Time & space complexity"]
+        ] }
+    ];
+
+    var grid = document.getElementById("categoryGrid");
+    CATALOG.forEach(function (cat) {
+        var card = document.createElement("div");
+        card.className = "category-card";
+        var head = document.createElement("div");
+        head.className = "cat-head";
+        var icon = document.createElement("div");
+        icon.className = "cat-icon";
+        icon.textContent = cat.icon;
+        var title = document.createElement("h2");
+        title.textContent = cat.name;
+        head.appendChild(icon); head.appendChild(title);
+        card.appendChild(head);
+        var desc = document.createElement("p");
+        desc.className = "desc";
+        desc.textContent = cat.desc;
+        card.appendChild(desc);
+        var ul = document.createElement("ul");
+        cat.pages.forEach(function (p) {
+            var li = document.createElement("li");
+            var a = document.createElement("a");
+            a.className = "page-link";
+            a.href = p[0];
+            var t = document.createElement("span");
+            t.textContent = p[1];
+            a.appendChild(t);
+            var pd = document.createElement("span");
+            pd.className = "pd";
+            pd.textContent = p[2];
+            a.appendChild(pd);
+            li.appendChild(a);
+            ul.appendChild(li);
+        });
+        card.appendChild(ul);
+        grid.appendChild(card);
+    });
+})();
+</script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

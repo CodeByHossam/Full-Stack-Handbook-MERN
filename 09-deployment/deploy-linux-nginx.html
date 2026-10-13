@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy on Linux (Nginx/PM2) — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle light or dark theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Deployment</span>
+                <span class="sep">/</span>
+                <span>Deploy on Linux (Nginx/PM2)</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Deploy a MERN App on a Linux Server</h1>
+                <p class="subtitle">The complete production deployment path: SSH, Git, Node.js, PM2, Nginx, DNS, HTTPS, and the firewall — from a fresh server to a live application.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Deployment</span>
+                    <span class="badge b-purple">Nginx</span>
+                    <span class="badge b-teal">PM2</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="production-architecture">Production architecture</h2>
+                <p>After finishing your MERN application locally, the typical production architecture puts Nginx in front and keeps Node internal.</p>
+                <pre class="flow">INTERNET
+    |
+    | HTTPS
+    v
+  NGINX
+  :80/:443
+    |
+    +-------------------+
+    |                   |
+    v                   v
+React dist/        Node / Express
+                        |
+                        v
+                     MongoDB</pre>
+                <p>The complete request flow:</p>
+                <pre class="flow">User Browser
+      |
+      | HTTPS
+      v
+    Nginx
+      |
+      +--------------------+
+      |                    |
+      v                    v
+  React dist/          /api/*
+                           |
+                           v
+                     Node / Express
+                           |
+                           v
+                      Controllers
+                           |
+                           v
+                        Mongoose
+                           |
+                           v
+                        MongoDB</pre>
+                <p>SSH is separate from all of this — it is how <em>you</em> control the server:</p>
+                <pre class="flow">Your PC
+   |
+   | SSH
+   v
+Linux Server</pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>SSH is used by you to control the server. Nginx is used to handle requests from users. They are different tools serving different people.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="ssh-access">SSH access</h2>
+                <p>SSH (Secure Shell) lets you remotely control a Linux server from your computer:</p>
+                <pre class="code-block" data-lang="bash"><code>ssh username@SERVER_IP</code></pre>
+                <pre class="flow">Windows / macOS PC
+        |
+        | SSH
+        v
+   Linux Server
+        |
+        v
+   Linux Terminal</pre>
+                <p>Once connected, commands such as <code>ls</code>, <code>cd /var/www</code>, and <code>node -v</code> are executed on the Linux server, not your computer.</p>
+                <aside class="callout key"><span class="ct">Key point</span><p>SSH does not run your application by itself. It gives you secure access to control the server. Think of SSH as the remote control for the server.</p></aside>
+                <p>When you connect you interact with a shell, usually Bash. You type a command, Bash interprets it, and Linux runs the corresponding program:</p>
+                <pre class="flow">You type command
+      |
+      v
+  Bash / Shell
+      |
+      v
+    Linux
+      |
+      v
+Program / System operation</pre>
+                <h3>Log in with a key instead of a password</h3>
+                <p>Password login works, but production servers should use SSH keys: the public key is installed on the server and the private key never leaves your computer. Generate a pair, then copy the public key to the server:</p>
+                <pre class="code-block" data-lang="bash"><code>ssh-keygen -t ed25519 -C "you@example.com"   # create a private + public key pair
+ssh-copy-id username@SERVER_IP               # install the public key on the server</code></pre>
+                <p>The public key ends up in <code>~/.ssh/authorized_keys</code> on the server; only a matching private key can log in afterwards. The key handshake is explained in depth on the <a href="ssh-docker.html">SSH into Docker</a> page.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="git-workflow">Git workflow for deployment</h2>
+                <p>Git is how your source code travels from your computer to the server.</p>
+                <pre class="flow">Your PC
+   |
+   | git push
+   v
+ GitHub
+   |
+   | git pull
+   v
+Linux Server</pre>
+                <p>On your development PC:</p>
+                <pre class="code-block" data-lang="bash"><code>git add .
+git commit -m "Prepare production deployment"
+git push</code></pre>
+                <p>On the server:</p>
+                <pre class="code-block" data-lang="bash"><code>git pull</code></pre>
+                <p>You should never commit <code>node_modules/</code> or <code>.env</code>. Dependencies are recreated with <code>npm install</code> or <code>npm ci</code>, and the production <code>.env</code> should exist only on the server because it holds database credentials, the JWT secret, and API keys.</p>
+                <pre class="code-block" data-lang="text"><code>node_modules/
+.env</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="vps-vs-shared">VPS vs shared hosting</h2>
+                <p>A MERN backend needs a machine where you can install Node.js and keep a process running continuously. That requirement decides the hosting type before any command is typed.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Option</th><th>What you get</th><th>Can it run MERN?</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>VPS</strong></td><td>Full root access, your own IP, install anything, long-running processes.</td><td>Yes — install Node, Git, PM2, Nginx, and a database.</td></tr>
+                            <tr><td><strong>Shared hosting</strong></td><td>No root, no shell, serves static files and PHP only.</td><td>No — it will not keep a Node process alive.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>A Hostinger VPS, a DigitalOcean droplet, and any cloud VM are all the same thing for deployment purposes: a remote Linux machine with an IP, a username, and SSH access. Everything on this page applies to all of them.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="server-prep">Server preparation</h2>
+                <p>A common choice is Ubuntu Linux. After creating the server you receive a public IP, a username, and SSH access.</p>
+                <pre class="code-block" data-lang="bash"><code># connect to the server
+ssh username@123.123.123.123
+
+# update the package list, then upgrade installed packages
+sudo apt update
+sudo apt upgrade
+
+# install Git
+sudo apt install git
+
+# verify Git
+git --version</code></pre>
+                <p>Install a supported Node.js LTS version compatible with the version you used during development. The default Ubuntu repository often ships an old Node, so add the NodeSource repository to get a current release:</p>
+                <pre class="code-block" data-lang="bash"><code># add the NodeSource repository, then install Node.js and npm
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# verify the runtime and package manager
+node -v
+npm -v</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p>Installing <code>nodejs</code> straight from the default repository can give a version older than the one you built locally. Prefer NodeSource and match the major version you developed against.</p></aside>
+                <p>Your Express application typically listens internally on <code>127.0.0.1:5000</code>:</p>
+                <pre class="code-block" data-lang="javascript"><code>const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () =&gt; {
+    console.log(`Server running on port ${PORT}`);
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="app-directory">Application directory</h2>
+                <p>A common location for web applications is <code>/var/www</code>:</p>
+                <pre class="code-block" data-lang="bash"><code>cd /var/www   # standard web-root location on Ubuntu</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="clone-project">Clone the project</h2>
+                <p>Pull the repository straight from GitHub onto the server. The trailing argument names the folder that is created.</p>
+                <pre class="code-block" data-lang="bash"><code>git clone YOUR_REPOSITORY_URL notes-app   # clone into ./notes-app</code></pre>
+                <p>You now have a project directory with a client and a server:</p>
+                <pre class="code-block" data-lang="text"><code>notes-app/
++-- client/
++-- server/</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="backend-dependencies">Install backend dependencies</h2>
+                <p>Install exactly the versions recorded in <code>package-lock.json</code>. This makes every deploy reproducible, so the server matches what you tested locally.</p>
+                <pre class="code-block" data-lang="bash"><code>cd /var/www/notes-app/server
+npm ci   # clean, lockfile-exact install</code></pre>
+                <p><code>npm ci</code> installs exactly the versions from <code>package-lock.json</code>, which is what you want in production. If there is no lock file, fall back to <code>npm install</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="production-env">Create the production .env</h2>
+                <p>Inside <code>/var/www/notes-app/server</code> create the environment file:</p>
+                <pre class="code-block" data-lang="bash"><code>nano .env</code></pre>
+                <pre class="code-block" data-lang="text"><code>PORT=5000
+MONGO_URI=your-production-mongodb-connection
+JWT_SECRET=your-production-secret
+NODE_ENV=production</code></pre>
+                <p>Never hard-code secrets in your source code. Read them through <code>process.env</code> instead:</p>
+                <pre class="code-block" data-lang="javascript"><code>// bad
+mongoose.connect("mongodb+srv://username:password@...");
+
+// good
+mongoose.connect(process.env.MONGO_URI);</code></pre>
+                <aside class="callout-err"><span class="ct">Common mistake</span><p>The <code>.env</code> file must not be committed to Git. It lives only on the server and contains the production database credentials and secrets.</p></aside>
+                <p>Restrict the file so only the owner can read it, since it holds production secrets:</p>
+                <pre class="code-block" data-lang="bash"><code>chmod 600 .env   # owner read/write only; nobody else</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="test-node-before-pm2">Test Node before PM2</h2>
+                <p>Before adding PM2 or Nginx, make sure the backend works on its own:</p>
+                <pre class="code-block" data-lang="bash"><code>node app.js</code></pre>
+                <p>You should see output similar to:</p>
+                <pre class="code-block" data-lang="text"><code>MongoDB connected
+Server running on port 5000</code></pre>
+                <p>Test it from the server itself, then stop it with <code>Ctrl + C</code>:</p>
+                <pre class="code-block" data-lang="bash"><code>curl http://127.0.0.1:5000</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>If Node does not work directly, do not troubleshoot PM2 or Nginx yet. The correct order is: Node works, then PM2, then Nginx.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="pm2">PM2: keep the backend alive</h2>
+                <p>PM2 is a process manager for Node.js. Without it, closing your SSH session can stop your application:</p>
+                <pre class="flow">SSH → node app.js → Node running → SSH closes → application may stop</pre>
+                <p>With PM2, the process runs in the background and is supervised:</p>
+                <pre class="flow">PM2 → Node.js → Express → running in the background</pre>
+                <p>Install it globally and check the version:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo npm install -g pm2
+pm2 -v</code></pre>
+                <p>Start the backend with a clear name:</p>
+                <pre class="code-block" data-lang="bash"><code>cd /var/www/notes-app/server
+pm2 start app.js --name notes-app-api
+pm2 status</code></pre>
+                <p>You should see the process listed as <code>online</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="pm2-commands">Important PM2 commands</h2>
+                <p>Once your app runs under PM2, these are the commands you use to inspect, restart, and manage it.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>pm2 list</code></td><td>Show all managed applications.</td></tr>
+                            <tr><td><code>pm2 logs notes-app-api</code></td><td>Show the application logs.</td></tr>
+                            <tr><td><code>pm2 restart notes-app-api</code></td><td>Restart the application.</td></tr>
+                            <tr><td><code>pm2 stop notes-app-api</code></td><td>Stop the application.</td></tr>
+                            <tr><td><code>pm2 delete notes-app-api</code></td><td>Remove it from PM2.</td></tr>
+                            <tr><td><code>pm2 describe notes-app-api</code></td><td>Show detailed process info.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="pm2-startup">Start PM2 automatically on reboot</h2>
+                <p>You want the Node application to come back after the server reboots:</p>
+                <pre class="code-block" data-lang="bash"><code>pm2 startup</code></pre>
+                <p>PM2 prints a command — run exactly the command it gives you. Then save the current process list:</p>
+                <pre class="code-block" data-lang="bash"><code>pm2 save</code></pre>
+                <pre class="flow">Server reboots
+      |
+      v
+Linux starts
+      |
+      v
+PM2 starts
+      |
+      v
+PM2 restores saved applications
+      |
+      v
+Node starts</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="why-not-npm-run-dev">Why not npm run dev in production?</h2>
+                <p><code>npm run dev</code> is built for development. It provides hot reload, development tooling, debugging features, and a development server. Production should serve the built output instead:</p>
+                <pre class="flow">React → npm run build → dist/ → Nginx
+PM2 → Node → Express</pre>
+                <p>And in production, <code>NODE_ENV=production</code> lets Express and libraries switch to optimized behavior.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="install-nginx">Install Nginx</h2>
+                <p>Nginx is a web server and reverse proxy — the front door of the server. It receives public requests and decides where they go.</p>
+                <pre class="flow">Without Nginx:
+Browser → SERVER_IP:5000 → Node
+
+With Nginx:
+Browser → https://example.com → Nginx → Node :5000</pre>
+                <pre class="code-block" data-lang="bash"><code>sudo apt update
+sudo apt install nginx
+
+# check, start, and enable at boot
+sudo systemctl status nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx</code></pre>
+                <p>Nginx can serve React static files, forward API requests to Express, handle HTTP and HTTPS, work with SSL certificates, hide the internal Node port, and route URLs to different services.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="build-react">Build the React application</h2>
+                <p>Compile the React source into static files. Vite writes them to <code>dist/</code>, which is what Nginx will serve.</p>
+                <pre class="code-block" data-lang="bash"><code>cd /var/www/notes-app/client
+npm ci          # install exact dependencies
+npm run build   # produce dist/</code></pre>
+                <p>This produces the production frontend:</p>
+                <pre class="code-block" data-lang="text"><code>client/
++-- dist/
+     +-- index.html
+     +-- assets/</code></pre>
+                <p>Nginx serves files from <code>/var/www/notes-app/client/dist</code>, and the request flow becomes:</p>
+                <pre class="flow">Browser → Nginx → React dist/ → index.html → React application</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="nginx-config">Nginx configuration: React + /api proxy</h2>
+                <p>Create a site file:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo nano /etc/nginx/sites-available/notes-app</code></pre>
+                <pre class="code-block" data-lang="text"><code>server {
+    listen 80;                                  # accept HTTP on port 80
+
+    server_name example.com www.example.com;    # domains this block serves
+
+    root /var/www/notes-app/client/dist;        # where the React build lives
+
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;       # serve real files, else fall back to React Router
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000;       # forward API calls to Node
+
+        proxy_http_version 1.1;                 # enable keep-alive
+
+        proxy_set_header Host $host;            # pass the original host
+        proxy_set_header X-Real-IP $remote_addr;              # real client IP
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;           # http or https
+    }
+}</code></pre>
+                <p>Replace <code>example.com</code> with your real domain. Two parts deserve special attention:</p>
+                <h3>Understanding root</h3>
+                <p><code>root /var/www/notes-app/client/dist;</code> tells Nginx where the React production files live. A request for <code>https://example.com</code> is served from <code>/var/www/notes-app/client/dist/index.html</code>.</p>
+                <h3>Understanding location /</h3>
+                <p>The block:</p>
+                <pre class="code-block" data-lang="text"><code>location / {
+    try_files $uri $uri/ /index.html;
+}</code></pre>
+                <p>is essential for React Router. If a user directly opens <code>https://example.com/notes</code>, Nginx would look for a physical <code>/notes</code> file that does not exist. <code>try_files</code> falls back to <code>index.html</code>, and React Router takes over the route.</p>
+                <h3>Understanding location /api/</h3>
+                <p>This block is the reverse proxy: any request whose path starts with <code>/api/</code> is forwarded to the Node process on <code>127.0.0.1:5000</code> instead of being served from disk. The trailing slash keeps the prefix intact, so <code>/api/notes</code> reaches the backend as <code>http://127.0.0.1:5000/api/notes</code>.</p>
+                <pre class="code-block" data-lang="text"><code>location /api/ {
+    proxy_pass http://127.0.0.1:5000;
+}</code></pre>
+                <p>Requests under <code>/api/*</code> are forwarded to Node on port 5000. For example, <code>https://example.com/api/notes</code> is forwarded internally to <code>http://127.0.0.1:5000/api/notes</code>.</p>
+                <pre class="flow">Browser
+   |
+   v
+https://example.com/api/notes
+   |
+   v
+Nginx
+   |
+   v
+127.0.0.1:5000
+   |
+   v
+ Express → Controller → Mongoose → MongoDB</pre>
+                <h3>WebSocket support</h3>
+                <p>If the backend uses WebSockets (for example Socket.IO), the proxy must forward the connection upgrade rather than terminate it. Add these two headers inside the <code>location /api/</code> block:</p>
+                <pre class="code-block" data-lang="text"><code>proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";</code></pre>
+                <p>Without them the initial HTTP request succeeds but the socket never upgrades, so live features silently stay disconnected.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="enable-nginx">Enable the site and test the configuration</h2>
+                <p>Create a symbolic link to enable the site, disable the default site, then test and reload:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo ln -s /etc/nginx/sites-available/notes-app /etc/nginx/sites-enabled/notes-app
+sudo rm /etc/nginx/sites-enabled/default
+
+# always test before reloading
+sudo nginx -t
+
+# apply the configuration
+sudo systemctl reload nginx</code></pre>
+                <p>If the test succeeds you will see <code>syntax is ok</code> and <code>test is successful</code>.</p>
+                <aside class="callout-warn"><span class="ct">Warning</span><p>Never reload Nginx blindly. Always run <code>sudo nginx -t</code> first — a broken configuration can take the site offline.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="domain-dns">Domain and DNS</h2>
+                <p>DNS connects your domain name to the server IP:</p>
+                <pre class="flow">example.com
+     |
+     v
+    DNS
+     |
+     v
+ SERVER_IP</pre>
+                <p>Usually you create an <code>A</code> record for the apex domain and one for <code>www</code>:</p>
+                <pre class="code-block" data-lang="text"><code>Type: A    Name: @      Value: SERVER_IP
+Type: A    Name: www    Value: SERVER_IP</code></pre>
+                <p>DNS changes can take some time to propagate.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="https-certbot">HTTPS with Certbot</h2>
+                <p>HTTP sends data in plain text; HTTPS encrypts communication between the browser and Nginx. In production, HTTPS should normally be used.</p>
+                <p>Let's Encrypt provides free certificates, and Certbot configures Nginx automatically:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d example.com -d www.example.com</code></pre>
+                <p>After HTTPS is configured, the flow becomes:</p>
+                <pre class="flow">Browser
+   |
+   | HTTPS :443
+   v
+Nginx
+   |
+   v
+Node :5000</pre>
+                <p>Certbot also configures automatic renewal, so the certificate stays valid without manual work. Verify the renewal path with a dry run, which does not touch the live certificate:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo certbot renew --dry-run</code></pre>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>If the request fails with <em>Challenge failed for domain</em>, the usual causes are: DNS is not pointing at the server, port 80 or 443 is blocked, or the domain is not publicly reachable. Certbot must complete an HTTP challenge before it can issue the certificate.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="firewall-ufw">Firewall (UFW)</h2>
+                <p>A firewall controls which network connections may reach the server. The common public ports are 22 (SSH), 80 (HTTP), and 443 (HTTPS). Node on port 5000 does not need to be publicly accessible because Nginx proxies to it internally.</p>
+                <pre class="code-block" data-lang="bash"><code>sudo ufw status
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable</code></pre>
+                <aside class="callout-warn"><span class="ct">Warning</span><p>Be careful with SSH. If you enable the firewall without allowing SSH first, you can lock yourself out of the server.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="deployment-setups">Choosing a deployment setup</h2>
+                <p>Not every project needs the full stack. Match the setup to what you actually built — the tools change, but the request flow stays the same.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>You built</th><th>What runs on the server</th><th>Nginx does</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Backend API only</strong></td><td>Node/Express + PM2 + database</td><td>Proxies the API paths to Node; no React build served.</td></tr>
+                            <tr><td><strong>Frontend only</strong></td><td>Nothing long-running</td><td>Serves the built React <code>dist/</code> as static files.</td></tr>
+                            <tr><td><strong>Complete MERN</strong></td><td>Node/Express + PM2 + MongoDB</td><td>Serves React <code>dist/</code> and proxies <code>/api/</code> to Node.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>The rest of this page covers the complete MERN setup, which is the superset of the other two.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="first-deployment">Complete first deployment sequence</h2>
+                <p>Once development is finished, the deployment process runs in this order:</p>
+                <pre class="flow">1.  Test application locally
+2.  Commit code
+3.  Push to GitHub
+4.  Create Linux server
+5.  Connect using SSH
+6.  Update Linux
+7.  Install Git
+8.  Install Node.js
+9.  Clone project
+10. Install backend dependencies
+11. Create production .env
+12. Test Node directly
+13. Install PM2
+14. Start Node with PM2
+15. Build React
+16. Install Nginx
+17. Configure Nginx
+18. Configure DNS
+19. Configure HTTPS
+20. Configure firewall
+21. Test the complete application</pre>
+                <p>The command sequence, grouped by stage:</p>
+                <pre class="code-block" data-lang="bash"><code># --- On the development PC ---
+git add .
+git commit -m "Prepare production deployment"
+git push
+
+# --- Connect to the server ---
+ssh username@SERVER_IP
+
+# --- Update the server and install Git ---
+sudo apt update
+sudo apt upgrade
+sudo apt install git
+
+# --- Clone the project ---
+cd /var/www
+git clone YOUR_REPOSITORY_URL notes-app
+
+# --- Backend ---
+cd /var/www/notes-app/server
+npm ci
+nano .env            # PORT, MONGO_URI, JWT_SECRET, NODE_ENV
+node app.js          # test, then Ctrl+C
+curl http://127.0.0.1:5000
+
+# --- PM2 ---
+sudo npm install -g pm2
+pm2 start app.js --name notes-app-api
+pm2 status
+pm2 startup          # run the command PM2 prints
+pm2 save
+
+# --- Frontend ---
+cd /var/www/notes-app/client
+npm ci
+npm run build
+
+# --- Nginx ---
+sudo apt install nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo nano /etc/nginx/sites-available/notes-app
+sudo ln -s /etc/nginx/sites-available/notes-app /etc/nginx/sites-enabled/notes-app
+sudo rm /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl reload nginx
+
+# --- HTTPS ---
+sudo certbot --nginx -d example.com -d www.example.com
+
+# --- Firewall ---
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="deployment-checklist">Deployment checklist</h2>
+                <p>Use this before calling a deployment done. Walk it top to bottom; each step depends on the one above it.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Check</th><th>How to verify</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Server reachable over SSH</td><td><code>ssh username@SERVER_IP</code> connects.</td></tr>
+                            <tr><td>Node version matches local</td><td><code>node -v</code> shows the expected major version.</td></tr>
+                            <tr><td>Dependencies installed</td><td><code>npm ci</code> completed in <code>server/</code>.</td></tr>
+                            <tr><td>Server-only <code>.env</code> created</td><td>File exists with <code>chmod 600</code>; not in Git.</td></tr>
+                            <tr><td>Backend runs directly</td><td><code>curl http://127.0.0.1:5000</code> responds.</td></tr>
+                            <tr><td>PM2 keeps backend online</td><td><code>pm2 status</code> shows <code>online</code>.</td></tr>
+                            <tr><td>Reboot survival configured</td><td><code>pm2 startup</code> command run, then <code>pm2 save</code>.</td></tr>
+                            <tr><td>React built to <code>dist/</code></td><td><code>npm run build</code> produced <code>client/dist/</code>.</td></tr>
+                            <tr><td>Nginx config valid</td><td><code>sudo nginx -t</code> reports success, then reload.</td></tr>
+                            <tr><td>Routing correct</td><td><code>/api/</code> proxies to Node; <code>try_files</code> handles React Router.</td></tr>
+                            <tr><td>DNS points at the server</td><td><code>A</code> records for <code>@</code> and <code>www</code> resolve to <code>SERVER_IP</code>.</td></tr>
+                            <tr><td>HTTPS issued</td><td>Certbot succeeded and <code>certbot renew --dry-run</code> passes.</td></tr>
+                            <tr><td>Firewall open</td><td>UFW allows OpenSSH, HTTP, and HTTPS.</td></tr>
+                            <tr><td>End-to-end works</td><td>Site loads over HTTPS and API calls succeed in the browser.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="updating-app">Updating the application later</h2>
+                <p>After the first deployment you do not repeat the entire process. The typical update flow is:</p>
+                <pre class="flow">Modify locally → Test locally → git push
+      → SSH into server → git pull
+      → Install dependencies if needed
+      → Build React → Restart Node</pre>
+                <p>On the server:</p>
+                <pre class="code-block" data-lang="bash"><code>cd /var/www/notes-app
+git pull</code></pre>
+                <h3>Update the backend</h3>
+                <p>Pull the new backend code, refresh dependencies, then restart the PM2 process so the running server picks up the changes. The restart is required — PM2 keeps the old process in memory until it is told to reload.</p>
+                <pre class="code-block" data-lang="bash"><code>cd /var/www/notes-app/server
+npm ci
+pm2 restart notes-app-api</code></pre>
+                <p>If you changed <code>.env</code>, restart the process so the new values take effect:</p>
+                <pre class="code-block" data-lang="bash"><code>pm2 restart notes-app-api</code></pre>
+                <h3>Update the frontend</h3>
+                <p>Rebuild the React source into fresh <code>dist/</code> files. Nginx serves whatever is in that folder, so a rebuild is enough — frontend-only changes never require restarting Nginx.</p>
+                <pre class="code-block" data-lang="bash"><code>cd /var/www/notes-app/client
+npm ci
+npm run build</code></pre>
+                <p>Nginx serves the newly generated <code>dist/</code> files automatically — you do not need to restart Nginx just because React files changed.</p>
+                <h3>If the Nginx configuration changes</h3>
+                <p>After editing the site file, always test and reload:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo nginx -t
+sudo systemctl reload nginx</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="file-transfer">Getting files to the server</h2>
+                <p>Git is the default for backend code, but other methods are useful for static builds and one-off files. Pick based on the deployment model, not habit.</p>
+                <p><strong>Git pull</strong> is the standard for bare-metal backends — clone once, then <code>git pull</code> and restart. It is covered in the <a href="#git-workflow">Git workflow</a> and <a href="#updating-app">Updating the application</a> sections above.</p>
+                <h3>rsync / SCP</h3>
+                <p>Command-line copy over SSH, best for sending the built React <code>dist/</code> directory:</p>
+                <pre class="code-block" data-lang="bash"><code># simple recursive copy — sends everything
+scp -r ./dist/* root@SERVER_IP:/var/www/frontend/
+
+# incremental sync — only changed files, removes stale server files
+rsync -avz --delete ./dist/ root@SERVER_IP:/var/www/frontend/</code></pre>
+                <p><code>scp</code> copies everything each time; <code>rsync</code> transfers only what changed, which is much faster for large builds. The flags <code>-avz</code> mean archive, verbose, and compression; <code>--delete</code> removes files on the server that are no longer present locally.</p>
+                <h3>SFTP with a GUI client</h3>
+                <p>A graphical client such as FileZilla can drag and drop files over SFTP (protocol SFTP, host = server IP, port 22, user and key or password). It is convenient for a single static site, but it keeps no history or rollback, so avoid it for real backends.</p>
+                <h3>CI/CD</h3>
+                <p>Automation is how teams deploy: every <code>git push</code> to the main branch triggers a pipeline that builds and ships the change, so nobody touches the server by hand. Add it once the manual flow is understood.</p>
+                <h3>Which method should I use?</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Your situation</th><th>Use this</th><th>Why</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Learning, personal project, VPS</td><td><strong>Git pull</strong></td><td>Simple, versioned, teaches core skills.</td></tr>
+                            <tr><td>Static React build to a VPS</td><td><strong>rsync / SCP</strong></td><td>Fast and simple for static output.</td></tr>
+                            <tr><td>Team, production, real users</td><td><strong>CI/CD</strong></td><td>Automated, auditable, rollback-friendly.</td></tr>
+                            <tr><td>Shared hosting, no SSH</td><td><strong>SFTP (FileZilla)</strong></td><td>The only available option.</td></tr>
+                            <tr><td>Quick one-off file fix</td><td><strong>SCP</strong></td><td>Faster than Git for a single file.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Anti-patterns to avoid: editing code directly on the server with <code>nano</code> (the server becomes the source of truth and drifts from Git), uploading via SFTP into production (no history or rollback), and committing <code>node_modules/</code> or <code>.env</code> (huge repos, leaked secrets).</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="troubleshooting">Troubleshooting by request path</h2>
+                <p>Always troubleshoot according to the request path — frontend, then API, then database.</p>
+                <h3>The website does not open</h3>
+                <p>When nothing loads at all, walk the request path from the outside in: confirm the domain resolves (DNS), that the firewall allows 80 and 443, and finally that Nginx is running with a valid config. The commands below check the last two.</p>
+                <pre class="flow">Domain → DNS → Server → Firewall → Nginx</pre>
+                <pre class="code-block" data-lang="bash"><code>sudo systemctl status nginx
+sudo nginx -t
+sudo ufw status</code></pre>
+                <h3>Frontend works but the API does not</h3>
+                <p>If the page loads but data calls fail, the break is between Nginx and Node. First confirm PM2 is keeping the backend online, check its logs for errors, then bypass Nginx entirely with a direct <code>curl</code> to the Node port.</p>
+                <p>A <code>502 Bad Gateway</code> is Nginx reporting exactly this: it reached the proxy target but Node was not listening. Check <code>pm2 status</code> and that the port in <code>proxy_pass</code> matches the port the backend uses.</p>
+                <pre class="flow">Browser → Nginx → Node</pre>
+                <p>First check PM2, then the logs, then test Node directly:</p>
+                <pre class="code-block" data-lang="bash"><code>pm2 status
+pm2 logs notes-app-api
+curl http://127.0.0.1:5000</code></pre>
+                <p>If Node works directly but the API through the domain does not, the problem is in Nginx.</p>
+                <h3>API works but the database does not</h3>
+                <p>If the API responds but returns empty or error results, the backend is reachable and the fault is in the data layer. Verify the connection string, credentials and (for Atlas) the network access list before reading the process logs.</p>
+                <pre class="flow">Node → Mongoose → MongoDB</pre>
+                <p>Check the <code>MONGO_URI</code>, database credentials, MongoDB Atlas network access, the database server status if MongoDB runs locally, the <code>.env</code>, and the logs:</p>
+                <pre class="code-block" data-lang="bash"><code>pm2 logs notes-app-api</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="faq">Deployment FAQ</h2>
+                <h3>Do I need a VPN to host a site?</h3>
+                <p>No. A VPN hides or changes your IP; a VPS is the server you host on. The names are similar but the concepts are unrelated.</p>
+                <h3>I uploaded the React build — why is the backend not working?</h3>
+                <p>Static hosting serves the frontend only. Running Express needs a VPS with Node.js and a process manager such as PM2, not just uploaded files.</p>
+                <h3>My new VPS looks empty — is that normal?</h3>
+                <p>Yes. A fresh VPS ships with no application. You SSH in, install Node and Git, clone the repository, build React, and start the backend under PM2.</p>
+                <h3>How do I know the app is live?</h3>
+                <p>Visit the server IP first, then the domain once DNS propagates. With Nginx and Certbot configured, open <code>https://yourdomain.com</code>.</p>
+                <h3>Why am I getting a 502 Bad Gateway?</h3>
+                <p>Nginx cannot reach Node. Check <code>pm2 status</code> and <code>pm2 logs</code>, and confirm the backend listens on the same port the proxy targets.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="useful-commands">Useful Linux and system commands</h2>
+                <p>Everyday commands for finding your way around the server, managing files, checking permissions and resources, and inspecting what is listening on the network.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>pwd</code></td><td>Show the current directory.</td></tr>
+                            <tr><td><code>ls -la</code></td><td>List files with details, including hidden ones.</td></tr>
+                            <tr><td><code>cd folder</code> / <code>cd ..</code></td><td>Change directory / go up one level.</td></tr>
+                            <tr><td><code>mkdir folder</code></td><td>Create a directory.</td></tr>
+                            <tr><td><code>rmdir folder</code></td><td>Remove an empty directory.</td></tr>
+                            <tr><td><code>rm file</code></td><td>Remove a file.</td></tr>
+                            <tr><td><code>cp source dest</code></td><td>Copy files or directories.</td></tr>
+                            <tr><td><code>mv source dest</code></td><td>Move or rename files and directories.</td></tr>
+                            <tr><td><code>cat file</code></td><td>Print a file's contents.</td></tr>
+                            <tr><td><code>grep "pattern" file</code></td><td>Search for a pattern inside files.</td></tr>
+                            <tr><td><code>find /var/www -name "*.js"</code></td><td>Find files by name under a directory.</td></tr>
+                            <tr><td><code>chmod 600 file</code></td><td>Change file permissions.</td></tr>
+                            <tr><td><code>chown user:group file</code></td><td>Change the owner of a file.</td></tr>
+                            <tr><td><code>df -h</code></td><td>Check disk usage.</td></tr>
+                            <tr><td><code>du -sh folder</code></td><td>Show the size of a directory.</td></tr>
+                            <tr><td><code>free -h</code></td><td>Check memory usage.</td></tr>
+                            <tr><td><code>lsblk</code></td><td>List disks and partitions.</td></tr>
+                            <tr><td><code>top</code> / <code>htop</code></td><td>Live process and resource monitor.</td></tr>
+                            <tr><td><code>ps aux</code></td><td>List running processes.</td></tr>
+                            <tr><td><code>kill PID</code></td><td>Terminate a process by its PID.</td></tr>
+                            <tr><td><code>ping host</code></td><td>Test network reachability.</td></tr>
+                            <tr><td><code>ip a</code></td><td>Show network interfaces and addresses.</td></tr>
+                            <tr><td><code>sudo ss -tulpn</code></td><td>Check open ports.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Managing the Nginx service:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo systemctl status nginx
+sudo systemctl start nginx
+sudo systemctl stop nginx
+sudo systemctl restart nginx
+sudo systemctl reload nginx
+sudo systemctl enable nginx</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="install-mysql">Install MySQL on the server</h2>
+                <p>MERN stores data in MongoDB, but some projects also run a SQL database. On Ubuntu, install MySQL Server and secure it:</p>
+                <pre class="code-block" data-lang="bash"><code>sudo apt update
+sudo apt install -y mysql-server     # install the database server
+
+sudo mysql_secure_installation       # set the root password, remove insecure defaults
+
+sudo systemctl start mysql           # start it now
+sudo systemctl enable mysql          # start it automatically on boot</code></pre>
+                <p>After these steps the MySQL service runs on <code>127.0.0.1:3306</code> by default and is not exposed publicly. This section covers installing and running the server only — writing queries, schemas, and connecting from Node belong to the database pages.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="pm2-nginx-ssh-architecture">PM2 vs Nginx vs SSH</h2>
+                <p>These three tools solve different problems and work together.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Tool</th><th>Role</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>SSH</strong></td><td>Lets you control the server remotely.</td></tr>
+                            <tr><td><strong>PM2</strong></td><td>Keeps the Node application running.</td></tr>
+                            <tr><td><strong>Nginx</strong></td><td>Receives and routes incoming web requests.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>The final production architecture combines them:</p>
+                <pre class="flow">                       INTERNET
+                          |
+                          | HTTPS
+                          v
+                    +-------------+
+                    |    NGINX    |
+                    |    :80/443  |
+                    +------+------+
+                           |
+             +-------------+-------------+
+             |                           |
+             v                           v
+       React dist/                   /api/*
+                                         |
+                                         v
+                                        PM2
+                                         |
+                                         v
+                                   Node / Express
+                                         |
+                                         v
+                                      Mongoose
+                                         |
+                                         v
+                                      MongoDB</pre>
+                <p>Administration is separate: your PC connects over SSH to the Linux server that hosts Nginx, PM2, Node.js, the React build, and MongoDB if it is installed locally.</p>
+                <aside class="callout key"><span class="ct">Key point</span><p>SSH controls the server, Git moves your source code, Node runs your backend JavaScript, Express runs the API, PM2 keeps Node alive, Nginx routes web traffic, <code>dist/</code> is the production frontend, MongoDB stores data, DNS connects the domain, HTTPS secures the browser connection, and UFW controls network access.</p></aside>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Nginx is the front door; Node stays internal.</li>
+                    <li>SSH controls the server; Git moves the code.</li>
+                    <li>Test Node directly before adding PM2 or Nginx.</li>
+                    <li>PM2 keeps the backend alive and restarts it on reboot.</li>
+                    <li>Keep secrets in a server-only <code>.env</code>.</li>
+                    <li>Build React to <code>dist/</code> and serve it with Nginx.</li>
+                    <li>Proxy <code>/api</code> to Node and use <code>try_files</code> for React Router.</li>
+                    <li>Always run <code>nginx -t</code> before reloading.</li>
+                    <li>Point DNS at the server and enable HTTPS with Certbot.</li>
+                    <li>Allow SSH in the firewall before enabling it.</li>
+                    <li>Update with <code>git pull</code>, rebuild, and restart.</li>
+                    <li>Choose a VPS — shared hosting cannot keep Node running.</li>
+                    <li>Move code with Git; send static builds with rsync or SCP.</li>
+                    <li>Match the setup to the project: API-only, frontend-only, or full MERN.</li>
+                    <li>Verify HTTPS renewal with <code>certbot renew --dry-run</code>.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="docker.html"><span class="rt">→ Docker &amp; Deployment</span><span class="rc">The containerized alternative to PM2 + Nginx</span></a>
+                    <a href="ssh-docker.html"><span class="rt">→ SSH into Docker</span><span class="rc">Deep dive on SSH keys and remote access</span></a>
+                    <a href="../02-fundamentals/terminal.html"><span class="rt">→ Terminal &amp; Command Line</span><span class="rc">Bash and the shell you deploy from</span></a>
+                    <a href="../02-fundamentals/git-github.html"><span class="rt">→ Git &amp; GitHub</span><span class="rc">Push and pull the code onto the server</span></a>
+                    <a href="../index.html"><span class="rt">← Library Home</span><span class="rc">Browse all categories</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

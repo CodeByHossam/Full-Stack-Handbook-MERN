@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Frontend</span>
+                <span class="sep">/</span>
+                <span>CSS</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>CSS</h1>
+                <p class="subtitle">Cascading Style Sheets control layout, color, typography, spacing, responsive design and animation — and this page is the single source of truth for Flexbox, Grid and positioning.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Frontend</span>
+                    <span class="badge b-teal">Flexbox &amp; Grid owner</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="syntax">Basic CSS syntax</h2>
+                <p>A CSS rule has three parts: a <em>selector</em> (what to target), <em>properties</em> (what to change) and <em>values</em>. The browser reads top to bottom, so later rules can override earlier ones — this cascading behavior is the "C" in CSS.</p>
+                <pre class="code-block" data-lang="css"><code>selector {          /* selector: which elements to style */
+    property: value;    /* property: value; */
+}
+
+p {                 /* element selector */
+    color: blue;
+    font-size: 18px;
+}</code></pre>
+                <p>Selector → <code>p</code>, property → <code>color</code>, value → <code>blue</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="selectors">Selectors</h2>
+                <p>Selectors decide <em>which</em> elements a rule applies to. Start with the simplest one that works, then combine them (descendant, child, attribute) when you need precision. Prefer classes over IDs so overrides stay predictable.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Selector</th><th>Example</th><th>Selects</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Element</td><td><code>p { }</code></td><td>All <code>&lt;p&gt;</code> elements</td></tr>
+                            <tr><td>Class</td><td><code>.card { }</code></td><td>Elements with <code>class="card"</code></td></tr>
+                            <tr><td>ID</td><td><code>#header { }</code></td><td>The element with <code>id="header"</code></td></tr>
+                            <tr><td>Universal</td><td><code>* { }</code></td><td>Every element</td></tr>
+                            <tr><td>Group</td><td><code>h1, h2, p { }</code></td><td>Any matching selector</td></tr>
+                            <tr><td>Descendant</td><td><code>.card p { }</code></td><td><code>p</code> anywhere inside <code>.card</code></td></tr>
+                            <tr><td>Child</td><td><code>.card &gt; p { }</code></td><td>Only direct children</td></tr>
+                            <tr><td>Attribute</td><td><code>input[type="text"] { }</code></td><td>Inputs with that attribute</td></tr>
+                            <tr><td>Pseudo-class</td><td><code>button:hover { }</code></td><td>A state: <code>:hover</code>, <code>:focus</code>, <code>:active</code>, <code>:visited</code>, <code>:first-child</code>, <code>:last-child</code>, <code>:nth-child()</code></td></tr>
+                            <tr><td>Pseudo-element</td><td><code>.title::before { }</code></td><td>A part: <code>::before</code>, <code>::after</code>, <code>::first-letter</code>, <code>::first-line</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="css"><code>input[type="text"] {
+    border: 1px solid gray;
+}
+
+button:hover {
+    background: blue;
+}
+
+.title::before {
+    content: "★";
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="colors">Colors</h2>
+                <p>CSS offers several notations for the same result. Pick one and stay consistent: hex for exact brand values, <code>rgb()</code>/<code>rgba()</code> when you need an alpha channel, and <code>hsl()</code> when you want to tweak lightness or saturation by feel.</p>
+                <pre class="code-block" data-lang="css"><code>color: red;                    /* keyword  */
+color: #ff0000;                /* hex      */
+color: rgb(255, 0, 0);         /* rgb      */
+color: rgba(0, 0, 0, 0.5);     /* rgba     */
+color: hsl(0, 100%, 50%);      /* hsl      */
+
+background-color: #ffffff;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="css-variables">CSS variables</h2>
+                <p>Custom properties (CSS variables) store reusable values at the document level. Define them once on <code>:root</code> and reference them with <code>var()</code>, so re-theming a whole app means changing one value instead of hunting every usage.</p>
+                <pre class="code-block" data-lang="css"><code>:root {
+    --primary: #2563eb;
+    --secondary: #14b8a6;
+    --text: #222;
+}
+
+button {
+    background: var(--primary);
+}</code></pre>
+                <p>Custom properties keep a design system consistent and are extremely useful on professional projects.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="typography">Fonts &amp; text</h2>
+                <p>Typography rules control how text looks: family, size, weight and style. Set a base on <code>body</code> and let children inherit it, then layer alignment, line-height and letter-spacing only where needed.</p>
+                <pre class="code-block" data-lang="css"><code>body {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+}</code></pre>
+                <p>Use the <code>body</code> element selector (not <code>.body</code>) unless your HTML actually has <code>&lt;body class="body"&gt;</code>.</p>
+                <pre class="code-block" data-lang="css"><code>text-align: left | center | right;
+text-decoration: none | underline;
+text-transform: uppercase | lowercase | capitalize;
+line-height: 1.6;
+letter-spacing: 1px;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="box-model">The box model</h2>
+                <p>Every element is a content box wrapped in padding, a border, and margin.</p>
+                <pre class="flow">┌───────────────────────────┐
+│          MARGIN           │
+│   ┌───────────────────┐   │
+│   │      BORDER       │   │
+│   │  ┌─────────────┐  │   │
+│   │  │   PADDING   │  │   │
+│   │  │ ┌─────────┐ │  │   │
+│   │  │ │ CONTENT │ │  │   │
+│   │  │ └─────────┘ │  │   │
+│   │  └─────────────┘  │   │
+│   └───────────────────┘   │
+└───────────────────────────┘
+
+Content → Padding → Border → Margin</pre>
+                <pre class="code-block" data-lang="css"><code>* {
+    box-sizing: border-box;
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p><code>border-box</code> makes width/height include padding and border, so size calculations are far easier. Almost every project sets it globally.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="sizing">Width &amp; height</h2>
+                <p>Explicit <code>width</code>/<code>height</code> set an element's size; <code>max-</code>/<code>min-</code> constraints let it flex between bounds. Relative units make blocks responsive to their parent or the viewport instead of fixed pixels.</p>
+                <pre class="code-block" data-lang="css"><code>width: 300px;
+height: 200px;
+
+max-width: 1200px;
+min-height: 100vh;
+
+width: 50%;      /* percentage of parent */
+width: 100vw;    /* viewport width       */
+height: 100vh;   /* viewport height      */</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="spacing">Margin &amp; padding</h2>
+                <p>Margin is space <em>outside</em> an element's border (between siblings); padding is space <em>inside</em>, between the border and the content. Shorthands take 1, 2, or 4 values, read clockwise from the top.</p>
+                <pre class="code-block" data-lang="css"><code>margin: 20px;                    /* all sides */
+margin: 10px 20px;               /* T/B = 10, L/R = 20 */
+margin: 10px 20px 30px 40px;     /* Top Right Bottom Left */
+
+padding: 20px;
+padding: 10px 20px;
+padding: 10px 20px 30px 40px;    /* TRBL */</code></pre>
+                <p>Center a block horizontally with auto margins:</p>
+                <pre class="code-block" data-lang="css"><code>.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="borders-shadow">Borders, radius &amp; shadow</h2>
+                <p>Borders draw a line around the box, <code>border-radius</code> rounds its corners, and <code>box-shadow</code> adds depth. Borders take part in layout (they add to the box size under the default <code>content-box</code>); radius and shadow are pure visual polish.</p>
+                <pre class="code-block" data-lang="css"><code>border: 1px solid black;
+
+border-top: 2px dashed red;
+border-right: 1px solid #ccc;
+border-bottom: none;
+border-left: 1px solid #ccc;
+border-color: gray;
+
+border-radius: 10px;
+border-radius: 50%;    /* circle */
+
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);</code></pre>
+                <p>Box-shadow structure: <code>x</code> <code>y</code> <code>blur</code> <code>color</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="display">Display</h2>
+                <p>The <code>display</code> property defines how an element participates in layout: as a block (own line), inline (inside text flow), a flex/grid container, or removed from the flow entirely with <code>none</code>.</p>
+                <pre class="code-block" data-lang="css"><code>display: block;
+display: inline;
+display: inline-block;
+display: none;
+display: flex;
+display: grid;</code></pre>
+                <p>See the <a href="html.html#block-inline-containers">HTML block vs inline table</a> for the defaults of common elements.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="flexbox">Flexbox (owner)</h2>
+                <p>Flexbox lays out items along one axis (a row or a column). Put <code>display: flex</code> on the <em>container</em>; its direct children become flex items.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Property</th><th>Applied to</th><th>Common values</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>display</code></td><td>Container</td><td><code>flex</code></td></tr>
+                            <tr><td><code>flex-direction</code></td><td>Container</td><td><code>row</code>, <code>column</code></td></tr>
+                            <tr><td><code>justify-content</code></td><td>Container (main axis)</td><td><code>flex-start</code>, <code>center</code>, <code>flex-end</code>, <code>space-between</code>, <code>space-around</code>, <code>space-evenly</code></td></tr>
+                            <tr><td><code>align-items</code></td><td>Container (cross axis)</td><td><code>flex-start</code>, <code>center</code>, <code>flex-end</code>, <code>stretch</code></td></tr>
+                            <tr><td><code>flex-wrap</code></td><td>Container</td><td><code>nowrap</code>, <code>wrap</code></td></tr>
+                            <tr><td><code>gap</code></td><td>Container</td><td><code>20px</code>, <code>1rem</code></td></tr>
+                            <tr><td><code>flex</code></td><td>Item</td><td><code>1</code>, <code>0 0 auto</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="css"><code>.container {
+    display: flex;
+    flex-direction: row;      /* or column */
+    justify-content: center;  /* main axis  */
+    align-items: center;      /* cross axis */
+    gap: 20px;
+    flex-wrap: wrap;          /* responsive */
+}
+
+.item {
+    flex: 1;                  /* share available space */
+}</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>Tailwind and React Native both link here for Flexbox concepts — the properties are the same, only the syntax differs.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="css-grid">CSS Grid (owner)</h2>
+                <p>Grid lays out items in rows <em>and</em> columns at the same time. Reach for Grid when the track structure is known up front (a dashboard, a gallery, a page shell); use Flexbox when content should decide the sizes along a single axis.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th></th><th>Flexbox</th><th>Grid</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Axes</td><td>One (row <em>or</em> column)</td><td>Two (rows <em>and</em> columns)</td></tr>
+                            <tr><td>Thinking</td><td>Content-driven sizing</td><td>Layout-driven tracks</td></tr>
+                            <tr><td>Best for</td><td>Navbars, toolbars, centering, distributing items</td><td>Page shells, galleries, dashboards</td></tr>
+                            <tr><td>Wrapping</td><td><code>flex-wrap</code></td><td><code>repeat(auto-fit, …)</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="css"><code>.container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* 3 equal-width tracks */
+    gap: 20px;                              /* space between cells  */
+}</code></pre>
+                <pre class="flow">┌────┐ ┌────┐ ┌────┐
+│    │ │    │ │    │
+└────┘ └────┘ └────┘</pre>
+                <p>A responsive grid that adjusts the number of columns automatically:</p>
+                <pre class="code-block" data-lang="css"><code>grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p><code>repeat(auto-fit, minmax(...))</code> is the go-to pattern for card galleries that reflow without a single media query.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="position">Positioning (owner)</h2>
+                <p>The <code>position</code> property takes an element out of (or keeps it in) normal flow and lets you offset it. The key gotcha: <code>absolute</code> is positioned relative to the nearest ancestor that is itself positioned — usually you set <code>position: relative</code> on the parent.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Value</th><th>Behavior</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>static</code></td><td>Default normal flow</td></tr>
+                            <tr><td><code>relative</code></td><td>Offset from its normal position; establishes a containing block for absolute children</td></tr>
+                            <tr><td><code>absolute</code></td><td>Positioned relative to the nearest positioned ancestor</td></tr>
+                            <tr><td><code>fixed</code></td><td>Positioned relative to the viewport; stays while scrolling</td></tr>
+                            <tr><td><code>sticky</code></td><td>Acts relative until a threshold, then sticks</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="css"><code>.parent { position: relative; }
+
+.child {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.navbar { position: fixed; top: 0; left: 0; width: 100%; }
+
+.sticky-header { position: sticky; top: 0; }</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="z-index">z-index</h2>
+                <p><code>z-index</code> controls stacking order when boxes overlap: higher numbers paint on top. It only has an effect on positioned elements (or flex/grid items), so a <code>z-index</code> on a <code>static</code> element does nothing.</p>
+                <pre class="code-block" data-lang="css"><code>.modal {
+    position: fixed;   /* positioned, so z-index applies */
+    z-index: 1000;
+}</code></pre>
+                <p>A higher <code>z-index</code> generally appears above lower layers. It only applies to positioned (or flex/grid) elements.</p>
+                <aside class="callout warn"><span class="ct">Watch out</span><p><code>z-index</code> can't escape its stacking context. A parent with <code>transform</code>, <code>opacity &lt; 1</code>, or its own <code>z-index</code> creates a new context, so its children can never rise above elements in a sibling context — no matter how high the number.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="overflow">Overflow</h2>
+                <p><code>overflow</code> decides what happens when content is bigger than its box: clip it (<code>hidden</code>), scroll it (<code>auto</code>/<code>scroll</code>), or let it spill out (the default, <code>visible</code>). Use the axis-specific properties to control each direction separately.</p>
+                <pre class="code-block" data-lang="css"><code>overflow: hidden | auto | scroll;
+overflow-x: auto;
+overflow-y: auto;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="transitions">Transitions</h2>
+                <p>A transition animates a property smoothly between two states, usually triggered by <code>:hover</code> or <code>:focus</code>. You declare which properties animate and how long; the browser generates the in-between frames. Keep it to cheap properties like <code>transform</code> and <code>opacity</code>.</p>
+                <pre class="code-block" data-lang="css"><code>button {
+    transition:
+        background-color 0.3s ease,   /* list each property to animate */
+        transform 0.3s ease;
+}
+
+button:hover {
+    transform: scale(1.05);
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="transforms">Transforms</h2>
+                <p><code>transform</code> moves, scales, rotates or skews an element without affecting the layout of siblings — the other boxes stay exactly where they were. It is GPU-accelerated, so it is the performant way to animate movement and scale.</p>
+                <pre class="code-block" data-lang="css"><code>transform: translateX(100px);
+transform: translateY(50px);
+transform: scale(1.2);
+transform: rotate(45deg);
+transform: skew(10deg);
+
+/* Combine multiple transforms */
+transform: translateX(100px) rotate(20deg) scale(1.1);</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="keyframes">Keyframe animations</h2>
+                <p><code>@keyframes</code> defines a multi-step animation, then the <code>animation</code> shorthand plays it. Unlike a transition (two states plus a trigger), a keyframe animation can loop, run automatically on load, and pass through several stages.</p>
+                <pre class="code-block" data-lang="css"><code>@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.box { animation: fadeIn 1s ease; }
+
+@keyframes move {
+    0%   { transform: translateX(0); }
+    50%  { transform: translateX(200px); }
+    100% { transform: translateX(0); }
+}
+
+.box { animation: move 2s infinite; }   /* name | duration | iteration */</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Tool</th><th>Steps</th><th>Trigger</th><th>Use when</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>transition</code></td><td>2 (from / to)</td><td>State change (hover, class)</td><td>Simple hover and focus feedback</td></tr>
+                            <tr><td><code>@keyframes</code></td><td>Many</td><td>Automatic or on class</td><td>Looping, multi-stage, load animations</td></tr>
+                            <tr><td><a href="gsap.html">GSAP</a></td><td>Many</td><td>JS / scroll</td><td>Timelines, scroll effects, advanced easing</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="media-queries">Media queries &amp; mobile-first</h2>
+                <p>Media queries apply CSS only when a condition matches — typically screen width, but also orientation or print. They are how one stylesheet adapts to phones, tablets and desktops without separate pages.</p>
+                <pre class="code-block" data-lang="css"><code>@media (max-width: 768px) {   /* max-width: desktop-first */
+    .container {
+        flex-direction: column;
+    }
+}</code></pre>
+                <p>Mobile-first flips this around: write the small-screen layout as the base, then add <code>min-width</code> queries for larger screens.</p>
+                <pre class="code-block" data-lang="css"><code>.container {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 768px) {
+    .container {
+        flex-direction: row;
+    }
+}</code></pre>
+                <pre class="flow">Mobile first
+   ↓
+Tablet
+   ↓
+Desktop</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="responsive-units">clamp(), calc() &amp; units</h2>
+                <p><code>clamp()</code> scales a value between a minimum and a maximum with no media query, and <code>calc()</code> does math while mixing units. Relative units keep a design proportional to screen size and to the user's font settings.</p>
+                <pre class="code-block" data-lang="css"><code>font-size: clamp(1.5rem, 4vw, 4rem);
+/*          minimum   flexible   maximum */
+
+width: calc(100% - 40px);</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Unit</th><th>Relative to</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>px</code></td><td>Fixed pixels</td></tr>
+                            <tr><td><code>rem</code></td><td>Root font size</td></tr>
+                            <tr><td><code>em</code></td><td>Current element font size</td></tr>
+                            <tr><td><code>%</code></td><td>Parent element</td></tr>
+                            <tr><td><code>vw</code> / <code>vh</code></td><td>Viewport width / height</td></tr>
+                            <tr><td><code>vmin</code> / <code>vmax</code></td><td>Smaller / larger viewport dimension</td></tr>
+                            <tr><td><code>ch</code></td><td>Width of the "0" character</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="css"><code>html { font-size: 16px; }
+
+/* 1rem = 16px, 2rem = 32px, 1.5rem = 24px */</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="reset">CSS reset</h2>
+                <p>Browsers ship with their own default margins, paddings and font sizes, which differ slightly between engines. A reset normalizes those starting points so your layout behaves predictably everywhere.</p>
+                <pre class="code-block" data-lang="css"><code>* {          /* every element */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;  /* width includes padding + border */
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="forms-buttons">Forms &amp; buttons</h2>
+                <p>Form controls need explicit styling because each browser renders them differently by default. A consistent input style (full width, padding, border, radius) plus a visible focus state and a button hover gives an interface a professional feel.</p>
+                <pre class="code-block" data-lang="css"><code>input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+input:focus {
+    outline: none;
+    border-color: blue;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #4f46e5;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover { background: #4338ca; }</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="specificity">Specificity</h2>
+                <p>Specificity is the scoring system browsers use to decide which conflicting rule wins. The more specific the selector, the higher it scores — which is why one ID can beat many classes.</p>
+                <pre class="flow">Inline  (highest)
+   ↓
+ID
+   ↓
+Class
+   ↓
+Element (lowest)</pre>
+                <p>An ID beats a class, a class beats an element. Avoid styling by ID — prefer classes so overrides stay predictable.</p>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Reaching for <code>!important</code> to win a specificity fight usually hides the real problem. Fix the selector instead; reserve <code>!important</code> for genuinely exceptional overrides.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="inheritance">Inheritance</h2>
+                <p>Some properties (mostly text: <code>color</code>, <code>font-family</code>, <code>line-height</code>) flow from a parent to its children automatically; others (<code>margin</code>, <code>border</code>, <code>background</code>) do not. Knowing which is which explains many "why didn't my style apply?" surprises.</p>
+                <pre class="code-block" data-lang="css"><code>body {
+    color: #222;
+    font-family: Arial;
+}</code></pre>
+                <p>Most children inherit text properties (color, font) unless a rule overrides them.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="css-structure">Combining classes, nesting &amp; file structure</h2>
+                <p>Real stylesheets are organized, not one giant file. Combine classes for variants, keep selectors shallow, group files by concern, and split components into their own files so the project stays maintainable as it grows.</p>
+                <pre class="code-block" data-lang="css"><code>.card { padding: 20px; }
+.card.active { border: 2px solid blue; }</code></pre>
+                <pre class="code-block" data-lang="html"><code>&lt;div class="card active"&gt;&lt;/div&gt;</code></pre>
+                <p>Modern CSS also supports nesting, but understand normal CSS first.</p>
+                <pre class="code-block" data-lang="css"><code>.card {
+    padding: 20px;
+
+    .title {
+        font-size: 24px;
+    }
+}</code></pre>
+                <p>For larger projects, organize styles logically:</p>
+                <pre class="code-block" data-lang="text"><code>styles/
+    reset.css
+    variables.css
+    global.css
+    components/
+        button.css
+        card.css
+        navbar.css</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="bem">BEM naming</h2>
+                <p>BEM = Block Element Modifier. It keeps class names predictable in large projects.</p>
+                <pre class="code-block" data-lang="css"><code>.card            /* block   */
+.card__title     /* element */
+.card__image     /* element */
+.card--featured  /* modifier */</code></pre>
+                <pre class="code-block" data-lang="html"><code>&lt;div class="card card--featured"&gt;
+    &lt;h2 class="card__title"&gt;&lt;/h2&gt;
+&lt;/div&gt;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="css-modules-react">CSS &amp; React (CSS Modules)</h2>
+                <p>CSS Modules give every class a unique generated name at build time, so class names are scoped to the file that imports them. This removes the "two components both happened to use <code>.button</code>" collision.</p>
+                <pre class="code-block" data-lang="javascript"><code>import "./Button.css";
+
+function Button() {
+    return &lt;button className="button"&gt;Save&lt;/button&gt;;
+}</code></pre>
+                <p>CSS Modules avoid class-name conflicts by scoping names per file.</p>
+                <pre class="code-block" data-lang="javascript"><code>import styles from "./Button.module.css";
+
+&lt;button className={styles.button}&gt;
+    Save
+&lt;/button&gt;</code></pre>
+                <p>More on components in <a href="react.html">React</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="css-ecosystem">Where CSS fits</h2>
+                <p>Plain CSS, a utility framework and a JS animation library solve different problems and are often used together: CSS for the design system and custom work, Tailwind for speed, GSAP for complex motion.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Tool</th><th>Best for</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Plain CSS</td><td>Understanding CSS, custom designs, complex styles and CSS architecture</td></tr>
+                            <tr><td><a href="tailwind.html">Tailwind</a></td><td>Fast development, React apps, consistent utilities, rapid UI building</td></tr>
+                            <tr><td><a href="gsap.html">GSAP</a></td><td>Complex animation, timelines, ScrollTrigger, advanced sequences</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="css"><code>/* CSS: simple hover effect */
+button:hover { transform: scale(1.05); }</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// GSAP: scripted animation
+gsap.to(button, { scale: 1.2, duration: 1 });</code></pre>
+                <p>Learn both plain CSS and a utility framework — they solve different problems.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="debugging">Debugging CSS</h2>
+                <p>When CSS "doesn't work", work through this list in Chrome DevTools:</p>
+                <ul>
+                    <li>Inspect the element.</li>
+                    <li>Check computed styles.</li>
+                    <li>Check whether the selector matches.</li>
+                    <li>Check specificity.</li>
+                    <li>Check the parent layout.</li>
+                    <li>Check width / height.</li>
+                    <li>Check position.</li>
+                    <li>Check overflow.</li>
+                    <li>Check z-index.</li>
+                    <li>Check media queries.</li>
+                </ul>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Target elements with selectors; understand specificity and inheritance.</li>
+                    <li>Everything is the box model — set <code>box-sizing: border-box</code>.</li>
+                    <li>Flexbox = one axis; Grid = two axes. This page owns both.</li>
+                    <li><code>position</code> + <code>z-index</code> + <code>overflow</code> control layering and clipping.</li>
+                    <li>Transitions and keyframes animate; transforms are GPU-friendly.</li>
+                    <li>Build mobile-first with <code>min-width</code> media queries.</li>
+                    <li>Use <code>rem</code>, <code>clamp()</code> and <code>calc()</code> for scalable, responsive sizing.</li>
+                    <li>Organize with variables, BEM and CSS Modules; debug in DevTools.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="html.html"><span class="rt">→ HTML</span><span class="rc">The structure CSS styles</span></a>
+                    <a href="tailwind.html"><span class="rt">→ Tailwind CSS</span><span class="rc">Utility classes that build on these concepts</span></a>
+                    <a href="gsap.html"><span class="rt">→ GSAP</span><span class="rc">Advanced animation beyond CSS transitions</span></a>
+                    <a href="react-native.html"><span class="rt">→ React Native</span><span class="rc">Flexbox in native mobile styles</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

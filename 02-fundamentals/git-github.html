@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git &amp; GitHub — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Fundamentals</span>
+                <span class="sep">/</span>
+                <span>Git &amp; GitHub</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Git &amp; GitHub</h1>
+                <p class="subtitle">The complete workflow: initialize, stage, commit, branch, merge, push, and open pull requests — plus the rules that keep a repository clean and secret-free.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Fundamentals</span>
+                    <span class="badge b-purple">Version control</span>
+                    <span class="badge b-teal">Workflow</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="git-vs-github">Git vs GitHub</h2>
+                <p><strong>Git</strong> is a version control system that tracks changes to your code. <strong>GitHub</strong> is an online platform for hosting Git repositories and collaborating.</p>
+                <pre class="code-block" data-lang="bash"><code>git --version   # verify Git is installed and see which version</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Git runs entirely on your machine and works offline; GitHub is just one remote place to store and share a Git repository. Other hosts such as GitLab and Bitbucket work the same way.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="create-a-repository">Create a Git repository</h2>
+                <p>Running <code>git init</code> in a folder creates a hidden <code>.git</code> folder — the repository that tracks all history.</p>
+                <pre class="code-block" data-lang="bash"><code>git init   # create .git/ in the current folder and start tracking history</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="check-status">Check status</h2>
+                <p><code>git status</code> shows modified files, new files, deleted files, and staged files.</p>
+                <pre class="code-block" data-lang="bash"><code>git status   # your most-used command: see what is staged vs unstaged</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="add-files">Add files</h2>
+                <p>Stage everything, or stage a single file:</p>
+                <pre class="code-block" data-lang="bash"><code>git add .        # stage all changes in the current directory tree
+git add app.js   # stage just one file</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p><code>git add .</code> stages <em>everything</em> that is not ignored — including secrets. Add a <code>.gitignore</code> with <code>.env</code> and <code>node_modules/</code> before your first commit.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="commit">Commit</h2>
+                <p>A commit records the staged changes with a message. Write messages that describe the change.</p>
+                <pre class="code-block" data-lang="bash"><code>git commit -m "Initial commit"        # -m supplies the message inline
+git commit -m "Add login functionality"  # describe WHAT changed, not "fix stuff"
+git commit -m "Fix product API"
+git commit -m "Update navbar"</code></pre>
+                <p>Amend the last commit's message if you made a mistake:</p>
+                <pre class="code-block" data-lang="bash"><code>git commit --amend -m "Updated commit message"  # rewrites the most recent commit only</code></pre>
+                <p>Already-tracked files can be staged and committed in one step with <code>-a</code> (it does not include brand-new untracked files):</p>
+                <pre class="code-block" data-lang="bash"><code>git commit -a -m "Update all modified tracked files"</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="view-history">View history and changes</h2>
+                <p><code>log</code> shows the commits that were made; <code>diff</code> shows edits that are not committed yet. Together they answer "what happened?" and "what am I about to commit?".</p>
+                <pre class="code-block" data-lang="bash"><code>git log             # full commit history
+git log --oneline   # one line per commit — much easier to scan
+
+git diff            # unstaged changes (working tree vs the last commit)
+git diff --staged   # staged changes (staging area vs the last commit)</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="configuration">Configuration</h2>
+                <p>Set your identity once (globally) so commits are attributed to you:</p>
+                <pre class="code-block" data-lang="bash"><code>git config --global user.name "Alice Doe"          # name attached to every commit
+git config --global user.email "alice@example.com" # must match your GitHub email</code></pre>
+                <p>Make Git output easier to read by enabling colors, and review everything you have set:</p>
+                <pre class="code-block" data-lang="bash"><code>git config --global color.ui auto   # colorize status/diff/log output for readability
+git config --list                   # show all current Git settings</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="connect-to-github">Connect to GitHub</h2>
+                <p>A <em>remote</em> is a named link from your local repository to a copy hosted elsewhere. <code>origin</code> is the conventional name for the main remote. Create an empty repository on GitHub first, then link it.</p>
+                <pre class="code-block" data-lang="bash"><code>git remote add origin https://github.com/USERNAME/REPOSITORY.git  # link local repo to GitHub
+git remote -v                                                      # list remotes and their URLs</code></pre>
+                <p>Push for the first time, then push normally afterwards:</p>
+                <pre class="code-block" data-lang="bash"><code>git push -u origin main   # -u sets origin/main as the default upstream
+git push                  # afterwards a plain push goes to that upstream</code></pre>
+                <p>Renamed the repository on GitHub, or want to switch between HTTPS and SSH? Update the remote's URL:</p>
+                <pre class="code-block" data-lang="bash"><code>git remote set-url origin https://github.com/USERNAME/NEW-REPOSITORY.git  # point origin at a new URL</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="ssh-keys">SSH keys (passwordless auth)</h2>
+                <p>An SSH key pair lets you push and pull without typing a password. The public key goes to GitHub; the private key stays on your machine and must never be shared.</p>
+                <pre class="code-block" data-lang="bash"><code>ssh-keygen -t rsa -b 4096 -C "alice@example.com"   # generate a key pair (press Enter to accept defaults)
+eval "$(ssh-agent -s)"                             # start the SSH agent in the current shell
+ssh-add ~/.ssh/id_rsa                              # load the private key into the agent
+cat ~/.ssh/id_rsa.pub                              # print the PUBLIC key so you can copy it</code></pre>
+                <p>Paste the printed public key into <strong>Settings → SSH and GPG keys</strong> on GitHub, then verify the connection:</p>
+                <pre class="code-block" data-lang="bash"><code>ssh -T git@github.com   # should reply "successfully authenticated" (use git@gitlab.com for GitLab)</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Add the public key (<code>id_rsa.pub</code> or <code>id_ed25519.pub</code>), never the private one. A modern, shorter option is <code>ssh-keygen -t ed25519 -C "alice@example.com"</code>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="clone-pull-fetch">Clone, pull, and fetch</h2>
+                <p>These get code <em>from</em> GitHub to your machine. Clone is for the first time; pull and fetch update a repository you already have.</p>
+                <pre class="code-block" data-lang="bash"><code>git clone https://github.com/USERNAME/REPOSITORY.git   # first-time full copy
+git pull                                               # fetch + merge into current branch
+git fetch                                              # download new commits but do not merge yet</code></pre>
+                <p><strong>clone</strong> gets a repository for the first time. <strong>pull</strong> gets the latest changes in an existing repository. <strong>fetch</strong> downloads information without merging (<code>pull = fetch + merge</code>).</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>When to use</th><th>Merges automatically?</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>clone</code></td><td>You have no local copy yet</td><td>n/a (creates the repo)</td></tr>
+                            <tr><td><code>fetch</code></td><td>You want to inspect changes first</td><td>No — remote-tracking only</td></tr>
+                            <tr><td><code>pull</code></td><td>You want the latest changes now</td><td>Yes (fetch + merge)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="branches">Branches</h2>
+                <p>A branch is a movable pointer to a line of commits. You create one to work on a feature in isolation so <code>main</code> stays stable until the work is reviewed and merged. <code>switch</code> is the modern replacement for <code>checkout</code>.</p>
+                <pre class="code-block" data-lang="bash"><code>git branch                 # list branches (* marks the current one)
+git branch feature-login   # create a branch (does NOT switch to it)
+git checkout feature-login # switch (classic, older command)
+git switch feature-login   # switch (modern)
+git switch -c feature-login # create + switch in one step</code></pre>
+                <p>Rename a branch (including the default one) and delete finished branches — locally and on the remote:</p>
+                <pre class="code-block" data-lang="bash"><code>git branch -m old-name new-name          # rename any local branch
+git branch -M main                       # force-rename the current branch to main
+git branch -d feature-login              # delete a merged local branch (-D to force)
+git push origin --delete feature-login   # delete the branch on the remote</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="merge">Merge</h2>
+                <p>Switch to the target branch first, then merge:</p>
+                <pre class="code-block" data-lang="bash"><code>git switch main          # you merge INTO the branch you are on
+git merge feature-login  # bring feature-login's commits into main</code></pre>
+                <h3>Merge conflicts</h3>
+                <p>When both branches changed the same lines, Git marks the conflict:</p>
+                <pre class="code-block" data-lang="text"><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+your code
+=======
+other code
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature-login</code></pre>
+                <p>Choose the correct code manually, then:</p>
+                <pre class="code-block" data-lang="bash"><code>git add .
+git commit -m "Resolve merge conflict"</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="stash">Stash</h2>
+                <p>Temporarily save uncommitted changes and bring them back later:</p>
+                <pre class="code-block" data-lang="bash"><code>git stash        # save changes
+git stash pop    # restore them
+git stash list   # see stashes</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="tags">Tags</h2>
+                <p>Tags mark releases:</p>
+                <pre class="code-block" data-lang="bash"><code>git tag v1.0.0            # mark the current commit as release 1.0.0
+git push origin v1.0.0    # tags are NOT pushed by a normal git push</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="reset-and-restore">Reset and restore</h2>
+                <p>Unstage a file, or discard local changes to it:</p>
+                <pre class="code-block" data-lang="bash"><code>git restore --staged app.js   # unstage
+git restore app.js            # discard local changes (destructive)</code></pre>
+                <p>Undo a commit while keeping or discarding the changes:</p>
+                <pre class="code-block" data-lang="bash"><code>git reset --soft HEAD~1   # undo commit, keep changes
+git reset --hard HEAD~1   # undo commit AND changes (destructive)</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p><code>git reset --hard</code> can permanently remove uncommitted work. Use it only when you are certain.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="gitignore">.gitignore</h2>
+                <p>Create a <code>.gitignore</code> so generated and secret files are never tracked:</p>
+                <pre class="code-block" data-lang="text"><code>node_modules/
+.env
+dist/
+build/
+.DS_Store</code></pre>
+                <p>A typical MERN project layout and its ignores:</p>
+                <pre class="code-block" data-lang="text"><code>online-store/
+├── client/
+├── server/
+├── .gitignore
+└── README.md
+
+# .gitignore
+node_modules/
+.env
+client/node_modules/
+client/dist/
+server/node_modules/</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="working-staging-repo">Working area → staging → repository</h2>
+                <p>Git moves changes through three areas. Understand this model and every command makes sense.</p>
+                <pre class="flow">Modified files (Working Area)
+      ↓
+   git add
+      ↓
+Staging Area
+      ↓
+  git commit
+      ↓
+Local Repository
+      ↓
+   git push
+      ↓
+   GitHub</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="pull-request-workflow">Pull request workflow</h2>
+                <p>The typical professional workflow uses a feature branch and a pull request (PR) on GitHub:</p>
+                <pre class="flow">main
+  ↓
+feature branch
+  ↓
+code
+  ↓
+commit
+  ↓
+push
+  ↓
+Pull Request
+  ↓
+Code Review
+  ↓
+Merge
+  ↓
+main</pre>
+                <p>GitHub gives you repositories, branches, pull requests, issues, releases, actions, and collaborators.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="common-commands">Common commands to memorize</h2>
+                <p>The commands you will type almost every day, and what each one does.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>What it does</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>git init</code></td><td>Create a repository</td></tr>
+                            <tr><td><code>git status</code></td><td>Show working tree status</td></tr>
+                            <tr><td><code>git add .</code></td><td>Stage changes</td></tr>
+                            <tr><td><code>git commit -m "message"</code></td><td>Record staged changes</td></tr>
+                            <tr><td><code>git log --oneline</code></td><td>Compact history</td></tr>
+                            <tr><td><code>git push</code></td><td>Upload commits</td></tr>
+                            <tr><td><code>git pull</code></td><td>Fetch and merge</td></tr>
+                            <tr><td><code>git clone</code></td><td>Copy a repository</td></tr>
+                            <tr><td><code>git branch</code></td><td>List branches</td></tr>
+                            <tr><td><code>git switch</code></td><td>Switch branches</td></tr>
+                            <tr><td><code>git switch -c branch</code></td><td>Create and switch</td></tr>
+                            <tr><td><code>git branch -m new-name</code></td><td>Rename a branch</td></tr>
+                            <tr><td><code>git remote set-url origin URL</code></td><td>Change the remote URL</td></tr>
+                            <tr><td><code>git merge</code></td><td>Merge a branch</td></tr>
+                            <tr><td><code>git stash</code></td><td>Shelve changes</td></tr>
+                            <tr><td><code>git restore</code></td><td>Unstage or discard</td></tr>
+                            <tr><td><code>git diff</code></td><td>Show changes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="daily-workflow">Simple daily workflow</h2>
+                <p>The loop most teams repeat: start from an up-to-date <code>main</code>, branch off, commit your work, push the branch, then open a pull request.</p>
+                <pre class="code-block" data-lang="bash"><code>git switch main           # go to the main branch
+git pull                  # get everyone's latest commits first
+git switch -c feature-login   # branch off so main stays clean
+
+# Write code...
+
+git status                # review what changed
+git add .                 # stage it
+git commit -m "Add login" # record it with a clear message
+git push -u origin feature-login   # publish the branch to GitHub
+
+# Then open a Pull Request on GitHub.</code></pre>
+                <p>Quick version for a personal branch:</p>
+                <pre class="code-block" data-lang="bash"><code>git pull
+
+# Write code...
+
+git status
+git add .
+git commit -m "Describe what you changed"
+git push</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="never-commit-secrets">Never commit secrets</h2>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Committing secret files. Once a secret is pushed, treat it as compromised and rotate it — removing the file later does not erase it from history.</p></aside>
+                <p>Never push any of these:</p>
+                <ul>
+                    <li><code>.env</code></li>
+                    <li>MongoDB password</li>
+                    <li><code>JWT_SECRET</code></li>
+                    <li>Stripe secret key</li>
+                    <li>PayPal secret</li>
+                    <li>API keys</li>
+                </ul>
+                <p>Environment variables and secrets are handled by the backend — see <a href="../05-backend/nodejs.html">Node.js</a> and <a href="../10-practices/mern-architecture.html">MERN Architecture</a>.</p>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Git tracks code history; GitHub hosts it online.</li>
+                    <li><code>git init</code> creates a repo; <code>git status</code> shows the state.</li>
+                    <li>Changes flow: working area → <code>add</code> → staging → <code>commit</code> → repo → <code>push</code> → GitHub.</li>
+                    <li><code>clone</code> gets a repo once; <code>pull</code> gets new changes; <code>fetch</code> downloads without merging.</li>
+                    <li>Branches isolate work; merge (and resolve conflicts) brings it back.</li>
+                    <li>Stash shelves work; tags mark releases; restore/reset undo changes.</li>
+                    <li>Use <code>.gitignore</code> and never commit secrets.</li>
+                    <li>SSH keys give passwordless auth: generate with <code>ssh-keygen</code> and add the <em>public</em> key to GitHub.</li>
+                    <li><code>git remote set-url</code> changes the remote; <code>git branch -m</code> renames and <code>git push origin --delete</code> removes a branch.</li>
+                    <li>Professional flow: branch → commit → push → pull request → review → merge.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="terminal.html"><span class="rt">→ Terminal &amp; Command Line</span><span class="rc">The shell you run Git commands in</span></a>
+                    <a href="../10-practices/mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">How to structure the project you version</span></a>
+                    <a href="../05-backend/nodejs.html"><span class="rt">→ Node.js</span><span class="rc">Environment variables and secrets handling</span></a>
+                    <a href="../09-deployment/docker.html"><span class="rt">→ Docker &amp; Deployment</span><span class="rc">CI/CD pipelines that build on Git workflows</span></a>
+                    <a href="../10-practices/clean-code.html"><span class="rt">→ Clean Code &amp; Best Practices</span><span class="rc">Commit and code review standards</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

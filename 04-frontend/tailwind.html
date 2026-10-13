@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind CSS — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Frontend</span>
+                <span class="sep">/</span>
+                <span>Tailwind CSS</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Tailwind CSS</h1>
+                <p class="subtitle">A utility-first CSS framework: instead of writing custom CSS rules, you compose small utility classes directly in your markup.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Frontend</span>
+                    <span class="badge b-purple">Utility-first</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="installation">Installation &amp; setup</h2>
+                <p>Tailwind is a utility-first framework: instead of writing a custom class per component, you compose small single-purpose classes directly in the markup. Styling therefore lives next to the element and you skip the "invent a class name, then hunt for it in a huge stylesheet" cycle.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install tailwindcss @tailwindcss/vite</code></pre>
+                <p>Then configure Tailwind according to your Tailwind version (for Vite, the plugin is added to <code>vite.config.js</code>). In React, Tailwind classes are written as a <code>className</code> string.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th></th><th>Custom CSS</th><th>Utility-first (Tailwind)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Where styles live</td><td>Separate <code>.css</code> files</td><td>In the markup, as classes</td></tr>
+                            <tr><td>Naming</td><td>You invent class names</td><td>Composable, predictable utilities</td></tr>
+                            <tr><td>Growth</td><td>Risk of unused or conflicting rules</td><td>Unused utilities are purged at build</td></tr>
+                            <tr><td>Best for</td><td>Complex custom designs, design systems</td><td>Fast, consistent UI in React apps</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="p-5 bg-white rounded-xl"&gt;&lt;/div&gt;</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Tailwind uses <code>className</code> in React but <code>class</code> in normal HTML. Mixing them up is a common beginner error.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="spacing">Spacing</h2>
+                <p>Spacing utilities map to one consistent scale, so a gap of "6" is the same everywhere. <code>p-*</code> sets padding and <code>m-*</code> sets margin; add an axis (<code>x</code>/<code>y</code>) or a side (<code>t</code>/<code>r</code>/<code>b</code>/<code>l</code>) to target one direction.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="p-6 mt-4"&gt;&lt;/div&gt;
+&lt;!-- p-6 = padding on all sides; mt-4 = margin-top only --&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Prefix</th><th>Applies to</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>p-</code></td><td>padding (all sides)</td></tr>
+                            <tr><td><code>px-</code> / <code>py-</code></td><td>padding left+right / top+bottom</td></tr>
+                            <tr><td><code>pt-</code> <code>pr-</code> <code>pb-</code> <code>pl-</code></td><td>padding per side</td></tr>
+                            <tr><td><code>m-</code></td><td>margin (all sides)</td></tr>
+                            <tr><td><code>mx-</code> / <code>my-</code></td><td>margin left+right / top+bottom</td></tr>
+                            <tr><td><code>mt-</code> <code>mr-</code> <code>mb-</code> <code>ml-</code></td><td>margin per side</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>The spacing scale is consistent: <code>p-1 p-2 p-3 p-4 p-5 p-6 p-8 p-10 p-12 p-16 p-20 p-24</code>. The most common spacing values in practice are <code>p-4</code>, <code>p-6</code> and <code>p-8</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="sizing">Width &amp; height</h2>
+                <p>Size utilities set width and height. Fractional widths (<code>w-1/2</code>) split the parent, <code>w-full</code> fills it, and <code>max-w-*</code> caps a container so lines of text stay readable instead of stretching across a wide screen.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="w-full"&gt;&lt;/div&gt;
+&lt;section className="min-h-screen"&gt;&lt;/section&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Category</th><th>Utilities</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Width</td><td><code>w-full</code>, <code>w-screen</code>, <code>w-auto</code>, <code>w-fit</code>, <code>w-1/2</code>, <code>w-1/3</code>, <code>w-1/4</code>, <code>w-64</code></td></tr>
+                            <tr><td>Max width</td><td><code>max-w-md</code>, <code>max-w-lg</code>, <code>max-w-xl</code>, <code>max-w-2xl</code>, <code>max-w-4xl</code>, <code>max-w-6xl</code></td></tr>
+                            <tr><td>Height</td><td><code>h-full</code>, <code>h-screen</code>, <code>h-auto</code>, <code>h-fit</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="colors">Colors &amp; shades</h2>
+                <p>Color utilities follow <code>{property}-{color}-{shade}</code>: the prefix (<code>text-</code>, <code>bg-</code>, <code>border-</code>) chooses what is colored, and the shade (<code>50</code>–<code>900</code>) chooses how light or dark.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;h1 className="text-white"&gt;Hello&lt;/h1&gt;   &lt;!-- text- prefix sets the color --&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Type</th><th>Examples</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Text</td><td><code>text-white</code>, <code>text-black</code>, <code>text-gray-500</code>, <code>text-blue-500</code>, <code>text-red-500</code>, <code>text-green-500</code></td></tr>
+                            <tr><td>Background</td><td><code>bg-white</code>, <code>bg-black</code>, <code>bg-gray-100</code>, <code>bg-blue-500</code>, <code>bg-indigo-600</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Each color has shades from <code>50</code> to <code>900</code>. Think of <code>500</code> as the middle, <code>600</code>/<code>700</code> as darker, and <code>100</code>/<code>200</code> as lighter.</p>
+                <pre class="code-block" data-lang="text"><code>bg-blue-50 bg-blue-100 bg-blue-200 bg-blue-300 bg-blue-400
+bg-blue-500 bg-blue-600 bg-blue-700 bg-blue-800 bg-blue-900</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="typography">Typography</h2>
+                <p>Typography utilities adjust font size, weight, alignment and spacing. Size (<code>text-*</code>), weight (<code>font-*</code>) and alignment usually get you most of the way; line-height and tracking fine-tune readability.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;h1 className="text-4xl font-bold text-center"&gt;Welcome&lt;/h1&gt;
+&lt;p className="leading-relaxed tracking-wide"&gt;Some text...&lt;/p&gt;
+&lt;!-- text-4xl size · font-bold weight · text-center align --&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Utility</th><th>Values</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Size</td><td><code>text-xs</code>, <code>text-sm</code>, <code>text-base</code>, <code>text-lg</code>, <code>text-xl</code>, <code>text-2xl</code> … <code>text-7xl</code></td></tr>
+                            <tr><td>Weight</td><td><code>font-light</code>, <code>font-normal</code>, <code>font-medium</code>, <code>font-semibold</code>, <code>font-bold</code>, <code>font-extrabold</code>, <code>font-black</code></td></tr>
+                            <tr><td>Align</td><td><code>text-left</code>, <code>text-center</code>, <code>text-right</code></td></tr>
+                            <tr><td>Line height</td><td><code>leading-none</code>, <code>leading-tight</code>, <code>leading-snug</code>, <code>leading-normal</code>, <code>leading-relaxed</code>, <code>leading-loose</code></td></tr>
+                            <tr><td>Letter spacing</td><td><code>tracking-tighter</code>, <code>tracking-tight</code>, <code>tracking-normal</code>, <code>tracking-wide</code>, <code>tracking-wider</code>, <code>tracking-widest</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="flexbox">Flexbox utilities</h2>
+                <p>The concepts (main axis, cross axis, sizing) are owned by <a href="css.html#flexbox">CSS → Flexbox</a>. Tailwind just exposes them as classes.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="flex items-center justify-between gap-4"&gt;&lt;/div&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Utility</th><th>CSS property</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>flex</code></td><td><code>display: flex</code></td></tr>
+                            <tr><td><code>flex-row</code> / <code>flex-col</code></td><td><code>flex-direction</code></td></tr>
+                            <tr><td><code>justify-start</code>, <code>justify-center</code>, <code>justify-end</code>, <code>justify-between</code>, <code>justify-around</code>, <code>justify-evenly</code></td><td><code>justify-content</code></td></tr>
+                            <tr><td><code>items-start</code>, <code>items-center</code>, <code>items-end</code>, <code>items-stretch</code></td><td><code>align-items</code></td></tr>
+                            <tr><td><code>gap-2</code>, <code>gap-4</code>, <code>gap-6</code>, <code>gap-8</code>, <code>gap-x-4</code>, <code>gap-y-4</code></td><td><code>gap</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="grid">Grid utilities</h2>
+                <p>Grid concepts are owned by <a href="css.html#css-grid">CSS → Grid</a>.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="grid grid-cols-3 gap-6"&gt;&lt;/div&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Utility</th><th>CSS property</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>grid</code></td><td><code>display: grid</code></td></tr>
+                            <tr><td><code>grid-cols-1</code> … <code>grid-cols-4</code></td><td><code>grid-template-columns</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="responsive">Responsive prefixes (mobile-first)</h2>
+                <p>Responsive prefixes apply a utility only from a breakpoint upward. Because Tailwind is mobile-first, the unprefixed class is the small-screen default and <code>md:</code>, <code>lg:</code> layer changes in at larger screens.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;h1 className="text-2xl md:text-4xl lg:text-6xl"&gt;&lt;/h1&gt;
+&lt;!-- 2xl on phones · 4xl from md · 6xl from lg --&gt;</code></pre>
+                <p>Tailwind is mobile-first. Base classes apply to all screens; prefixed classes apply from that breakpoint upward: <code>sm:</code>, <code>md:</code>, <code>lg:</code>, <code>xl:</code>.</p>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Write <code>text-xl md:text-3xl lg:text-5xl</code>, not <code>lg:text-xl md:text-3xl text-5xl</code>. Always go mobile → tablet → desktop.</p></aside>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"&gt;&lt;/div&gt;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="dark-mode">Dark mode</h2>
+                <p>The <code>dark:</code> prefix applies a utility only when dark mode is active, so you can supply both light and dark values on the same element — no separate stylesheet or duplicated markup.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="bg-white text-black dark:bg-gray-900 dark:text-white"&gt;&lt;/div&gt;
+&lt;!-- light: white bg, black text · dark: gray-900 bg, white text --&gt;</code></pre>
+                <p>The <code>dark:</code> prefix applies a utility only when dark mode is active.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="borders-effects">Borders, radius, shadow &amp; opacity</h2>
+                <p>These utilities style a box's edges and depth: border width and color, corner radius, shadow, and opacity. Each maps directly to the CSS property of the same name.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="border border-gray-200 rounded-xl shadow-lg opacity-100"&gt;&lt;/div&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Group</th><th>Utilities</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Border</td><td><code>border</code>, <code>border-2</code>, <code>border-4</code>, <code>border-gray-200</code>, <code>border-blue-500</code></td></tr>
+                            <tr><td>Radius</td><td><code>rounded-sm</code>, <code>rounded</code>, <code>rounded-md</code>, <code>rounded-lg</code>, <code>rounded-xl</code>, <code>rounded-2xl</code>, <code>rounded-3xl</code>, <code>rounded-full</code></td></tr>
+                            <tr><td>Shadow</td><td><code>shadow-sm</code>, <code>shadow</code>, <code>shadow-md</code>, <code>shadow-lg</code>, <code>shadow-xl</code>, <code>shadow-2xl</code>, <code>shadow-none</code></td></tr>
+                            <tr><td>Opacity</td><td><code>opacity-0</code>, <code>opacity-25</code>, <code>opacity-50</code>, <code>opacity-75</code>, <code>opacity-100</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="states">Interactive states: hover, focus, active</h2>
+                <p>State variants apply a utility only in a given interaction state. They are how you add hover, focus and press feedback with no custom CSS — so buttons and inputs feel responsive to the user.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;button className="bg-blue-600 hover:bg-blue-700"&gt;&lt;/button&gt;
+
+&lt;input className="border focus:ring-2 focus:ring-blue-500"&gt;
+
+&lt;button className="active:scale-95"&gt;&lt;/button&gt;</code></pre>
+                <ul>
+                    <li><code>hover:</code> — only while hovering.</li>
+                    <li><code>focus:</code> — while focused (keyboard users rely on this).</li>
+                    <li><code>active:</code> — while pressed; great for click feedback.</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="transitions-transform">Transitions &amp; transforms</h2>
+                <p>Transition utilities control <em>which</em> properties animate and for how long; transform utilities change position, scale and rotation. Pair them so a hover state eases in smoothly instead of snapping.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;button className="bg-blue-500 hover:bg-blue-700 transition-colors duration-300"&gt;&lt;/button&gt;
+&lt;!-- animate only colors, over 300ms --&gt;
+
+&lt;div className="hover:scale-105 transition-transform"&gt;&lt;/div&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Group</th><th>Utilities</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Transition</td><td><code>transition</code>, <code>transition-all</code>, <code>transition-colors</code>, <code>transition-transform</code>, <code>transition-opacity</code>, <code>duration-300</code></td></tr>
+                            <tr><td>Transform</td><td><code>scale-95</code>, <code>scale-100</code>, <code>scale-105</code>, <code>rotate-45</code>, <code>translate-x-4</code>, <code>translate-y-4</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="layout-helpers">Position, z-index, overflow, object-fit, cursor, display</h2>
+                <p>This group covers positioning (<code>relative</code>/<code>absolute</code> plus offsets), stacking (<code>z-*</code>), clipping (<code>overflow-*</code>), how an image fills its box (<code>object-*</code>), the cursor, and display (including <code>hidden</code>, often paired with a breakpoint).</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="relative"&gt;
+    &lt;button className="absolute top-2 right-2"&gt;&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;div className="fixed z-50"&gt;&lt;/div&gt;   &lt;!-- pin to viewport, stack on top --&gt;
+
+&lt;img className="w-full h-64 object-cover"&gt;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Group</th><th>Utilities</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Position</td><td><code>static</code>, <code>relative</code>, <code>absolute</code>, <code>fixed</code>, <code>sticky</code></td></tr>
+                            <tr><td>Offsets</td><td><code>top-0</code>, <code>top-4</code>, <code>right-0</code>, <code>right-4</code>, <code>bottom-0</code>, <code>left-0</code></td></tr>
+                            <tr><td>z-index</td><td><code>z-0</code>, <code>z-10</code>, <code>z-20</code>, <code>z-30</code>, <code>z-40</code>, <code>z-50</code></td></tr>
+                            <tr><td>Overflow</td><td><code>overflow-hidden</code>, <code>overflow-auto</code>, <code>overflow-scroll</code>, <code>overflow-x-auto</code>, <code>overflow-y-auto</code></td></tr>
+                            <tr><td>Object fit</td><td><code>object-cover</code>, <code>object-contain</code></td></tr>
+                            <tr><td>Cursor</td><td><code>cursor-pointer</code>, <code>cursor-not-allowed</code>, <code>cursor-default</code></td></tr>
+                            <tr><td>Display</td><td><code>block</code>, <code>inline</code>, <code>inline-block</code>, <code>flex</code>, <code>grid</code>, <code>hidden</code> (e.g. <code>hidden md:block</code>)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="recipes">Container, centering &amp; common recipes</h2>
+                <p>These are copy-paste building blocks for the most common layouts: a centered page container, a full-height centered box, vertical stacking with <code>space-y-*</code>, and the standard card, button and input styles.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;!-- Page container --&gt;
+&lt;div className="container mx-auto"&gt;&lt;/div&gt;
+
+&lt;!-- Center horizontally --&gt;
+&lt;div className="max-w-6xl mx-auto"&gt;&lt;/div&gt;
+
+&lt;!-- Center everything --&gt;
+&lt;div className="flex items-center justify-center min-h-screen"&gt;&lt;/div&gt;
+
+&lt;!-- Space between stacked items --&gt;
+&lt;div className="space-y-4"&gt;&lt;/div&gt;</code></pre>
+                <p>Common component recipes:</p>
+                <pre class="code-block" data-lang="html"><code>&lt;!-- Card --&gt;
+&lt;div className="bg-white p-6 rounded-xl shadow-md border border-gray-200"&gt;&lt;/div&gt;
+
+&lt;!-- Primary button --&gt;
+&lt;button className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"&gt;&lt;/button&gt;
+
+&lt;!-- Input --&gt;
+&lt;input className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"&gt;</code></pre>
+                <pre class="code-block" data-lang="html"><code>&lt;!-- Professional page shell --&gt;
+&lt;div className="min-h-screen bg-gray-50"&gt;
+    &lt;header&gt;&lt;/header&gt;
+    &lt;main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"&gt;
+        ...
+    &lt;/main&gt;
+&lt;/div&gt;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="conditional-classes">Conditional classes in React</h2>
+                <p>In React <code>className</code> is just a string, so you can build it dynamically with a template literal or a conditional expression — toggling a state-driven class for active/inactive looks.</p>
+                <pre class="code-block" data-lang="javascript"><code>const isActive = true;
+
+// base classes + a color that depends on state
+&lt;button className={`px-4 py-2 ${isActive ? "bg-blue-600" : "bg-gray-400"}`}&gt;
+    Button
+&lt;/button&gt;</code></pre>
+                <p>For larger projects use <code>clsx</code> (or <code>classnames</code>):</p>
+                <pre class="code-block" data-lang="javascript"><code>import clsx from "clsx";
+
+&lt;button
+    className={clsx(
+        "px-4 py-2 rounded",
+        isActive ? "bg-blue-600" : "bg-gray-400"
+    )}
+&gt;
+    Button
+&lt;/button&gt;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="arbitrary-values">Arbitrary values</h2>
+                <p>Square brackets let you use any value that is not on the default scale — <code>w-[350px]</code>, <code>bg-[#123456]</code>, <code>top-[120px]</code>. It is an escape hatch for one-off needs, not a habit.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div className="w-[350px] top-[120px] bg-[#123456] text-[22px]"&gt;&lt;/div&gt;</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Arbitrary values escape the design system. Use them sparingly when the standard scale genuinely isn't enough.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="design-system">Custom colors &amp; design system</h2>
+                <p>For a professional project, define and reuse a small palette and a consistent set of tokens.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Token</th><th>Example choice</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Primary</td><td><code>indigo</code></td></tr>
+                            <tr><td>Secondary</td><td><code>teal</code></td></tr>
+                            <tr><td>Neutral</td><td><code>gray</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Standardize colors, spacing, font sizes, border radius, shadows, and the recipes for buttons, inputs and cards. A primary button should always be, for example, <code>bg-indigo-600 hover:bg-indigo-700</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="component-reuse">Reuse components, not class strings</h2>
+                <p>Instead of repeating the same long utility list everywhere, wrap it in a component and reuse it.</p>
+                <pre class="code-block" data-lang="javascript"><code>&lt;Button&gt;Save&lt;/Button&gt;
+&lt;Button&gt;Delete&lt;/Button&gt;</code></pre>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Don't make huge className strings that repeat across the app. If you type the same utilities three times, extract a component. Also avoid too many arbitrary values, inconsistent colors, <code>!important</code>, and mixing several styling systems at once.</p></aside>
+                <p>Tailwind and GSAP complement each other: Tailwind controls the design (layout, colors, spacing), GSAP controls complex animation. See <a href="gsap.html">GSAP</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="accessibility">Accessibility</h2>
+                <p>Don't use Tailwind instead of semantic HTML.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;!-- Good --&gt;
+&lt;button&gt;Save&lt;/button&gt;
+
+&lt;!-- Bad --&gt;
+&lt;div className="cursor-pointer"&gt;Save&lt;/div&gt;</code></pre>
+                <p>Also consider focus states, color contrast, keyboard navigation and screen readers. The base elements are covered in <a href="html.html#accessibility-aria">HTML → Accessibility &amp; ARIA</a>.</p>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Tailwind is utility-first: compose small classes in the markup.</li>
+                    <li><code>className</code> in React, <code>class</code> in HTML.</li>
+                    <li>Learn the pattern (property + value), not every class.</li>
+                    <li>Mobile-first: base, then <code>sm:</code> <code>md:</code> <code>lg:</code> <code>xl:</code>.</li>
+                    <li>States use <code>hover:</code> <code>focus:</code> <code>active:</code>; dark mode uses <code>dark:</code>.</li>
+                    <li>Flexbox/Grid concepts live in <a href="css.html">CSS</a>; Tailwind just names them.</li>
+                    <li>Use a small design system and reuse components — never vast repeated className strings.</li>
+                    <li>Keep semantic HTML and accessible focus states.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="css.html"><span class="rt">→ CSS</span><span class="rc">Flexbox, Grid and the properties behind every utility</span></a>
+                    <a href="react.html"><span class="rt">→ React</span><span class="rc">Where className strings live</span></a>
+                    <a href="gsap.html"><span class="rt">→ GSAP</span><span class="rc">Add motion on top of Tailwind layouts</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

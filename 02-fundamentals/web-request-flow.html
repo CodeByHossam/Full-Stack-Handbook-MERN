@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Request Flow — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Fundamentals</span>
+                <span class="sep">/</span>
+                <span>Web Request Flow</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Complete Web Request Flow</h1>
+                <p class="subtitle">From the browser to the server and back — all 14 phases and 25 steps that happen between typing a URL and seeing a rendered page.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Fundamentals</span>
+                    <span class="badge b-purple">End-to-end</span>
+                    <span class="badge b-teal">Layers in action</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="overall-flow">The overall flow at a glance</h2>
+                <p>Every page load — from typing <code>https://www.example.com/index.html</code> to seeing the rendered page — passes through these 14 phases. The sections below explain each group in detail.</p>
+                <pre class="flow">      ┌─ PHASE 1-2 ── User action, URL parsing, DNS resolution ─────┐
+      │                                                              │
+      ▼
+      ┌─ PHASE 3 ──── TCP three-way handshake ───────────────────────┐
+      ▼
+      ┌─ PHASE 4-5 ── HTTP request + TLS encryption ────────────────┐
+      ▼
+      ┌─ PHASE 6-7 ── Character encoding, compression, IP packet ───┐
+      ▼
+      ┌─ PHASE 8 ──── ARP + MAC frame creation ─────────────────────┐
+      ▼
+      ┌─ PHASE 9 ──── Binaries → physical signals ──────────────────┐
+      ▼
+      ┌─ PHASE 10 ─── Routers and multiple hops ────────────────────┐
+      ▼
+      ┌─ PHASE 11 ─── Server receives, decrypts, processes ─────────┐
+      ▼
+      ┌─ PHASE 12-13 ─ HTTP response + reverse return journey ──────┐
+      ▼
+      ┌─ PHASE 14 ─── Browser receives and renders the page ────────┐
+      ▼
+              [USER SEES THE WEB PAGE]</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="browser-url-and-dns">Phase 1–2: Browser URL processing and DNS</h2>
+                <p><strong>Step 1 — User action:</strong> the user types <code>https://www.example.com/index.html</code> and the browser receives the URL input.</p>
+                <p><strong>Step 2 — URL parsing:</strong> the browser breaks the URL into components — protocol <code>https</code>, host <code>www.example.com</code>, path <code>/index.html</code>, and the default port <code>443</code>.</p>
+                <p><strong>Step 3 — DNS query:</strong> the browser checks its own DNS cache, then the OS cache, then the router cache. If the name is not found, it queries a DNS server.</p>
+                <pre class="flow">Browser DNS cache → OS DNS cache → Router DNS cache → DNS server</pre>
+                <p><strong>Step 4 — DNS resolution:</strong> the DNS server answers:</p>
+                <pre class="code-block" data-lang="text"><code>Domain: www.example.com
+IP:     93.184.216.34</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>This is a data transformation: a human-readable domain name becomes a machine-readable IP address.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="tcp-handshake">Phase 3: TCP three-way handshake</h2>
+                <p><strong>Step 5 — TCP handshake:</strong> before any HTTP data flows, the client and server establish a reliable connection with a three-way handshake.</p>
+                <pre class="flow">Client → Server: SYN
+  Seq: 1000
+
+Server → Client: SYN-ACK
+  Seq: 5000
+  Ack: 1001
+
+Client → Server: ACK
+  Ack: 5001</pre>
+                <p>After this exchange the transport connection is established. See <a href="networking-layers.html">Networking Layers</a> for how TCP provides ordering, acknowledgements, and retransmission.</p>
+                <aside class="callout warn"><span class="ct">Watch out</span><p>The order is fixed: DNS resolves the name <em>before</em> TCP connects, TCP connects <em>before</em> the TLS handshake, and only then is the HTTP request sent. If an HTTPS request fails, checking them in this order isolates the cause quickly.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="http-request-tls">Phase 4–5: HTTP request and TLS encryption</h2>
+                <p><strong>Step 6 — HTTP request creation:</strong> the browser builds an HTTP request message.</p>
+                <pre class="code-block" data-lang="text"><code>GET /index.html HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0 ...
+Accept: text/html
+Accept-Encoding: gzip, deflate
+Connection: keep-alive</code></pre>
+                <p><strong>Step 7 — TLS handshake:</strong> for HTTPS, the client and server negotiate an encrypted channel.</p>
+                <pre class="flow">ClientHello:  TLS version, cipher suites, random number
+ServerHello:  chosen cipher, certificate, random number
+Key Exchange: pre-master secret → session keys generated</pre>
+                <p><strong>Step 8 — Data encryption:</strong> the HTTP request is encrypted (for example with AES-256-GCM) and becomes unreadable ciphertext.</p>
+                <pre class="code-block" data-lang="text"><code>Original:  GET /index.html HTTP/1.1
+Encrypted: 7E 3A 1F 9C B2 4D 8E A1 ...</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>TLS is a security layer that sits between the application data and the transport. The HTTP message is the same, it is just protected on the wire.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="encoding-compression-packetization">Phase 6–7: Encoding, compression, and packetization</h2>
+                <p><strong>Step 9 — Character encoding:</strong> the text request is encoded into bytes (UTF-8).</p>
+                <pre class="code-block" data-lang="text"><code>"GET / HTTP/1.1"
+        ↓
+47 45 54 20 2F 20 48 54 54 50 ...</code></pre>
+                <p><strong>Step 10 — Data compression (optional):</strong> the payload may be compressed to reduce size — for example 1,024 bytes down to 342 bytes via GZIP/DEFLATE.</p>
+                <p><strong>Step 11 — IP packet creation:</strong> TCP segmentation and IP wrap the payload in an IP packet.</p>
+                <pre class="code-block" data-lang="text"><code>Source IP:      192.168.1.20
+Destination IP: 93.184.216.34
+TTL:            64
+Protocol:       TCP (6)
+Payload:        encrypted TCP segment</code></pre>
+                <p>Encoding, compression, and packetization are three different problems — see <a href="data-representation.html">Data Representation &amp; Encoding</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="arp-and-mac-frame">Phase 8: ARP and MAC frame creation</h2>
+                <p><strong>Step 12 — MAC frame creation:</strong> because the destination IP is not on the local network, the frame is addressed to the router. The host first resolves the router's MAC via ARP.</p>
+                <pre class="flow">ARP Request: "Who has 192.168.1.1?"
+ARP Reply:   "192.168.1.1 is at BB:BB:BB:BB:BB:BB"
+
+Source MAC:      AA:AA:AA:AA:AA:AA
+Destination MAC: BB:BB:BB:BB:BB:BB</pre>
+                <p>The IP packet from step 11 becomes the payload of the Ethernet/Wi-Fi frame. Note that the destination IP is the final server while the destination MAC is the local router — exactly the distinction covered in <a href="networking-layers.html">Networking Layers</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="physical-transmission">Phase 9: Physical transmission</h2>
+                <p><strong>Step 13 — Binary conversion:</strong> frame bytes are converted to bits.</p>
+                <pre class="code-block" data-lang="text"><code>Frame bytes: AA BB CC DD EE FF ...
+        ↓
+Bits: 10101010 10111011 11001100 ...</code></pre>
+                <p><strong>Step 14 — Physical signal transmission:</strong> bits become physical signals depending on the medium.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Medium</th><th>Signal</th><th>Details</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Wi-Fi</td><td>Radio waves</td><td>2.4 GHz / 5 GHz, OFDM modulation</td></tr>
+                            <tr><td>Ethernet</td><td>Electrical signals</td><td>Voltage variations, Manchester/PAM5</td></tr>
+                            <tr><td>Fiber</td><td>Light pulses</td><td>850 nm / 1310 nm / 1550 nm</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="routers-and-hops">Phase 10: Routers and multiple hops</h2>
+                <p><strong>Step 15 — Router reception and processing:</strong> the router converts the signal back to bits and a frame, checks the destination MAC, extracts the IP packet, and makes a routing decision.</p>
+                <pre class="flow">1. Signal → bits
+2. Bits → frame
+3. Check destination MAC (matches router)
+4. Extract IP packet
+5. Check destination IP: 93.184.216.34
+6. Routing decision: forward to next hop</pre>
+                <p><strong>Step 16 — MAC address transformation:</strong> the router builds a new frame for the next link. The old MAC information is discarded; the IP packet is unchanged.</p>
+                <pre class="flow">Old Frame (removed):  AA:AA:AA:AA:AA:AA → BB:BB:BB:BB:BB:BB
+New Frame (created):  CC:CC:CC:CC:CC:CC → DD:DD:DD:DD:DD:DD
+
+IP Packet (unchanged): 192.168.1.20 → 93.184.216.34</pre>
+                <p><strong>Step 17 — Forwarded to the next hop:</strong> the packet travels through several routers — home router, ISP router, backbone router, destination router — and each hop repeats steps 15–16.</p>
+                <aside class="callout key"><span class="ct">Key point</span><p>MAC addresses change at every hop, but the destination IP stays the same end-to-end. That is what makes global routing possible.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="server-receive-process">Phase 11: Server reception and processing</h2>
+                <p><strong>Step 18 — Server receives the packet:</strong> the web server demultiplexes the incoming data.</p>
+                <pre class="flow">1. Receive frame from network
+2. Check destination MAC
+3. Extract IP packet
+4. Check destination IP matches
+5. Extract TCP segment
+6. TCP reassembly</pre>
+                <p><strong>Step 19 — Decryption and decompression:</strong> TLS decryption turns ciphertext back into the original request, and decompression expands any compressed payload.</p>
+                <pre class="code-block" data-lang="text"><code>GET /index.html HTTP/1.1
+Host: www.example.com</code></pre>
+                <p><strong>Step 20 — Web server processing:</strong> the server parses the request, determines the resource path, checks that the file exists, reads it, and builds a response.</p>
+                <pre class="flow">1. Parse HTTP request
+2. Determine resource path (/index.html)
+3. Check the file exists
+4. Read file content
+5. Build HTTP response</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="response-preparation">Phase 12–13: Response preparation and return path</h2>
+                <p><strong>Step 21 — HTTP response creation:</strong> the server builds the response message.</p>
+                <pre class="code-block" data-lang="text"><code>HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 1256
+Connection: keep-alive
+
+&lt;html&gt;
+  &lt;head&gt;&lt;title&gt;Example&lt;/title&gt;&lt;/head&gt;
+  &lt;body&gt;&lt;h1&gt;Hello World!&lt;/h1&gt;&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                <p><strong>Step 22 — Response encoding and encryption:</strong> the same processes run in reverse: UTF-8 encoding, optional GZIP compression, TLS encryption, TCP segmentation, and IP packet creation.</p>
+                <pre class="code-block" data-lang="text"><code>Source IP: 93.184.216.34
+Dest IP:   192.168.1.20</code></pre>
+                <p><strong>Step 23 — Response transmission:</strong> the packet travels back through the routers to the browser, and each hop transforms the MAC addresses again.</p>
+                <pre class="flow">Server → Routers → Browser
+
+HH:HH:HH:HH:HH:HH → GG:GG:GG:GG:GG:GG
+GG:GG:GG:GG:GG:GG → FF:FF:FF:FF:FF:FF
+...               → AA:AA:AA:AA:AA:AA</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="browser-reception-rendering">Phase 14: Browser reception and rendering</h2>
+                <p><strong>Step 24 — Browser receives the response:</strong> the browser reverses the entire stack.</p>
+                <pre class="flow">1. Physical → Bits
+2. Bits → MAC frame
+3. Extract IP packet
+4. TCP reassembly
+5. TLS decryption
+6. Decompression
+7. UTF-8 decoding</pre>
+                <p><strong>Step 25 — Browser rendering:</strong> the browser parses the HTML, builds the DOM, applies CSS, executes JavaScript, loads images, and paints the page. The user sees the finished web page, typically in roughly 100–500 ms for a simple request.</p>
+                <pre class="flow">1. Parse HTML
+2. Build DOM
+3. Apply CSS styling
+4. Execute JavaScript
+5. Load images
+6. Display the page</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="phase-summary">Phase summary table</h2>
+                <p>Every step of the journey in one place: what happens, at which layer, and what transformation it performs.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Phase</th><th>Step</th><th>Process</th><th>Layer</th><th>Transformation</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>1</td><td>User action</td><td>Application</td><td>URL input</td></tr>
+                            <tr><td>1</td><td>2</td><td>URL parsing</td><td>Application</td><td>URL → components</td></tr>
+                            <tr><td>2</td><td>3</td><td>DNS query</td><td>Application</td><td>Domain → IP query</td></tr>
+                            <tr><td>2</td><td>4</td><td>DNS resolution</td><td>Application</td><td>Domain name → IP address</td></tr>
+                            <tr><td>3</td><td>5</td><td>TCP handshake</td><td>Transport</td><td>Connection establishment</td></tr>
+                            <tr><td>4</td><td>6</td><td>HTTP request</td><td>Application</td><td>HTTP formatting</td></tr>
+                            <tr><td>5</td><td>7</td><td>TLS handshake</td><td>Security</td><td>Encryption setup</td></tr>
+                            <tr><td>5</td><td>8</td><td>Data encryption</td><td>Security</td><td>Plaintext → ciphertext</td></tr>
+                            <tr><td>6</td><td>9</td><td>Character encoding</td><td>Presentation</td><td>Text → bytes (UTF-8)</td></tr>
+                            <tr><td>6</td><td>10</td><td>Data compression</td><td>Presentation</td><td>Large → small (GZIP)</td></tr>
+                            <tr><td>7</td><td>11</td><td>IP packet creation</td><td>Network</td><td>TCP segment → IP packet</td></tr>
+                            <tr><td>8</td><td>12</td><td>MAC frame creation</td><td>Data Link</td><td>IP packet → Ethernet frame</td></tr>
+                            <tr><td>9</td><td>13</td><td>Binary conversion</td><td>Data Link</td><td>Bytes → bits</td></tr>
+                            <tr><td>9</td><td>14</td><td>Physical transmission</td><td>Physical</td><td>Bits → signals</td></tr>
+                            <tr><td>10</td><td>15</td><td>Router reception</td><td>Network/Data Link</td><td>Signals → frame → packet</td></tr>
+                            <tr><td>10</td><td>16</td><td>MAC transformation</td><td>Data Link</td><td>MAC addresses change</td></tr>
+                            <tr><td>10</td><td>17</td><td>Multi-hop routing</td><td>Network</td><td>Forwarding decisions</td></tr>
+                            <tr><td>11</td><td>18</td><td>Server reception</td><td>All layers</td><td>Demultiplexing</td></tr>
+                            <tr><td>11</td><td>19</td><td>Decryption/decompression</td><td>Security/Presentation</td><td>Reverse encryption</td></tr>
+                            <tr><td>11</td><td>20</td><td>Server processing</td><td>Application</td><td>Request → response</td></tr>
+                            <tr><td>12</td><td>21</td><td>HTTP response</td><td>Application</td><td>Response creation</td></tr>
+                            <tr><td>13</td><td>22</td><td>Response encoding</td><td>All layers</td><td>Response encoding</td></tr>
+                            <tr><td>13</td><td>23</td><td>Response transmission</td><td>All layers</td><td>Return journey</td></tr>
+                            <tr><td>14</td><td>24</td><td>Browser reception</td><td>All layers</td><td>Reverse process</td></tr>
+                            <tr><td>14</td><td>25</td><td>Browser rendering</td><td>Application</td><td>HTML → display</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="osi-layer-summary">OSI-layer summary</h2>
+                <p>The same flow mapped onto the seven-layer OSI model. OSI is a teaching model; the practical Internet uses the TCP/IP model, but the layer names are still useful vocabulary when debugging.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>Layer</th><th>In this flow</th><th>Example units</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>7</td><td>Application</td><td>User action, URL parsing, HTTP request/response, DNS</td><td>HTTP message, DNS query</td></tr>
+                            <tr><td>6</td><td>Presentation</td><td>Character encoding (UTF-8), compression (GZIP), TLS encryption</td><td>Bytes</td></tr>
+                            <tr><td>5</td><td>Session</td><td>TLS session and keep-alive connection management</td><td>Session</td></tr>
+                            <tr><td>4</td><td>Transport</td><td>TCP handshake, segmentation, ports, reassembly</td><td>TCP segment</td></tr>
+                            <tr><td>3</td><td>Network</td><td>IP addressing, TTL, routing decisions, multi-hop forwarding</td><td>IP packet</td></tr>
+                            <tr><td>2</td><td>Data Link</td><td>ARP, MAC frame creation, MAC transformation per hop</td><td>Ethernet/Wi-Fi frame</td></tr>
+                            <tr><td>1</td><td>Physical</td><td>Bits → electrical/optical/radio signals and back</td><td>Bits and signals</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>URL parsing and DNS turn a name into an IP address.</li>
+                    <li>A TCP three-way handshake establishes a reliable connection.</li>
+                    <li>HTTP builds the request; TLS encrypts it; UTF-8 and GZIP prepare the bytes.</li>
+                    <li>IP adds logical addressing; ARP/MAC add local-link addressing.</li>
+                    <li>Bits become physical signals and travel hop by hop through routers.</li>
+                    <li>Each hop rewrites MAC addresses but keeps the destination IP.</li>
+                    <li>The server decrypts, decompresses, processes, and builds a response.</li>
+                    <li>The response travels the reverse path, and the browser decodes and renders it.</li>
+                    <li>Encapsulation happens going down; decapsulation happens going up.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="internet-web.html"><span class="rt">→ Internet &amp; Web Fundamentals</span><span class="rc">HTTP, DNS, ports, and the vocabulary behind this flow</span></a>
+                    <a href="networking-layers.html"><span class="rt">→ Networking Layers</span><span class="rc">TCP, IP, MAC, ARP, and encapsulation in depth</span></a>
+                    <a href="data-representation.html"><span class="rt">→ Data Representation &amp; Encoding</span><span class="rc">What "text → bytes → bits" really means</span></a>
+                    <a href="../05-backend/rest-api.html"><span class="rt">→ REST API</span><span class="rc">Designing the HTTP requests shown here</span></a>
+                    <a href="../10-practices/mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">How the server processes requests in a MERN app</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

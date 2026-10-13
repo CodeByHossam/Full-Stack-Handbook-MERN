@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSAP — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Frontend</span>
+                <span class="sep">/</span>
+                <span>GSAP</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>GSAP</h1>
+                <p class="subtitle">The GreenSock Animation Platform: professional web animation with tweens, timelines and ScrollTrigger — including clean React integration.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Frontend</span>
+                    <span class="badge b-purple">Animation</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="installation">Install &amp; import</h2>
+                <p>GSAP is a JavaScript animation library. Unlike CSS transitions and keyframes, it lets you sequence many elements on a precise timeline, drive animation from scroll, and control easing and playback programmatically — which is why it is the standard for polished marketing sites and app UI.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install gsap</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>import gsap from "gsap";</code></pre>
+                <p>GSAP is used for web animations: landings, hero sections, scroll effects, timelines, text/SVG animation and parallax.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="tweens">Tweens: to, from, fromTo</h2>
+                <p>A "tween" animates one or more properties over time. The three core methods differ only in where the start and end values come from — <code>to()</code> animates toward a target, <code>from()</code> animates in from a given start state, and <code>fromTo()</code> sets both ends explicitly.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;div class="box"&gt;&lt;/div&gt;</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// Animate FROM the current state TO these values
+gsap.to(".box", { x: 300, duration: 1 });   // 0 → 300
+
+// Start at a value and animate to the normal position
+gsap.from(".box", { x: -300, duration: 1 });
+
+// Define both ends explicitly
+gsap.fromTo(
+    ".box",
+    { x: -300, opacity: 0 },
+    { x: 0, opacity: 1, duration: 1 }
+);</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p><code>to()</code> starts from wherever the element is now. <code>from()</code> is ideal for entrance animations.</p></aside>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Method</th><th>Starts from</th><th>Common use</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>to()</code></td><td>The element's current state</td><td>Move/scale on click or hover</td></tr>
+                            <tr><td><code>from()</code></td><td>The values you pass</td><td>Entrance / reveal animations</td></tr>
+                            <tr><td><code>fromTo()</code></td><td>Explicit start, explicit end</td><td>Repeatable, predictable sequences</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="properties">Common properties</h2>
+                <p>Tweens accept a mix of position, transform and appearance properties, plus control keys like <code>duration</code>. GSAP turns <code>x</code>/<code>y</code> into CSS transforms automatically, so these are the smooth, GPU-friendly properties you should reach for most.</p>
+                <pre class="code-block" data-lang="javascript"><code>gsap.to(".box", {
+    x: 100,
+    y: 50,
+    rotation: 360,
+    scale: 1.5,
+    opacity: 0.5,
+    duration: 2
+});</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Group</th><th>Properties</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Position</td><td><code>x</code>, <code>y</code></td></tr>
+                            <tr><td>Rotation</td><td><code>rotation</code>, <code>rotationX</code>, <code>rotationY</code></td></tr>
+                            <tr><td>Scale</td><td><code>scale</code>, <code>scaleX</code>, <code>scaleY</code></td></tr>
+                            <tr><td>Appearance</td><td><code>opacity</code>, <code>width</code>, <code>height</code>, <code>color</code>, <code>backgroundColor</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="timing-easing">Duration, delay &amp; easing</h2>
+                <p><code>duration</code> is measured in seconds, <code>delay</code> waits before starting, and <code>ease</code> shapes the speed curve over time. The ease is what makes motion feel natural rather than robotic — always pick one instead of leaving the default linear.</p>
+                <pre class="code-block" data-lang="javascript"><code>gsap.to(".box", { x: 300, duration: 2 });      // seconds
+gsap.to(".box", { x: 300, duration: 1, delay: 2 }); // wait 2s, then animate
+gsap.to(".box", { x: 500, duration: 2, ease: "power2.out" });</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Ease</th><th>Feel</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>"none"</code> / <code>"linear"</code></td><td>Constant speed</td></tr>
+                            <tr><td><code>"power1.out"</code> … <code>"power4.out"</code></td><td>Smooth deceleration; <code>power2.out</code> for UI, <code>power3.out</code> for entrances</td></tr>
+                            <tr><td><code>"back.out"</code></td><td>Playful overshoot</td></tr>
+                            <tr><td><code>"elastic.out"</code></td><td>Springy</td></tr>
+                            <tr><td><code>"bounce.out"</code></td><td>Bouncing finish</td></tr>
+                            <tr><td><code>"circ.out"</code></td><td>Circular easing</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="repeat-yoyo">Repeat &amp; yoyo</h2>
+                <p><code>repeat</code> and <code>yoyo</code> turn a one-shot tween into a loop. <code>yoyo: true</code> reverses direction on each repeat, which is ideal for pulsing, bouncing or ping-pong effects.</p>
+                <pre class="code-block" data-lang="javascript"><code>gsap.to(".box", { x: 300, duration: 1, repeat: 3 });
+
+// Infinite spin
+gsap.to(".box", { rotation: 360, duration: 2, repeat: -1 });
+
+// Ping-pong: 0 → 300 → 0 → 300 …
+gsap.to(".box", { x: 300, duration: 1, repeat: -1, yoyo: true });</code></pre>
+                <p><code>repeat: -1</code> means repeat forever. <code>repeat: 3</code> means the initial run plus three repeats.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="callbacks">Callbacks</h2>
+                <p>Callbacks fire at lifecycle points of a tween, so you can run code exactly when an animation starts, updates or ends — the clean way to chain logic without guessing <code>setTimeout</code> durations.</p>
+                <pre class="code-block" data-lang="javascript"><code>gsap.to(".box", {
+    x: 300,
+    duration: 1,
+    onComplete: () =&gt; {
+        console.log("Animation finished");
+    }
+});</code></pre>
+                <p>Useful callbacks: <code>onStart</code>, <code>onUpdate</code>, <code>onComplete</code>, <code>onRepeat</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="selectors-stagger">Selectors &amp; stagger</h2>
+                <p>GSAP accepts any CSS selector (or a DOM node / React ref) and animates <em>every</em> match. <code>stagger</code> then offsets their start times so they cascade in one after another instead of moving in lockstep.</p>
+                <pre class="code-block" data-lang="javascript"><code>gsap.to(".box", { x: 200 });   // class
+gsap.to("#box", { x: 200 });   // id
+
+// Stagger: items start one after another
+gsap.from(".item", {
+    y: 50,
+    opacity: 0,
+    duration: 1,
+    stagger: 0.2
+});</code></pre>
+                <p>GSAP animates every matching element. Stagger is one of its most useful features for lists, menus and galleries.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="timelines">Timelines</h2>
+                <p>A timeline sequences animations so you don't have to chain callbacks and delays.</p>
+                <pre class="code-block" data-lang="javascript"><code>const tl = gsap.timeline();
+
+tl.to(".box", { x: 300, duration: 1 });
+tl.to(".circle", { y: 200, duration: 1 });   // runs after the box</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th></th><th>Tween</th><th>Timeline</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Unit</td><td>One animation</td><td>A sequence of tweens</td></tr>
+                            <tr><td>Control</td><td>Play / pause</td><td>Play, pause, reverse and seek as one group</td></tr>
+                            <tr><td>Best for</td><td>A single movement</td><td>Multi-step sequences and hero intros</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Position parameters &amp; labels</h3>
+                <p>The third argument to <code>tl.to()</code> is the position parameter, which controls <em>when</em> a tween starts on the timeline. A number places it at that absolute second, <code>"+=0.5"</code> / <code>"-=0.5"</code> offset from the previous tween's end, and <code>"&lt;"</code> starts it together with the previous tween. Labels name a point in time so complex timelines can be sought and reused.</p>
+                <pre class="code-block" data-lang="javascript"><code>const tl = gsap.timeline();
+
+tl.to(".box", { x: 300, duration: 1 });
+
+// Start 0.5s BEFORE the previous animation finishes
+tl.to(".circle", { y: 200, duration: 1 }, "-=0.5");
+
+// Start at the SAME time as the previous animation
+tl.to(".ring", { scale: 2, duration: 1 }, "&lt;");
+
+// Delay the whole timeline
+const tl2 = gsap.timeline({ delay: 1 });
+
+// Labels organize complex timelines
+tl.addLabel("start");
+tl.to(".box", { x: 300 });
+tl.addLabel("middle");
+tl.to(".circle", { y: 200 });</code></pre>
+                <h3>Controlling a timeline</h3>
+                <p>Because a timeline is one object, a single call controls the whole sequence — <code>pause()</code>, <code>play()</code>, <code>reverse()</code> and <code>restart()</code> act on every tween it contains. <code>progress(0.5)</code> jumps to the halfway point, which is useful for tying a timeline to a slider or scroll value.</p>
+                <pre class="code-block" data-lang="javascript"><code>tl.pause();
+tl.play();
+tl.reverse();
+tl.restart();
+tl.progress(0.5);   // seek to 50% (0..1)</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="react-integration">React integration</h2>
+                <p>React owns the DOM, so selector-based tweens can leak across components or outlive unmount. Use a <code>ref</code> to scope animation to one subtree and <code>gsap.context()</code> to collect every tween it creates so they can all be reverted at once.</p>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Don't blindly write <code>gsap.to(".box", {...})</code> inside React components. Use refs and <code>gsap.context()</code> so animations are scoped and cleaned up on unmount.</p></aside>
+                <pre class="code-block" data-lang="javascript"><code>import { useLayoutEffect, useRef } from "react";
+import gsap from "gsap";
+
+function Hero() {
+    const container = useRef(null);
+
+    useLayoutEffect(() =&gt; {
+        const ctx = gsap.context(() =&gt; {
+            gsap.from(".title", {
+                y: 50,
+                opacity: 0,
+                duration: 1
+            });
+        }, container);
+
+        return () =&gt; ctx.revert();
+    }, []);
+
+    return (
+        &lt;div ref={container}&gt;
+            &lt;h1 className="title"&gt;Welcome&lt;/h1&gt;
+        &lt;/div&gt;
+    );
+}</code></pre>
+                <p>You can also animate a specific element through a ref:</p>
+                <pre class="code-block" data-lang="javascript"><code>const boxRef = useRef(null);
+
+useLayoutEffect(() =&gt; {
+    gsap.to(boxRef.current, { x: 200, duration: 1 });
+}, []);
+
+&lt;div ref={boxRef}&gt;Box&lt;/div&gt;</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p><code>useLayoutEffect()</code> runs before the browser paints, which is why it's a good fit for GSAP measuring and manipulating the DOM.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="scrolltrigger">ScrollTrigger</h2>
+                <p>ScrollTrigger (a free plugin) runs an animation based on scroll position instead of time — revealing a section as it enters the viewport, pinning a section while it animates, or linking progress directly to the scrollbar with <code>scrub</code>. Register it once after importing.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { ScrollTrigger } from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
+
+gsap.to(".box", {
+    x: 500,
+    scrollTrigger: {
+        trigger: ".box",
+        start: "top 80%",
+        end: "top 30%"
+    }
+});</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Option</th><th>Meaning</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>trigger</code></td><td>Element whose position drives the animation</td></tr>
+                            <tr><td><code>start</code> / <code>end</code></td><td>Positions like <code>"top 80%"</code>, <code>"top top"</code>, <code>"center center"</code></td></tr>
+                            <tr><td><code>scrub: true</code></td><td>Animation follows scroll position (parallax/storytelling)</td></tr>
+                            <tr><td><code>scrub: 1</code></td><td>Smoothly catches up to the scroll position</td></tr>
+                            <tr><td><code>pin: true</code></td><td>Keep the section pinned while the animation progresses</td></tr>
+                            <tr><td><code>toggleActions</code></td><td><code>onEnter onLeave onEnterBack onLeaveBack</code>, e.g. <code>"play none none reverse"</code></td></tr>
+                            <tr><td><code>markers: true</code></td><td>Debug markers — remove before production</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="javascript"><code>const tl = gsap.timeline({
+    scrollTrigger: {
+        trigger: ".hero",
+        start: "top top",
+        end: "+=1000",
+        scrub: true,
+        pin: true
+    }
+});
+
+tl.to(".title", { y: -100, opacity: 0 });
+tl.to(".image", { scale: 1.5 });</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="text-animation">Text animation</h2>
+                <p>You can animate opacity, position, scale, color, and — with the SplitText plugin — characters, words and lines. Splitting text into spans lets you stagger each unit for a typing or reveal effect.</p>
+                <pre class="code-block" data-lang="javascript"><code>gsap.from(".headline", {
+    y: 40,
+    opacity: 0,
+    duration: 1,
+    ease: "power3.out"
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="set-kill-utils">set, kill &amp; utilities</h2>
+                <p><code>gsap.set()</code> applies values instantly with no animation, which is perfect for establishing initial states before a tween runs. <code>kill*</code> stops running tweens, and the <code>utils</code> helpers do math, clamping and randomness for you.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Instantly set values with no animation (great for initial states)
+gsap.set(".box", { x: 100, opacity: 0 });
+
+// Stop active animations on an element
+gsap.killTweensOf(".box");
+
+// Utilities
+gsap.utils.random(0, 100);
+gsap.utils.clamp(0, 100, value);
+gsap.utils.mapRange(0, 100, 0, 500, value);
+
+// Random values per element
+gsap.to(".box", { x: () =&gt; gsap.utils.random(-200, 200) });</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>gsap.from(".card", {
+    y: 50,
+    opacity: 0,
+    duration: 0.8,
+    stagger: 0.1
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="performance">Performance</h2>
+                <p>Prefer animating <code>transform</code> and <code>opacity</code> — <code>x</code>, <code>y</code>, <code>scale</code>, <code>rotation</code>, <code>opacity</code>. Avoid continuously animating <code>top</code>, <code>left</code>, <code>width</code> and <code>height</code> when a transform can achieve the same effect.</p>
+                <pre class="code-block" data-lang="text"><code>Instead of top: 100  →  prefer y: 100
+Instead of left: 200 →  prefer x: 200</code></pre>
+                <p>GSAP handles transforms efficiently. Don't over-animate: keep effects fast, purposeful, smooth and meaningful.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="accessibility">Accessibility: reduced motion</h2>
+                <p>Some users prefer less animation. Respect <code>prefers-reduced-motion</code> by reducing or disabling non-essential animations.</p>
+                <pre class="code-block" data-lang="javascript"><code>const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+).matches;
+
+if (!reduceMotion) {
+    gsap.from(".hero-title", { y: 60, opacity: 0, duration: 1 });
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="workflow">Common GSAP workflow</h2>
+                <p>Almost every GSAP animation follows the same loop: select the targets, build a timeline, set the initial state, animate, optionally connect it to scroll, then test and clean up on unmount.</p>
+                <pre class="flow">SELECT
+   ↓
+CREATE TIMELINE
+   ↓
+SET INITIAL STATE
+   ↓
+ANIMATE
+   ↓
+CONNECT TO SCROLL
+   ↓
+TEST
+   ↓
+CLEAN UP</pre>
+                <p>For larger projects, keep animation logic out of huge components — for example a <code>useHeroAnimation.js</code> hook or an <code>animations/</code> folder with <code>heroAnimation.js</code>, <code>cardAnimation.js</code> and <code>menuAnimation.js</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="hero-example">Full hero example</h2>
+                <p>A complete React hero section: a timeline of <code>from()</code> tweens with position control, scoped by <code>gsap.context()</code> and cleaned up on unmount.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { useLayoutEffect, useRef } from "react";
+import gsap from "gsap";
+
+function Hero() {
+    const container = useRef(null);
+
+    useLayoutEffect(() =&gt; {
+        const ctx = gsap.context(() =&gt; {
+            const tl = gsap.timeline();
+
+            tl.from(".hero-title", {
+                y: 60,
+                opacity: 0,
+                duration: 1,
+                ease: "power3.out"
+            });
+
+            tl.from(".hero-text", {
+                y: 30,
+                opacity: 0,
+                duration: 0.8
+            }, "-=0.5");
+
+            tl.from(".hero-button", {
+                scale: 0.8,
+                opacity: 0,
+                duration: 0.5
+            }, "-=0.3");
+        }, container);
+
+        return () =&gt; ctx.revert();
+    }, []);
+
+    return (
+        &lt;section ref={container}&gt;
+            &lt;h1 className="hero-title"&gt;Welcome&lt;/h1&gt;
+            &lt;p className="hero-text"&gt;Build something amazing.&lt;/p&gt;
+            &lt;button className="hero-button"&gt;Get Started&lt;/button&gt;
+        &lt;/section&gt;
+    );
+}</code></pre>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li><code>gsap.to()</code>, <code>from()</code> and <code>fromTo()</code> are the core tweens.</li>
+                    <li><code>duration</code>, <code>delay</code> and <code>ease</code> control timing.</li>
+                    <li><code>repeat</code>, <code>yoyo</code> and callbacks shape loops and sequencing.</li>
+                    <li><code>stagger</code> animates collections in a cascade.</li>
+                    <li>Timelines sequence with position parameters, labels and control methods.</li>
+                    <li>In React: <code>useRef</code> + <code>useLayoutEffect</code> + <code>gsap.context()</code> + <code>revert()</code>.</li>
+                    <li>ScrollTrigger connects animation to scroll: <code>start</code>, <code>end</code>, <code>scrub</code>, <code>pin</code>, <code>toggleActions</code>.</li>
+                    <li>Animate transforms/opacity for performance and honor <code>prefers-reduced-motion</code>.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="css.html"><span class="rt">→ CSS</span><span class="rc">Transitions and keyframes for simple motion</span></a>
+                    <a href="react.html"><span class="rt">→ React</span><span class="rc">Refs, effects and component structure</span></a>
+                    <a href="tailwind.html"><span class="rt">→ Tailwind CSS</span><span class="rc">Style the elements GSAP then animates</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

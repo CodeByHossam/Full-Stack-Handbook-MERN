@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Principles — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Practices</span>
+                <span class="sep">/</span>
+                <span>Programming Principles</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Programming Principles</h1>
+                <p class="subtitle">The 48 timeless principles behind every language and framework — how to understand problems, design code, stay correct, secure, fast, and professional.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Practices</span>
+                    <span class="badge b-purple">48 principles</span>
+                    <span class="badge b-teal">Language-agnostic</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="what-programming-is">What programming is really about</h2>
+                <p>Before any framework, programming is a small set of repeatable activities. Every principle on this page is one way of doing one of these well:</p>
+                <ul>
+                    <li>Breaking problems into smaller problems</li>
+                    <li>Managing data</li>
+                    <li>Controlling logic</li>
+                    <li>Designing reusable code</li>
+                    <li>Handling errors</li>
+                    <li>Keeping code understandable</li>
+                    <li>Making the program reliable and efficient</li>
+                </ul>
+                <aside class="callout key"><span class="ct">Key point</span><p>This page is the conceptual foundation. For how these principles look in real code see <a href="clean-code.html">Clean Code</a>; for how they map onto a MERN app see <a href="mern-architecture.html">MERN Architecture</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="understanding-the-problem">Understand the problem first</h2>
+                <p>Before writing a single line, answer five questions. Most "hard" bugs are actually a misunderstood requirement.</p>
+                <ul>
+                    <li>What is the input?</li>
+                    <li>What is the output?</li>
+                    <li>What rules must be followed?</li>
+                    <li>What can go wrong?</li>
+                    <li>What constraints exist?</li>
+                </ul>
+                <pre class="code-block" data-lang="text"><code>Problem:
+  Calculate the total price of products.
+
+Input:
+  products
+
+Output:
+  total price</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Don't immediately start coding. Vague understanding produces clever code that solves the wrong problem.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="decomposition-and-ipo">Decomposition &amp; Input → Process → Output</h2>
+                <p>Big problems are only hard because they are big. Break them down until each piece is obviously solvable — then each piece further.</p>
+                <pre class="flow">Build an online-store
+   |
+   +-- Authentication
+   +-- Products
+   +-- Cart
+   +-- Orders
+   +-- Payments
+   +-- Admin</pre>
+                <p>Every unit of code, from a function to a service, has the same shape:</p>
+                <pre class="flow">INPUT  ->  PROCESS  ->  OUTPUT</pre>
+                <pre class="code-block" data-lang="javascript"><code>const price = 100;
+const tax = price * 0.05;
+const total = price + tax;
+
+// Input:   price
+// Process: calculate tax
+// Output:  total</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="building-blocks">Building blocks: variables, types, conditions, loops, functions</h2>
+
+                <h3>Variables</h3>
+                <p><strong>What:</strong> A variable is a named container that stores data in memory. <strong>Why:</strong> Without variables, code can't track changing values or reuse data across operations. <strong>When:</strong> Use variables whenever you need to reference or manipulate values later in your code.</p>
+                <p>A variable stores data. Use <code>const</code> by default, <code>let</code> only when a value must change, and avoid <code>var</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const name = "Alice";
+let age = 42;</code></pre>
+
+                <h3>Data types</h3>
+                <p><strong>What:</strong> Data types define the kind of value a variable holds (text, numbers, true/false, collections, etc.). <strong>Why:</strong> Knowing types prevents logic errors and helps you pick the right operations. <strong>When:</strong> Always consider types when storing, comparing, or passing data in JavaScript.</p>
+                <ul>
+                    <li><strong>Primitive:</strong> <code>string</code>, <code>number</code>, <code>boolean</code>, <code>null</code>, <code>undefined</code>, <code>bigint</code>, <code>symbol</code></li>
+                    <li><strong>Complex:</strong> <code>object</code>, <code>array</code>, <code>function</code></li>
+                </ul>
+                <pre class="code-block" data-lang="javascript"><code>const name = "Alice";
+const age = 42;
+const active = true;
+const user = {};
+const products = [];</code></pre>
+
+                <h3>Conditions</h3>
+                <p><strong>What:</strong> Conditional logic lets code branch down different paths based on truthiness. <strong>Why:</strong> Real apps must react differently to different inputs (valid/invalid, auth/no-auth, etc.). <strong>When:</strong> Use <code>if/else</code>, <code>switch</code>, or ternaries to express decisions clearly.</p>
+                <p>Programs make decisions with <code>if</code> / <code>else if</code> / <code>else</code> and the comparison and logical operators.</p>
+                <pre class="code-block" data-lang="javascript"><code>if (age &gt;= 18) {
+    console.log("Adult");
+} else {
+    console.log("Minor");
+}
+
+// ===  !==  &gt;  &lt;  &gt;=  &lt;=  &amp;&amp;  ||</code></pre>
+
+                <h3>Loops</h3>
+                <p><strong>What:</strong> Loops automate repetitive tasks by running the same block multiple times. <strong>Why:</strong> Manual repetition is error-prone and scales poorly. <strong>When:</strong> Use loops to iterate over arrays, ranges, or collections when processing items.</p>
+                <p>Loops repeat work. Choose the loop that makes the code easiest to understand.</p>
+                <pre class="code-block" data-lang="javascript"><code>for (const product of products) {
+    console.log(product);
+}</code></pre>
+
+                <h3>Functions</h3>
+                <p><strong>What:</strong> A function is a reusable block of code that takes inputs, does work, and returns an output. <strong>Why:</strong> Functions prevent duplication, improve readability, and isolate logic. <strong>When:</strong> Extract logic into a function whenever it will be reused or would otherwise clutter the caller.</p>
+                <p>A function groups reusable logic and does one clear job.</p>
+                <pre class="code-block" data-lang="javascript"><code>function add(a, b) {
+    return a + b;
+}
+
+const result = add(10, 20);</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="design-principles">Design principles</h2>
+                <p>The principles that decide <em>how</em> code is shaped. Cross-links point to deeper treatment rather than repeating it here.</p>
+
+                <h3>Abstraction</h3>
+                <p><strong>What:</strong> Abstraction hides implementation details behind a simple interface. <strong>Why:</strong> It reduces cognitive load and lets you change internals without breaking callers. <strong>When:</strong> Use when you want to expose only what's necessary (e.g., utility functions, services, APIs).</p>
+                <p>Hide unnecessary details so callers state <em>what</em> they want, not <em>how</em>.</p>
+                <pre class="code-block" data-lang="javascript"><code>// instead of:  const total = price + price * 0.05;
+const total = calculateTotal(price);</code></pre>
+
+                <h3>Encapsulation</h3>
+                <p><strong>What:</strong> Encapsulation bundles data and the methods that operate on it, restricting direct access where appropriate. <strong>Why:</strong> It prevents unintended mutations and enforces valid state changes. <strong>When:</strong> Use classes, closures, or modules to protect internal state (e.g., BankAccount balance).</p>
+                <p>Keep related data and logic together and control how they are accessed.</p>
+                <pre class="code-block" data-lang="javascript"><code>class BankAccount {
+    #balance = 0;
+
+    deposit(amount) {
+        this.#balance += amount;
+    }
+}</code></pre>
+
+                <h3>Modularity</h3>
+                <p><strong>What:</strong> Modularity means splitting code into focused, interchangeable pieces (modules/files). <strong>Why:</strong> Smaller pieces are easier to test, reuse, and maintain. <strong>When:</strong> Structure your MERN app by feature/layer (routes, controllers, services, models) rather than one monolith.</p>
+                <p>Split a large program into modules, each with a clear purpose: <code>auth.js</code>, <code>products.js</code>, <code>orders.js</code>, <code>payments.js</code> — instead of one giant <code>app.js</code>.</p>
+
+                <h3>Single responsibility</h3>
+                <p><strong>What:</strong> SRP states a function, class, or module should have exactly one responsibility. <strong>Why:</strong> Changes stay isolated; bugs don't cascade across unrelated concerns. <strong>When:</strong> If a function does multiple jobs, split it. For example, <code>calculateTotal()</code> should not also send emails.</p>
+                <p>One function or module should have one main reason to change. <code>calculateTotal()</code> calculates the total — it does not also <code>sendEmail()</code>, <code>saveUser()</code>, or <code>loginUser()</code>.</p>
+
+                <h3>Reusability &amp; DRY</h3>
+                <p><strong>What:</strong> DRY (Don't Repeat Yourself) means extract shared logic into reusable units. <strong>Why:</strong> Duplication creates maintenance nightmares — fix once, fix everywhere. <strong>When:</strong> If you copy-paste logic twice, refactor to a function, hook, or utility.</p>
+                <p>Don't Rewrite Yourself — don't repeat yourself. If the same logic appears twice, extract it once.</p>
+                <pre class="code-block" data-lang="javascript"><code>// repeated
+const total1 = price1 * 1.05;
+const total2 = price2 * 1.05;
+
+// extracted
+function addTax(price) {
+    return price * 1.05;
+}</code></pre>
+
+                <h3>KISS, YAGNI, and don't over-engineer</h3>
+                <p><strong>What:</strong> These guardrails prevent unnecessary complexity. <strong>Why:</strong> Simple code is faster to write, test, and debug. <strong>When:</strong> Always choose the simplest solution that meets requirements; add complexity only when proven necessary.</p>
+                <ul>
+                    <li><strong>KISS</strong> — Keep It Simple. Prefer <code>if (!user) return;</code> over convoluted branching.</li>
+                    <li><strong>YAGNI</strong> — "You Aren't Gonna Need It." Build the payment system you need now, not fifteen hypothetical ones.</li>
+                    <li><strong>Don't over-engineer</strong> — not every problem needs ten classes, five design patterns, and multiple services. Use the simplest architecture that solves the real problem.</li>
+                </ul>
+
+                <h3>Separation of concerns</h3>
+                <p><strong>What:</strong> SoC means different jobs (UI, logic, data, routes) live in separate modules. <strong>Why:</strong> It prevents spaghetti code and lets teams work in parallel. <strong>When:</strong> Follow layered structure in MERN (client vs server; routes/controllers/services/models).</p>
+                <p>Different parts of the program handle different concerns. In MERN this is explicit:</p>
+                <pre class="flow">React       -> UI
+RTK Query   -> API state
+Express     -> API
+Controller  -> HTTP handling
+Service     -> Business logic
+Mongoose    -> Database
+MongoDB     -> Data storage</pre>
+                <aside class="callout info"><span class="ct">Note</span><p>See <a href="mern-architecture.html">MERN Architecture</a> for the folder-level application of separation of concerns, and <a href="clean-code.html">Clean Code</a> for DRY-without-over-abstraction.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="state-and-immutability">State &amp; immutability</h2>
+                <p><strong>What:</strong> State is data that changes over time; immutability means creating new values instead of mutating existing ones. <strong>Why:</strong> Immutability prevents side effects, makes debugging predictable, and is essential for React's change detection. <strong>When:</strong> Use immutable updates (spread, map, filter, reduce) whenever updating arrays/objects, especially in React state.</p>
+                <p><strong>State</strong> is information that can change; understanding it is fundamental. <strong>Immutability</strong> means avoiding unexpected mutation so programs are easier to reason about.</p>
+                <pre class="code-block" data-lang="javascript"><code>let count = 0;
+count++;                            // state changed
+
+// React
+const [count, setCount] = useState(0);
+
+// avoid mutation
+user.name = "Alice";                // bad
+
+const updatedUser = {               // good
+    ...user,
+    name: "Alice"
+};</code></pre>
+                <p>State management strategy in a real app (local vs global vs server state) is owned by <a href="mern-architecture.html">MERN Architecture</a> and <a href="../04-frontend/redux-toolkit.html">Redux Toolkit</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="correctness">Correctness: control flow, errors, validation, edge cases, null</h2>
+
+                <h3>Control flow</h3>
+                <p><strong>What:</strong> Control flow defines how statements execute (sequence, branches, loops). <strong>Why:</strong> Mismanaged flow leads to unreachable code, deep nesting, or missed cases. <strong>When:</strong> Favor early returns, guard clauses, and clear branching to keep paths readable.</p>
+                <p>Understand the execution order of <code>if</code>, <code>else</code>, loops, function calls, <code>return</code>, and <code>try/catch</code>.</p>
+
+                <h3>Error handling</h3>
+                <p><strong>What:</strong> Error handling means anticipating and recovering from failures. <strong>Why:</strong> Apps must degrade gracefully when networks fail, inputs are bad, or services error. <strong>When:</strong> Use <code>try/catch</code> around async I/O, validate early, and return actionable errors without leaking internals.</p>
+                <p>Errors are normal. Don't assume everything succeeds. Ask: what can fail, what should happen, and can the user recover?</p>
+                <pre class="code-block" data-lang="javascript"><code>try {
+    const data = await getData();
+} catch (error) {
+    console.error(error);
+}</code></pre>
+
+                <h3>Validation</h3>
+                <p><strong>What:</strong> Validation ensures inputs conform to expected rules before processing. <strong>Why:</strong> Prevents bad data, business logic errors, and security issues. <strong>When:</strong> Validate at boundaries (user input, API requests, external data); server-side validation is non-negotiable.</p>
+                <p>Never assume input is valid. Validate important data at the boundary, early.</p>
+                <pre class="code-block" data-lang="javascript"><code>function createUser(email) {
+    if (!email) {
+        throw new Error("Email is required");
+    }
+}</code></pre>
+
+                <h3>Edge cases</h3>
+                <p><strong>What:</strong> Edge cases are unusual but valid inputs (empty, zero, null, extremes). <strong>Why:</strong> Most bugs appear at boundaries. <strong>When:</strong> Always consider: empty arrays, missing fields, nulls, zeros, large values, duplicates, race conditions, or network failures.</p>
+                <p>Always ask: what if the array is empty, the value is <code>null</code>, the user doesn't exist, the number is 0, the network fails, or the user clicks twice? For example, <code>array[0]</code> behaves very differently when <code>array = []</code>.</p>
+
+                <h3>Null &amp; undefined</h3>
+                <p><strong>What:</strong> <code>null</code> (intentional absence) vs <code>undefined</code> (unassigned). <strong>Why:</strong> Mishandling causes TypeErrors. <strong>When:</strong> Prefer safe access (<code>?.</code>) and defaults (<code>??</code>) over falsy checks when zero/empty are valid values.</p>
+                <p>Always consider missing data and handle it with optional chaining and nullish coalescing.</p>
+                <pre class="code-block" data-lang="javascript"><code>user?.profile?.name;
+
+const name = user?.name ?? "Guest";</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="security">Security</h2>
+                <p><strong>What:</strong> Security means protecting data, auth, and access from misuse. <strong>Why:</strong> Small oversights (leaked .env, unvalidated input) lead to serious exploits. <strong>When:</strong> Always hash passwords, store secrets in env vars, validate/authorize server-side, and never expose secrets in client code.</p>
+                <p>Never trust user input, and never expose passwords, JWT secrets, API keys, or database credentials. Validate on the server.</p>
+                <pre class="flow">AUTHENTICATION  ->  "Who are you?"
+AUTHORIZATION   ->  "What can you do?"</pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Full security ownership lives elsewhere: auth mechanics in <a href="../05-backend/authentication-jwt.html">Authentication &amp; JWT</a>, secrets/env vars in <a href="../05-backend/nodejs.html">Node.js</a>, and the app-wide checklist in <a href="mern-architecture.html">MERN Architecture</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="performance-and-big-o">Performance &amp; Big O</h2>
+                <p><strong>What:</strong> Big O measures how algorithms scale as input grows. <strong>Why:</strong> It prevents premature micro-optimizations and helps avoid O(n^2) traps. <strong>When:</strong> First make code correct/readable; only optimize measured bottlenecks with complexity in mind.</p>
+                <p>Optimize in the right order, and never blindly:</p>
+                <pre class="flow">Make it correct
+    -> Make it readable
+        -> Measure performance
+            -> Optimize if necessary</pre>
+                <p>Big O describes how work grows as input grows. Know the classes and think about performance when data becomes large:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Complexity</th><th>Name</th><th>Typical source</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>O(1)</code></td><td>Constant</td><td>Direct index/lookup</td></tr>
+                            <tr><td><code>O(log n)</code></td><td>Logarithmic</td><td>Binary search</td></tr>
+                            <tr><td><code>O(n)</code></td><td>Linear</td><td>One pass</td></tr>
+                            <tr><td><code>O(n log n)</code></td><td>Linearithmic</td><td>Efficient sorting</td></tr>
+                            <tr><td><code>O(n²)</code></td><td>Quadratic</td><td>Nested loops</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout info"><span class="ct">Note</span><p>The full treatment — every class, tables, space complexity, and Big O in MERN — lives in <a href="big-o-time-complexity.html">Big O / Time Complexity</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="data-structures-algorithms">Data structures &amp; algorithms</h2>
+                <p><strong>What:</strong> Data structures organize data; algorithms are procedures to solve problems. <strong>Why:</strong> Right choices impact complexity and maintainability. <strong>When:</strong> Use hash maps for O(1) lookups, arrays for ordered lists, sets for uniqueness, stacks/queues for LIFO/FIFO.</p>
+                <p>Choose the right structure for the job:</p>
+                <ul>
+                    <li><strong>Array</strong> — ordered collection</li>
+                    <li><strong>Object</strong> — key/value data</li>
+                    <li><strong>Map</strong> — key/value lookup</li>
+                    <li><strong>Set</strong> — unique values</li>
+                    <li><strong>Stack</strong> — Last In, First Out</li>
+                    <li><strong>Queue</strong> — First In, First Out</li>
+                </ul>
+                <p>An <strong>algorithm</strong> is a step-by-step solution. Finding the maximum, for example, is: start with the first number, compare each next, replace when bigger, return the maximum.</p>
+                <pre class="code-block" data-lang="javascript"><code>function findMax(numbers) {
+    let max = numbers[0];
+
+    for (const number of numbers) {
+        if (number > max) {
+            max = number;
+        }
+    }
+
+    return max;
+}</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>Patterns and the step-by-step method are owned by <a href="problem-solving.html">Problem Solving</a>; the JS implementation of each structure by <a href="../03-javascript/javascript-data-structures.html">JavaScript Data Structures</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="testing-debugging-and-thinking">Testing, debugging &amp; thinking</h2>
+
+                <h3>Testing</h3>
+                <p><strong>What:</strong> Testing validates logic under different cases. <strong>Why:</strong> Prevents regressions and builds confidence. <strong>When:</strong> Test happy paths, boundaries, empty inputs, errors; manual tests suffice early, automated tests later.</p>
+                <p>Don't only test the happy path. Test normal, empty, invalid input, boundary values, and errors.</p>
+                <pre class="code-block" data-lang="javascript"><code>add(2, 3);   // normal
+add(0, 0);   // boundary
+add(-2, 3);  // negative
+add(null, 3); // invalid</code></pre>
+
+                <h3>Debugging</h3>
+                <p><strong>What:</strong> A systematic method to find root causes. <strong>Why:</strong> Prevents introducing new bugs while guessing. <strong>When:</strong> Follow: reproduce → observe → hypothesis → test → fix → verify.</p>
+                <p>When something doesn't work, don't randomly change code:</p>
+                <ol>
+                    <li>Read the error</li>
+                    <li>Find the exact line</li>
+                    <li>Understand what the error means</li>
+                    <li>Check the values</li>
+                    <li>Reproduce the problem</li>
+                    <li>Fix the root cause</li>
+                    <li>Test again</li>
+                </ol>
+
+                <h3>Read error messages</h3>
+                <p><strong>What:</strong> Stack traces show the failure path. <strong>Why:</strong> They point to the root cause faster than guessing. <strong>When:</strong> Read full error (file/line/stack) first; trace back to where undefined/null came from.</p>
+                <p>For <code>TypeError: Cannot read properties of undefined</code>, don't search blindly. Ask: which value is undefined, why, and where was it supposed to be created?</p>
+
+                <h3>Logic before syntax</h3>
+                <p><strong>What:</strong> Define the solution in plain steps before writing code. <strong>Why:</strong> Correct logic + imperfect syntax is easier to fix than syntax + wrong logic. <strong>When:</strong> Always: understand → plan (pseudocode) → code → test.</p>
+                <p>Don't ask only "How do I write this in JavaScript?". First decide "What should happen?", then "How do I express that?". This is the difference between learning syntax and learning programming.</p>
+
+                <h3>Pseudocode</h3>
+                <p><strong>What:</strong> High-level description of steps in natural language. <strong>Why:</strong> Isolates logic from syntax errors. <strong>When:</strong> Sketch algorithms or complex flows before coding.</p>
+                <p>Write the logic in plain steps before coding, then convert. Pseudocode separates logic from syntax.</p>
+                <pre class="code-block" data-lang="text"><code>INPUT products
+FOR each product
+    add product price
+RETURN total</code></pre>
+
+                <h3>Flowchart / mental model</h3>
+                <p><strong>What:</strong> A flow diagram maps decisions/paths. <strong>Why:</strong> Helps spot missing branches/edge cases. <strong>When:</strong> Sketch before coding complex flows.</p>
+                <pre class="flow">Input -> Validate -> Process -> Decision -> Database -> Response</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="professionalism">Professionalism</h2>
+
+                <h3>Readability</h3>
+                <p><strong>What:</strong> Readable code is easy to scan and understand. <strong>Why:</strong> Code is read far more than written — especially in teams. <strong>When:</strong> Prioritize clear names, small functions, consistent style over clever tricks.</p>
+                <p>Code is read more often than it is written. Good formatting, names, small functions, clear structure, and consistent style matter a lot.</p>
+
+                <h3>Consistency</h3>
+                <p><strong>What:</strong> Follow the same naming/style conventions everywhere. <strong>Why:</strong> Consistency reduces cognitive load. <strong>When:</strong> Follow existing project patterns; don't mix styles arbitrarily.</p>
+                <p>Choose a style and stay consistent. Don't mix <code>getUser()</code>, <code>fetch_product()</code>, and <code>get_order_data()</code>.</p>
+
+                <h3>Comments explain WHY</h3>
+                <p><strong>What:</strong> Comments should clarify intent, not restate what code does. <strong>Why:</strong> Self-explanatory code is better; comments fill gaps in reasoning. <strong>When:</strong> Explain "why" for non-obvious decisions (workarounds, constraints, edge logic).</p>
+                <pre class="code-block" data-lang="javascript"><code>// bad: Add 1
+index++;
+
+// good: Move to the next item and wrap
+// around when reaching the end.
+index = (index + 1) % items.length;</code></pre>
+
+                <h3>Version control</h3>
+                <p><strong>What:</strong> Git tracks history of small, logical changes. <strong>Why:</strong> Enables collaboration, rollback, and safe experimentation. <strong>When:</strong> Commit with meaningful messages per logical change; use branches for features/fixes.</p>
+                <p>Use Git and commit small logical changes: <code>git status</code>, <code>add</code>, <code>commit</code>, <code>pull</code>, <code>push</code>, <code>branch</code>, <code>merge</code>. Full workflow: <a href="../02-fundamentals/git-github.html">Git &amp; GitHub</a>.</p>
+
+                <h3>Code review</h3>
+                <p><strong>What:</strong> A self/review check to catch issues before merging. <strong>Why:</strong> Small review catches bugs, improves clarity, enforces standards. <strong>When:</strong> Review your own PR: correctness, readability, tests, security, edge cases.</p>
+                <p>Before saying "finished", ask: does it work? is it readable? can I simplify it? is anything duplicated? are errors and edge cases handled? is it secure? are tests needed?</p>
+
+                <h3>Learn to read code</h3>
+                <p><strong>What:</strong> Reading code is as important as writing it. <strong>Why:</strong> Most work involves understanding existing code. <strong>When:</strong> When debugging/maintaining: trace inputs, outputs, side effects, callers, failure paths.</p>
+                <p>Professionals spend a lot of time reading code. For any function, ask: what does it receive, what does it return, what changes, what calls it, and what happens if it fails?</p>
+
+                <h3>Don't memorize everything</h3>
+                <p><strong>What:</strong> Focus on concepts, not every syntax detail. <strong>Why:</strong> Docs exist; problem-solving skills compound. <strong>When:</strong> Master core concepts (logic, DS, async) and look up syntax as needed.</p>
+                <p>Understand concepts — arrays, objects, functions, conditions, loops, state, async, promises, APIs, errors, data structures, algorithms. You can look up syntax.</p>
+
+                <h3>Keep a debugging mindset</h3>
+                <p><strong>What:</strong> Treat bugs as puzzles to solve systematically. <strong>Why:</strong> Calm, methodical debugging beats random changes. <strong>When:</strong> Any time code doesn't behave as expected.</p>
+                <p>A good developer doesn't panic when code breaks:</p>
+                <pre class="flow">Problem -> Reproduce -> Observe -> Hypothesis -> Test -> Fix -> Verify</pre>
+
+                <h3>Programming mindset</h3>
+                <p><strong>What:</strong> Think in tradeoffs: simplest, reliable, explainable. <strong>Why:</strong> Prevents over-engineering and ensures maintainability. <strong>When:</strong> Before finalizing any solution, ask: can I explain it clearly to a teammate?</p>
+                <p>Don't ask only "How can I code this?" Ask "What's the simplest reliable solution?" and "Can I explain this solution?" If you can't explain your code, you probably don't understand it well enough.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="consequences-and-dev-loop">Consequences &amp; the professional development loop</h2>
+                <p><strong>What:</strong> A repeatable cycle (understand → plan → implement → test → debug → refactor → review → deploy → monitor → improve). <strong>Why:</strong> Consistent process yields reliable, maintainable software. <strong>When:</strong> Use for every feature, bug fix, or refactor.</p>
+                <p>The principles above pay off in a repeatable loop that runs for the life of a project:</p>
+                <pre class="flow">UNDERSTAND -> PLAN -> IMPLEMENT -> TEST -> DEBUG
+    -> REFACTOR -> REVIEW -> DEPLOY -> MONITOR -> IMPROVE</pre>
+                <p>The order of priorities never changes. Solve first, then refine:</p>
+                <pre class="flow">SOLVE THE PROBLEM
+    -> MAKE IT CORRECT
+    -> MAKE IT SIMPLE
+    -> MAKE IT READABLE
+    -> MAKE IT TESTABLE
+    -> MAKE IT FAST IF NEEDED
+    -> MAKE IT MAINTAINABLE</pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>The final principle: the goal is code another developer can understand. Principles are means to that end, never ceremony for its own sake.</p></aside>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Understand the problem before coding: input, output, rules, failures, constraints</li>
+                    <li>Break big problems down; every unit is Input → Process → Output</li>
+                    <li>Master the building blocks: variables, types, conditions, loops, functions</li>
+                    <li>Design for abstraction, encapsulation, modularity, single responsibility, and DRY</li>
+                    <li>KISS, YAGNI, don't over-engineer, separate concerns</li>
+                    <li>Respect state and prefer immutable updates</li>
+                    <li>Handle control flow, errors, validation, edge cases, and null</li>
+                    <li>Never trust input; never expose secrets</li>
+                    <li>Make it correct and readable first, then measure and optimize (Big O)</li>
+                    <li>Choose the right data structure and learn patterns, not answers</li>
+                    <li>Test beyond the happy path; debug by method, not by guessing</li>
+                    <li>Prioritize readability, consistency, Git, and self-review</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="clean-code.html"><span class="rt">→ Clean Code &amp; Best Practices</span><span class="rc">Turn these principles into everyday coding rules</span></a>
+                    <a href="problem-solving.html"><span class="rt">→ Problem Solving</span><span class="rc">The step-by-step method for tackling any problem</span></a>
+                    <a href="big-o-time-complexity.html"><span class="rt">→ Big O / Time Complexity</span><span class="rc">How work grows as input grows</span></a>
+                    <a href="mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">These principles applied to a full-stack app</span></a>
+                    <a href="../03-javascript/javascript-basics.html"><span class="rt">→ JavaScript Basics</span><span class="rc">The language where these ideas take concrete form</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
