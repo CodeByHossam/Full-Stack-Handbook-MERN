@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Development Lifecycle (SDLC) — Project Planning &amp; Engineering</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="../index.html"><span class="dot">M</span><span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span></a>
+    <div class="search search-panel"><span class="icon">⌕</span><input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off"><div id="navResults"></div></div>
+    <div class="topbar-actions"><button class="menu-toggle icon-btn" id="menuToggle">☰</button><button class="icon-btn" id="themeToggle">☾</button></div>
+</header>
+<div class="layout">
+    <aside class="sidebar" id="sidebar"><nav id="navTree"></nav><div class="toc"><div class="toc-title">On this page</div><nav id="pageToc"></nav></div></aside>
+    <main class="content">
+        <div class="doc" id="docContent">
+            <nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">/</span><a href="project-planning-engineering.html">Planning &amp; Engineering</a><span class="sep">/</span><span>SDLC</span></nav>
+            <header class="page-header"><h1>Software Development Lifecycle (SDLC)</h1><p class="subtitle">Phases before and around implementation, and how Agile/Waterfall/Kanban compare.</p></header>
+            <section class="section">
+                <h2 id="phases">Complete phases (pre-implementation focus)</h2>
+                <ol>
+                    <li><strong>Business idea &amp; problem discovery</strong> — Validate real problem, not just an idea.</li>
+                    <li><strong>Business feasibility &amp; validation</strong> — Technical, operational, financial, legal, schedule.</li>
+                    <li><strong>Requirements elicitation &amp; analysis</strong> — Stakeholders, needs, constraints.</li>
+                    <li><strong>Scope definition &amp; prioritization</strong> — In/out, MVP, trade-offs.</li>
+                    <li><strong>System analysis &amp; domain modeling</strong> — Flows, entities, invariants.</li>
+                    <li><strong>Software architecture &amp; technical design</strong> — Layers, boundaries, ADRs.</li>
+                    <li><strong>Database &amp; API design</strong> — Contracts, models, authZ/N.</li>
+                    <li><strong>UI/UX research &amp; design</strong> — Journeys, wireframes, states.</li>
+                    <li><strong>Project structure &amp; engineering standards</strong> — Conventions, repo layout.</li>
+                    <li><strong>Project planning, estimation &amp; scheduling</strong> — WBS, milestones, capacity.</li>
+                    <li><strong>Risk analysis &amp; quality planning</strong> — Risks, gates, testing strategy.</li>
+                    <li><strong>Development readiness review</strong> — Go/no-go gate before coding.</li>
+                    <li><strong>Implementation</strong> — Build to contracts.</li>
+                    <li><strong>Testing</strong> — Unit/integration/E2E, acceptance.</li>
+                    <li><strong>Deployment</strong> — Release with guardrails.</li>
+                    <li><strong>Maintenance</strong> — Monitoring, fixes, evolution.</li>
+                </ol>
+            </section>
+            <section class="section">
+                <h2 id="approaches">Methodologies</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Approach</th><th>When suitable</th><th>Notes</th></tr></thead>
+                        <tbody>
+                            <tr><td>Waterfall</td><td>Fixed scope, regulated, low uncertainty</td><td>Sequential; harder to change late.</td></tr>
+                            <tr><td>Agile (Scrum)</td><td>Evolving scope, feedback-driven</td><td>Iterative, time-boxed; emphasize DoR/DoD.</td></tr>
+                            <tr><td>Kanban</td><td>Continuous flow, support/ops-heavy</td><td>Visualize WIP, optimize flow.</td></tr>
+                            <tr><td>Hybrid/Pragmatic</td><td>Most real projects</td><td>Adapt: plan enough upfront, iterate continuously.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout info"><span class="ct">Note</span><p>Match process to size, risk, regulatory needs, and uncertainty — not dogma.</p></aside>
+            </section>
+            <footer class="doc-footer"><div class="related-nav"><a href="project-planning-engineering.html">← Back to Planning Overview</a></div></footer>
+        </div>
+    </main>
+</div>
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

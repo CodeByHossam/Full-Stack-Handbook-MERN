@@ -92,13 +92,26 @@
             ]
         },
         {
+            name: "Planning & Engineering",
+            pages: [
+                { t: "Project Planning & Engineering", p: "11-planning/project-planning-engineering.html", d: "From business idea to development readiness: SDLC, requirements, architecture, design, estimation, risks" }
+            ]
+        },
+        {
+            name: "Security",
+            pages: [
+                { t: "MERN Security Handbook", p: "12-security/mern-security.html", d: "Comprehensive security guide: auth, access control, injection, API, DB, secrets, testing, OWASP" }
+            ]
+        },
+        {
             name: "Practices",
             pages: [
                 { t: "Programming Principles", p: "10-practices/programming-principles.html", d: "DRY/KISS/YAGNI, state, immutability, security, debugging" },
                 { t: "Clean Code & Best Practices", p: "10-practices/clean-code.html", d: "Naming, small functions, error handling, code review checklist" },
                 { t: "MERN Architecture", p: "10-practices/mern-architecture.html", d: "Project structure, layer responsibilities, API/DB design, production" },
                 { t: "Problem Solving", p: "10-practices/problem-solving.html", d: "Algorithm playbook: patterns, templates, debugging" },
-                { t: "Big O / Time Complexity", p: "10-practices/big-o-time-complexity.html", d: "Complexity classes, space vs time, Big O in MERN" }
+                { t: "Big O / Time Complexity", p: "10-practices/big-o-time-complexity.html", d: "Complexity classes, space vs time, Big O in MERN" },
+
             ]
         }
     ];

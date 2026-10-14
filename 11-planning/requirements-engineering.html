@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requirements Engineering — Project Planning &amp; Engineering</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../index.html"><span class="dot">M</span><span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span></a><div class="search search-panel"><span class="icon">⌕</span><input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off"><div id="navResults"></div></div><div class="topbar-actions"><button class="menu-toggle icon-btn" id="menuToggle">☰</button><button class="icon-btn" id="themeToggle">☾</button></div></header>
+<div class="layout"><aside class="sidebar" id="sidebar"><nav id="navTree"></nav><div class="toc"><div class="toc-title">On this page</div><nav id="pageToc"></nav></div></aside>
+<main class="content"><div class="doc" id="docContent">
+<nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">/</span><a href="project-planning-engineering.html">Planning &amp; Engineering</a><span class="sep">/</span><span>Requirements Engineering</span></nav>
+<header class="page-header"><h1>Requirements Engineering</h1><p class="subtitle">Gather, analyze, document, validate, and trace requirements before implementation.</p></header>
+<section class="section"><h2 id="functional">Functional requirements</h2><ul><li>User authN/Z, roles/permissions</li><li>Core business workflows</li><li>CRUD, notifications, reports, payments, integrations, admin</li></ul></section>
+<section class="section"><h2 id="non-functional">Non-functional requirements</h2><ul><li>Performance, scalability, availability, reliability</li><li>Security, privacy, accessibility, usability</li><li>Maintainability, extensibility, observability</li><li>Backups/DR, compatibility, compliance, retention</li></ul></section>
+<section class="section"><h2 id="docs">Key documents</h2><div class="table-wrap"><table><thead><tr><th>Doc</th><th>Purpose</th><th>When</th></tr></thead><tbody><tr><td>Project Brief</td><td>High-level summary</td><td>Always</td></tr><tr><td>BRD</td><td>Business needs</td><td>Larger/reg projects</td></tr><tr><td>SRS</td><td>Detailed technical/functional spec</td><td>Formal/spec-driven</td></tr><tr><td>PRD</td><td>Product features, UX, acceptance</td><td>Product teams</td></tr><tr><td>User Stories/Use Cases</td><td>Behavioral requirements</td><td>Agile</td></tr><tr><td>Acceptance Criteria</td><td>Testable conditions</td><td>Essential</td></tr><tr><td>RTM</td><td>Traceability</td><td>Medium+</td></tr></tbody></table></div><aside class="callout info"><span class="ct">Tip</span><p>Small projects: brief + user stories + acceptance criteria. Scale up only when needed.</p></aside></section>
+<section class="section"><h2 id="user-stories">User story format</h2><pre class="code-block" data-lang="text"><code>As a [user role]
+I want [capability]
+So that [benefit]
+
+Acceptance Criteria:
+- Given [context], When [action], Then [outcome]
+- Edge cases covered</code></pre></section>
+<footer class="doc-footer"><div class="related-nav"><a href="sdlc.html">← SDLC</a> | <a href="project-planning-engineering.html">Overview →</a></div></footer>
+</div></main></div>
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Architecture &amp; Technical Decisions</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../index.html"><span class="dot">M</span><span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span></a><div class="search search-panel"><span class="icon">⌕</span><input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off"><div id="navResults"></div></div><div class="topbar-actions"><button class="menu-toggle icon-btn" id="menuToggle">☰</button><button class="icon-btn" id="themeToggle">☾</button></div></header>
+<div class="layout"><aside class="sidebar" id="sidebar"><nav id="navTree"></nav><div class="toc"><div class="toc-title">On this page</div><nav id="pageToc"></nav></div></aside>
+<main class="content"><div class="doc" id="docContent">
+<nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">/</span><a href="project-planning-engineering.html">Planning &amp; Engineering</a><span class="sep">/</span><span>Architecture &amp; Technical Decisions</span></nav>
+<header class="page-header"><h1>Software Architecture &amp; Technical Decisions</h1><p class="subtitle">Choose structure based on requirements, not trends. Favor modular monolith before microservices.</p></header>
+<section class="section"><h2 id="patterns">Architectural styles</h2><div class="table-wrap"><table><thead><tr><th>Style</th><th>When to use</th><th>Notes</th></tr></thead><tbody><tr><td>Modular monolith</td><td>Most MERN apps</td><td>Clear boundaries, easy to test, low ops overhead</td></tr><tr><td>Monolith</td><td>Small/simple</td><td>Fast to start</td></tr><tr><td>Microservices</td><td>Independent teams, high scale domains</td><td>Complex, only when justified</td></tr><tr><td>Layered (3-tier)</td><td>Clear separation</td><td>Routes → controllers → services → models → DB</td></tr></tbody></table></div></section>
+<section class="section"><h2 id="adr">Architecture Decision Records (ADR)</h2><pre class="code-block" data-lang="markdown"><code># ADR-001: Choose architecture for [Project]
+
+## Status
+Proposed/Accepted/Rejected
+
+## Context
+Why decision needed
+
+## Decision
+Chosen approach
+
+## Consequences
+Pros/Cons, trade-offs
+
+## Alternatives Considered
+Rejected with rationale</code></pre></section>
+<section class="section"><h2 id="principles">Core principles</h2><ul><li>Separation of concerns, feature/domain boundaries</li><li>Trust boundaries: frontend untrusted, server enforces</li><li>Justify decisions with requirements &amp; trade-offs</li></ul></section>
+<footer class="doc-footer"><div class="related-nav"><a href="project-planning-engineering.html">Overview</a></div></footer>
+</div></main></div>
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
