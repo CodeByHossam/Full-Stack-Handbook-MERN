@@ -92,6 +92,16 @@
             ]
         },
         {
+            name: "JavaScript & Other Platforms",
+            pages: [
+                { t: "Overview", p: "03-javascript-other-platforms/index.html", d: "Mixed JS topics and Phaser game dev" },
+                { t: "Phaser: Getting Started", p: "03-javascript-other-platforms/phaser-getting-started.html", d: "Init project, config, scenes" },
+                { t: "Phaser: Sprites, Assets & Animation", p: "03-javascript-other-platforms/phaser-sprites-assets.html", d: "Load assets, sprite sheets, animations" },
+                { t: "Phaser: Physics, Collisions & Groups", p: "03-javascript-other-platforms/phaser-physics-collision.html", d: "Arcade physics, collisions, groups" },
+                { t: "Phaser: Build 2 Games", p: "03-javascript-other-platforms/phaser-build-2-games.html", d: "Platformer & Top-down shooter" }
+            ]
+        },
+        {
             name: "Planning & Engineering",
             pages: [
                 { t: "Project Planning & Engineering", p: "11-planning/project-planning-engineering.html", d: "From business idea to development readiness: SDLC, requirements, architecture, design, estimation, risks" }

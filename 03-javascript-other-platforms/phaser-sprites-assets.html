@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser: Sprites, Assets, Animation — JS &amp; Other Platforms</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../index.html"><span class="dot">M</span><span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span></a><div class="search search-panel"><span class="icon">⌕</span><input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off"><div id="navResults"></div></div><div class="topbar-actions"><button class="menu-toggle icon-btn" id="menuToggle">☰</button><button class="icon-btn" id="themeToggle">☾</button></div></header>
+<div class="layout"><aside class="sidebar" id="sidebar"><nav id="navTree"></nav><div class="toc"><div class="toc-title">On this page</div><nav id="pageToc"></nav></div></aside>
+<main class="content"><div class="doc" id="docContent">
+<nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">/</span><a href="index.html">JS &amp; Other Platforms</a><span class="sep">/</span><span>Sprites, Assets, Animation</span></nav>
+<header class="page-header"><h1>Phaser: Sprites, Assets, Animation</h1><p class="subtitle">Load images, sprite sheets, audio; create animations.</p></header>
+<section class="section"><h2 id="preload">Preload</h2><pre class="code-block" data-lang="javascript"><code>function preload() {
+  this.load.image('bg', 'assets/bg.png');
+  this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 48 });
+  this.load.audio('jump', 'assets/jump.mp3');
+}</code></pre></section>
+<section class="section"><h2 id="animate">Create Animations</h2><pre class="code-block" data-lang="javascript"><code>function create() {
+  this.anims.create({ key: 'walk', frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }), frameRate: 10, repeat: -1 });
+}</code></pre></section>
+<section class="section"><h2 id="assets">Getting Assets</h2><ul><li><a href="https://kenney.nl/assets">Kenney.nl</a> — free sprite/audio packs</li><li><a href="https://opengameart.org/">OpenGameArt.org</a> — public domain/CC assets</li><li>Create with Aseprite/Piskel</li></ul></section>
+</div></main></div>
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

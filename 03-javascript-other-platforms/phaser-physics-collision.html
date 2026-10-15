@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser: Physics, Collisions &amp; Groups — JS &amp; Other Platforms</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../index.html"><span class="dot">M</span><span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span></a><div class="search search-panel"><span class="icon">⌕</span><input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off"><div id="navResults"></div></div><div class="topbar-actions"><button class="menu-toggle icon-btn" id="menuToggle">☰</button><button class="icon-btn" id="themeToggle">☾</button></div></header>
+<div class="layout"><aside class="sidebar" id="sidebar"><nav id="navTree"></nav><div class="toc"><div class="toc-title">On this page</div><nav id="pageToc"></nav></div></aside>
+<main class="content"><div class="doc" id="docContent">
+<nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">/</span><a href="index.html">JS &amp; Other Platforms</a><span class="sep">/</span><span>Physics, Collisions &amp; Groups</span></nav>
+<header class="page-header"><h1>Phaser: Physics, Collisions &amp; Groups</h1><p class="subtitle">Arcade physics, static platforms, collision detection, groups.</p></header>
+<section class="section"><h2 id="config">Physics Config</h2><pre class="code-block" data-lang="javascript"><code>const config = {
+  type: Phaser.AUTO, width:800,height:600,
+  physics: { default: 'arcade', arcade: { gravity: { y: 300 }, debug: false } },
+  scene: { preload, create, update }
+};</code></pre></section>
+<section class="section"><h2 id="platforms">Platforms &amp; Collisions</h2><pre class="code-block" data-lang="javascript"><code>function create() {
+  this.platforms = this.physics.add.staticGroup();
+  this.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+  this.player = this.physics.add.sprite(100, 450, 'player');
+  this.physics.add.collider(this.player, this.platforms);
+}</code></pre></section>
+<section class="section"><h2 id="groups">Groups &amp; Overlap</h2><pre class="code-block" data-lang="javascript"><code>this.coins = this.physics.add.group({ key:'coin', repeat:11, setXY:{x:12,y:0,stepX:70} });
+this.physics.add.collider(this.coins, this.platforms);
+this.physics.add.overlap(this.player, this.coins, (p,c)=>{ c.disableBody(true,true); }, null, this);</code></pre></section>
+</div></main></div>
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
