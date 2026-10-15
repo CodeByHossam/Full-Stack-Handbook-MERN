@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Planning &amp; Engineering — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Planning &amp; Engineering</span>
+                <span class="sep">/</span>
+                <span>Project Planning &amp; Engineering</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Software Project Planning &amp; Engineering</h1>
+                <p class="subtitle">Transforming a business idea into a validated, documented, and development-ready MERN project. This section covers planning, analysis, architecture, design, documentation, estimation, risks, and readiness — everything that happens before writing code.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Planning</span>
+                    <span class="badge b-purple">SDLC</span>
+                    <span class="badge b-teal">Requirements &amp; Architecture</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="overview">Overview</h2>
+                <p>This section is about <strong>pre-implementation</strong>. Professional teams don't start with Express routes or React components. They start with discovery, validation, requirements, scope, modeling, technical decisions, API contracts, UI/UX planning, estimation, risks, and a development readiness gate.</p>
+                <p>The goal is to reduce uncertainty: <strong>clear problem, clear scope, clear contracts, and a plan proportional to risk</strong>. For small projects, this can be lightweight; for larger or regulated ones, more formal is appropriate. The principle is "right amount of process" — adapt, don't overburden.</p>
+                <aside class="callout key"><span class="ct">Key point</span><p>Planning is about making expensive mistakes cheaper — discover issues at the whiteboard, not during deployment.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="learning-path">Learning path</h2>
+                <p>Work through the pages in this order:</p>
+                <ol>
+                    <li><strong><a href="sdlc.html">Software Development Lifecycle (SDLC)</a></strong> — Understand phases, Agile/Waterfall/Kanban, and how to adapt.</li>
+                    <li><strong><a href="business-discovery.html">Business Discovery &amp; Project Definition</a></strong> — Problem, stakeholders, feasibility, MVP vs POC vs Prototype.</li>
+                    <li><strong><a href="requirements-engineering.html">Requirements Engineering</a></strong> — Functional/Non-functional, BRD/PRD/SRS, user stories, acceptance criteria.</li>
+                    <li><strong><a href="stakeholders-roles.html">Stakeholders, Users, Roles &amp; Permissions</a></strong> — Personas, RACI, RBAC, boundaries.</li>
+                    <li><strong><a href="scope-mvp-prioritization.html">Scope, MVP &amp; Feature Prioritization</a></strong> — In/out of scope, MoSCoW, value vs effort, DoR/DoD.</li>
+                    <li><strong><a href="system-analysis-modeling.html">System Analysis &amp; Domain Modeling</a></strong> — Context, use cases, flows, ERDs, state diagrams.</li>
+                    <li><strong><a href="architecture-technical-decisions.html">Software Architecture &amp; Technical Decisions</a></strong> — Layers, monolith vs microservices, ADRs, trade-offs.</li>
+                    <li><strong><a href="database-data-architecture.html">Database &amp; Data Architecture Planning</a></strong> — Entities, embedding vs referencing, indexes, validation.</li>
+                    <li><strong><a href="api-integration-design.html">API &amp; Integration Design</a></strong> — Contracts, auth, pagination, errors, OpenAPI.</li>
+                    <li><strong><a href="ui-ux-planning.html">UI/UX &amp; Frontend Planning</a></strong> — User journeys, wireframes, design system, states.</li>
+                    <li><strong><a href="mern-project-structure-planning.html">MERN Project Structure Planning</a></strong> — Feature vs layer, client/server boundaries, reference tree.</li>
+                    <li><strong><a href="engineering-standards-conventions.html">Engineering Standards &amp; Conventions</a></strong> — Naming, linting, Git, code review.</li>
+                    <li><strong><a href="security-privacy-quality-planning.html">Security, Privacy &amp; Quality Planning</a></strong> — Threat modeling, gates, testing strategy. (Cross-link to <a href="../12-practices/mern-security.html">MERN Security Handbook</a>.)</li>
+                    <li><strong><a href="estimation-scheduling-resources.html">Estimation, Scheduling &amp; Resource Planning</a></strong> — WBS, epics/stories/tasks, story points vs time.</li>
+                    <li><strong><a href="risk-management-adr.html">Risk Management &amp; ADRs</a></strong> — Risk register, mitigation, decisions.</li>
+                    <li><strong><a href="development-workflow.html">Development Workflow &amp; Collaboration</a></strong> — From idea to handoff, roles, DoR/DoD.</li>
+                    <li><strong><a href="development-readiness-gate.html">Development Readiness Gate</a></strong> — Checklist to enter implementation.</li>
+                    <li><strong><a href="templates-and-worked-example.html">Practical Templates &amp; Worked Example</a></strong> — Reusable templates + end-to-end example.</li>
+                    <li><strong><a href="references-and-accuracy.html">References, Accuracy &amp; Missing Topics</a></strong> — ISO/IEEE, SWEBOK, Scrum, OWASP, C4.</li>
+                </ol>
+            </section>
+
+            <section class="section">
+                <h2 id="principles">Core principles</h2>
+                <ul>
+                    <li><strong>Problem-first, technology-second.</strong> Don't choose MongoDB/Express/React/Node before validating the problem.</li>
+                    <li><strong>Right-sized process.</strong> Lightweight for solo/small projects, more structured as risk grows.</li>
+                    <li><strong>Contracts before code.</strong> Agree on entities, API shapes, permissions, and states before implementation.</li>
+                    <li><strong>Server-authoritative.</strong> Security, rules, and access are enforced server-side. Frontend is untrusted.</li>
+                    <li><strong>Traceable.</strong> Requirements, decisions, and risks should be traceable to avoid ambiguity.</li>
+                    <li><strong>Adaptable.</strong> Blend Agile/Waterfall/Kanban pragmatically; no single "one true way".</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="../12-practices/mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">How structure maps to code</span></a>
+                    <a href="../12-practices/clean-code.html"><span class="rt">→ Clean Code &amp; Best Practices</span><span class="rc">Coding conventions once you start</span></a>
+                    <a href="../12-practices/mern-security.html"><span class="rt">→ MERN Security Handbook</span><span class="rc">Security planning and controls</span></a>
+                    <a href="../06-backend/rest-api.html"><span class="rt">→ REST API</span><span class="rc">API design in practice</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

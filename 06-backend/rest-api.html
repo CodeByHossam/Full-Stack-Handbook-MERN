@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REST API — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Backend</span>
+                <span class="sep">/</span>
+                <span>REST API</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>REST API</h1>
+                <p class="subtitle">How applications communicate over HTTP — methods, status codes, resource naming, request anatomy, CRUD endpoints, filtering, pagination, and versioning. This page owns the API design rules.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Backend</span>
+                    <span class="badge b-purple">API Design</span>
+                    <span class="badge b-teal">HTTP · CRUD</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="what-is-rest">REST vs HTTP</h2>
+                <p>REST is a way for applications to communicate using HTTP. The terms are related but distinct:</p>
+                <ul>
+                    <li><strong>HTTP</strong> — the communication protocol.</li>
+                    <li><strong>REST</strong> — an architectural style for designing APIs on top of HTTP.</li>
+                    <li><strong>Express</strong> — the framework used to build the API.</li>
+                    <li><strong>MongoDB</strong> — the database behind it.</li>
+                </ul>
+                <pre class="flow">React
+  ↓
+HTTP
+  ↓
+REST API
+  ↓
+Express
+  ↓
+Mongoose
+  ↓
+MongoDB</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="http-methods">HTTP methods</h2>
+                <p>Each HTTP verb signals the intended action on a resource, which is why REST APIs reuse a small fixed set of methods instead of inventing custom action names. <strong>Idempotent</strong> means repeating the call has the same effect as calling once (safe to retry).</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Method</th><th>Action</th><th>Body?</th><th>Idempotent</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>GET</code></td><td>Read data</td><td>No</td><td>Yes</td></tr>
+                            <tr><td><code>POST</code></td><td>Create data</td><td>Yes</td><td>No</td></tr>
+                            <tr><td><code>PUT</code></td><td>Replace / full update</td><td>Yes</td><td>Yes</td></tr>
+                            <tr><td><code>PATCH</code></td><td>Update part of a resource</td><td>Yes</td><td>No</td></tr>
+                            <tr><td><code>DELETE</code></td><td>Delete data</td><td>No</td><td>Yes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="crud-mapping">CRUD mapping</h2>
+                <p>CRUD (Create, Read, Update, Delete) maps one-to-one onto HTTP methods. Use this mapping to pick the verb: the verb carries the action, so the URL never needs to.</p>
+                <pre class="flow">CREATE → POST
+READ   → GET
+UPDATE → PUT / PATCH
+DELETE → DELETE</pre>
+                <pre class="code-block" data-lang="text"><code>GET     /api/products        # list all
+GET     /api/products/123    # read one
+POST    /api/products        # create
+PUT     /api/products/123    # replace one
+PATCH   /api/products/123    # update part of one
+DELETE  /api/products/123    # delete one</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="request-anatomy">Request anatomy</h2>
+                <p>Every request can carry several parts. Knowing which part to use is the core API design skill.</p>
+                <pre class="code-block" data-lang="text"><code>POST /api/users
+
+Headers:
+  Authorization: Bearer TOKEN
+  Content-Type: application/json
+
+Body:
+{
+    "name": "Alice",
+    "email": "alice@example.com"
+}</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Part</th><th>Purpose</th><th>Express access</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>URL parameters</td><td>Identify one resource</td><td><code>req.params</code></td></tr>
+                            <tr><td>Query parameters</td><td>Filter, search, sort, paginate</td><td><code>req.query</code></td></tr>
+                            <tr><td>Body</td><td>Data to create/update</td><td><code>req.body</code></td></tr>
+                            <tr><td>Headers</td><td>Metadata such as auth tokens</td><td><code>req.headers</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="url-parameters">URL parameters</h2>
+                <p>Used to identify a specific resource within a collection — the <code>:id</code> is a placeholder the router fills from the path.</p>
+                <pre class="code-block" data-lang="javascript"><code>// GET /api/products/123
+router.get("/products/:id", (req, res) =&gt; {
+    console.log(req.params.id); // "123" — the resource id
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="query-parameters">Query parameters</h2>
+                <p>Used for filtering, searching, sorting, and pagination — they modify <em>how</em> a collection is returned and never identify the resource itself. They are always strings, so convert numbers explicitly.</p>
+                <pre class="code-block" data-lang="javascript"><code>// /api/products?category=phones&amp;page=2&amp;limit=10
+const { category, page, limit } = req.query;   // all strings</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="request-body">Request body</h2>
+                <p>Used mainly with <code>POST</code> / <code>PUT</code> / <code>PATCH</code> to carry the data to create or update. It requires the server to parse it (<code>express.json()</code>).</p>
+                <pre class="code-block" data-lang="json"><code>{
+    "name": "Laptop",
+    "price": 1000
+}</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>const { name, price } = req.body;   // destructure the parsed payload</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="content-types-multipart">Content types and multipart/form-data</h2>
+                <p>The <code>Content-Type</code> header tells the server how to decode the request body. JSON is only one option — the parser you register in Express must match the type being sent.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Content-Type</th><th>Body carries</th><th>Express parser</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>application/json</code></td><td>A JSON object</td><td><code>express.json()</code></td></tr>
+                            <tr><td><code>application/x-www-form-urlencoded</code></td><td>Key/value text from a plain form</td><td><code>express.urlencoded()</code></td></tr>
+                            <tr><td><code>multipart/form-data</code></td><td>File bytes plus fields, split by a boundary</td><td>Multer (not built in)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><code>multipart/form-data</code> is the type a browser uses when a form contains a file input. Express does <strong>not</strong> parse it — <code>express.json()</code> ignores it — so an upload endpoint needs Multer middleware.</p>
+                <pre class="code-block" data-lang="javascript"><code>const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+
+// POST /api/products with a multipart body
+router.post("/products", upload.single("image"), createProduct);
+// file -&gt; req.file, other fields -&gt; req.body</code></pre>
+                <p>Full client and server mechanics are owned by <a href="file-uploads.html">File Uploads</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="headers">Headers</h2>
+                <p>Headers carry metadata about the request — content type, caching, and authentication. The <code>Authorization</code> header is how a JWT reaches the server.</p>
+                <pre class="code-block" data-lang="text"><code>Authorization: Bearer TOKEN
+Content-Type: application/json</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>req.headers.authorization;   // header names are lower-cased</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="response-shape">Response shape</h2>
+                <p>The server sends a status code, headers, and (usually) a body. Keep the body shape consistent so the client can parse every endpoint the same way.</p>
+                <pre class="code-block" data-lang="javascript"><code>res.status(200).json({   // 200 = success
+    message: "Success"
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="status-codes">Status codes</h2>
+                <p>The status code is the first thing a client checks, so getting it right matters more than the message text. Codes group by first digit: <strong>2xx</strong> success, <strong>4xx</strong> the client did something wrong, <strong>5xx</strong> the server failed. This table is the single source of truth for status codes across the library.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Code</th><th>Name</th><th>Meaning</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>200</code></td><td>OK</td><td>Request successful</td></tr>
+                            <tr><td><code>201</code></td><td>Created</td><td>New resource created</td></tr>
+                            <tr><td><code>204</code></td><td>No Content</td><td>Successful, no response body</td></tr>
+                            <tr><td><code>400</code></td><td>Bad Request</td><td>Invalid request</td></tr>
+                            <tr><td><code>401</code></td><td>Unauthorized</td><td>Not authenticated</td></tr>
+                            <tr><td><code>403</code></td><td>Forbidden</td><td>Authenticated but not allowed</td></tr>
+                            <tr><td><code>404</code></td><td>Not Found</td><td>Resource does not exist</td></tr>
+                            <tr><td><code>409</code></td><td>Conflict</td><td>Conflict, e.g. duplicate email</td></tr>
+                            <tr><td><code>422</code></td><td>Unprocessable Entity</td><td>Validation error</td></tr>
+                            <tr><td><code>500</code></td><td>Internal Server Error</td><td>Server problem</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="rest-naming">REST naming rules</h2>
+                <p>Prefer <strong>nouns</strong> for resources. The HTTP method already describes the action, so verbs in the path are redundant.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Good</th><th>Avoid</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>/api/users</code></td><td><code>/api/getUsers</code></td></tr>
+                            <tr><td><code>/api/products</code></td><td><code>/api/createProduct</code></td></tr>
+                            <tr><td><code>/api/orders</code></td><td><code>/api/deleteOrder</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="crud-endpoints">CRUD endpoints in practice</h2>
+                <p>The same URL plus a different verb gives each CRUD operation its own endpoint. Notice the response status changes with the action — not always <code>200</code>.</p>
+                <h3>Get all</h3>
+                <p>Lists the whole collection. It returns <code>200 OK</code> with a JSON array; on a real dataset this endpoint also applies filtering, sorting, and pagination.</p>
+                <pre class="code-block" data-lang="text"><code>GET /api/products        # 200 OK, returns an array
+
+[
+    { "_id": "1", "name": "Laptop" },
+    { "_id": "2", "name": "Phone" }
+]</code></pre>
+                <h3>Get one</h3>
+                <p>Fetches a single resource by the id in the URL path. If no document matches, the correct response is <code>404 Not Found</code> rather than an empty object.</p>
+                <pre class="code-block" data-lang="text"><code>GET /api/products/123    # 200 OK, or 404 if the id does not exist
+
+{
+    "_id": "123",
+    "name": "Laptop",
+    "price": 1000
+}</code></pre>
+                <h3>Create</h3>
+                <p>Creates a new resource with <code>POST</code>. The new data travels in the request body and the server answers <code>201 Created</code> with the created document.</p>
+                <pre class="code-block" data-lang="text"><code>POST /api/products
+
+Body:
+{ "name": "Laptop", "price": 1000 }
+
+Response: 201 Created    # 201 signals a new resource was made
+{ "_id": "123", "name": "Laptop", "price": 1000 }</code></pre>
+                <h3>Update</h3>
+                <p>Changes an existing resource with <code>PATCH</code> (partial) or <code>PUT</code> (full replace). Send only the fields that changed and return the updated document to confirm.</p>
+                <pre class="code-block" data-lang="text"><code>PATCH /api/products/123   # send only the changed fields
+
+Body:
+{ "price": 900 }
+
+Response:
+{ "_id": "123", "name": "Laptop", "price": 900 }</code></pre>
+                <h3>Delete</h3>
+                <p>Removes a resource by id with <code>DELETE</code>. Reply <code>200</code> with a message, or <code>204 No Content</code> with an empty body.</p>
+                <pre class="code-block" data-lang="text"><code>DELETE /api/products/123
+
+Response:                 # 200 with a message, or 204 with no body
+{ "message": "Product deleted" }</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="filtering">Filtering</h2>
+                <p>Filtering narrows a collection by an exact field match, passed as a query parameter and turned into a Mongoose filter object. It reduces payload size and is the first thing to add to a list endpoint.</p>
+                <pre class="code-block" data-lang="javascript"><code>// GET /api/products?category=phones
+const { category } = req.query;
+
+const products = await Product.find({ category });  // { category: "phones" }</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="searching">Searching</h2>
+                <p>Searching matches part of a string rather than an exact value. The <code>$regex</code> operator does a pattern match and <code>"i"</code> makes it case-insensitive.</p>
+                <pre class="code-block" data-lang="javascript"><code>// GET /api/products?search=laptop
+const { search } = req.query;
+
+const products = await Product.find({
+    name: {
+        $regex: search,     // substring / pattern match
+        $options: "i"       // case-insensitive
+    }
+});</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p>Unanchored <code>$regex</code> cannot use an index and is slow on large collections. Escape user input and consider a text index for real search.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="sorting">Sorting</h2>
+                <p>Sorting orders results by one or more fields. In Mongoose the value is <code>1</code> for ascending and <code>-1</code> for descending.</p>
+                <pre class="code-block" data-lang="javascript"><code>// GET /api/products?sort=price
+Product.find().sort({ price: 1 });   // cheapest first
+
+// 1  → ascending
+// -1 → descending</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="pagination">Pagination</h2>
+                <p>Pagination returns one page of results at a time so a list endpoint does not send thousands of documents. Convert the string query params to numbers and use <code>skip</code> / <code>limit</code>.</p>
+                <pre class="code-block" data-lang="text"><code>/api/products?page=2&amp;limit=10
+
+page 1: skip 0
+page 2: skip 10
+page 3: skip 20
+
+skip = (page - 1) * limit</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>const skip = (page - 1) * limit;   // page 2 with limit 10 -> skip 10
+
+const products = await Product.find()
+    .skip(skip)      // drop earlier pages
+    .limit(limit);   // cap the page size</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="combining-filters">Combining filter + search + sort + pagination</h2>
+                <p>Real list endpoints combine several query parameters at once. This is the full request shape you build toward, with each option doing one job.</p>
+                <pre class="code-block" data-lang="text"><code>GET /api/products
+  ?search=laptop
+  &amp;category=electronics
+  &amp;page=2
+  &amp;limit=10
+  &amp;sort=price</code></pre>
+                <p>This is a very common real-world API pattern. Apply each clause conditionally, then sort and paginate.</p>
+                <pre class="code-block" data-lang="javascript"><code>const { search, category, sort, page = 1, limit = 10 } = req.query;
+
+const filter = {};                       // build the query up piece by piece
+if (category) filter.category = category;
+if (search) filter.name = { $regex: search, $options: "i" };
+
+const products = await Product.find(filter)
+    .sort({ [sort]: 1 })                 // sort by the requested field
+    .skip((page - 1) * limit)            // page offset
+    .limit(Number(limit));               // cap results per page</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="authenticated-request">Authenticated request</h2>
+                <p>React sends the token in the <code>Authorization</code> header; middleware verifies it before the controller runs. The implementation is owned by <a href="authentication-jwt.html">Authentication &amp; JWT</a>.</p>
+                <pre class="code-block" data-lang="text"><code>Authorization: Bearer JWT_TOKEN</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>const token = req.headers.authorization?.split(" ")[1];  // strip "Bearer "</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="protected-route">Protected route</h2>
+                <p>Adding <code>protect</code> as the second argument runs auth before the controller, so only requests with a valid token reach the handler.</p>
+                <pre class="code-block" data-lang="javascript"><code>router.get("/profile", protect, getProfile);  // protect runs first</code></pre>
+                <pre class="flow">Request
+   ↓
+protect middleware
+   ↓
+verify JWT
+   ↓
+req.user
+   ↓
+controller</pre>
+                <p>See <a href="authentication-jwt.html">Authentication &amp; JWT</a> for the full <code>protect</code> and role middleware.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="error-envelope">Error response envelope</h2>
+                <p>Return a consistent shape so clients can always read <code>success</code> and <code>message</code>.</p>
+                <pre class="code-block" data-lang="json"><code>{
+    "success": false,
+    "message": "Product not found"
+}</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>res.status(404).json({   // 404 = the resource was not found
+    success: false,
+    message: "Product not found"
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="success-envelope">Success response envelope</h2>
+                <p>Wrap success responses in the same <code>{ success, data }</code> shape so the client always knows where the payload lives. Mixing bare arrays and envelopes across endpoints makes the frontend harder to write.</p>
+                <pre class="code-block" data-lang="javascript"><code>res.status(200).json({
+    success: true,
+    data: products   // the actual payload goes under "data"
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="validation">Validation</h2>
+                <p>Never trust <code>req.body</code>. Check required fields, then prefer a schema validator.</p>
+                <pre class="code-block" data-lang="javascript"><code>if (!name) {
+    return res.status(400).json({   // reject early with a client error
+        success: false,
+        message: "Name is required"
+    });
+}</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>Better options: <strong>Joi</strong>, <strong>Zod</strong>, or <strong>express-validator</strong>. They generate consistent <code>422</code> validation errors.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="express-routes">REST API routes with Express</h2>
+                <p>Each REST operation becomes one Express route pointing at a controller. Keep the route table flat and noun-based so it maps directly to the resource.</p>
+                <pre class="code-block" data-lang="javascript"><code>router.get("/products", getProducts);        // GET    list
+router.get("/products/:id", getProduct);     // GET    one
+router.post("/products", createProduct);     // POST   create
+router.patch("/products/:id", updateProduct); // PATCH  part update
+router.delete("/products/:id", deleteProduct); // DELETE remove</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="api-structure">API structure</h2>
+                <p>Every endpoint travels through the same layered path. A request enters the routes, passes middleware, reaches a controller, optionally calls a service, and finally the model that talks to MongoDB.</p>
+                <pre class="flow">routes
+     ↓
+middleware
+     ↓
+controller
+     ↓
+service (optional)
+     ↓
+model
+     ↓
+MongoDB</pre>
+                <pre class="flow">GET /api/products
+       ↓
+productRoutes
+       ↓
+getProducts()
+       ↓
+Product.find()
+       ↓
+MongoDB
+       ↓
+res.json(products)</pre>
+                <p>The folder layout and layer responsibilities are owned by <a href="../12-practices/mern-architecture.html">MERN Architecture</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="api-versioning">API versioning</h2>
+                <p>Version the URL so you can change an API without breaking existing clients. Old versions keep working while new ones roll out — critical once mobile apps or third parties depend on the API.</p>
+                <pre class="code-block" data-lang="text"><code>/api/v1/users        # current stable version pinned in the path
+/api/v1/products
+
+# later, a breaking change ships without touching v1 clients
+/api/v2/users</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="complete-mern-flow">Complete MERN request flow</h2>
+                <p>Putting it together: a click in React becomes an HTTP request, travels through Express to MongoDB, and the response is rendered back. Every concept on this page is one step in this path.</p>
+                <pre class="flow">USER CLICKS BUTTON
+       ↓
+React
+       ↓
+RTK Query / fetch / axios
+       ↓
+HTTP REQUEST
+       ↓
+Express Route
+       ↓
+Middleware
+       ↓
+Controller
+       ↓
+Mongoose
+       ↓
+MongoDB
+       ↓
+Mongoose
+       ↓
+Controller
+       ↓
+JSON RESPONSE
+       ↓
+React</pre>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>HTTP is the protocol; REST is the API design style; Express builds it</li>
+                    <li>Methods: GET, POST, PUT, PATCH, DELETE</li>
+                    <li>CRUD: POST create, GET read, PUT/PATCH update, DELETE delete</li>
+                    <li>Request parts: params, query, body, headers</li>
+                    <li>Status codes: 200/201/204, 400/401/403/404/409/422, 500</li>
+                    <li>Name resources with nouns, not verbs</li>
+                    <li>Filter, search (<code>$regex</code>), sort (<code>1</code>/<code>-1</code>), paginate (<code>skip = (page-1)*limit</code>)</li>
+                    <li>Use consistent response envelopes: <code>success</code>, <code>message</code>, <code>data</code></li>
+                    <li>Validate <code>req.body</code> (Joi / Zod / express-validator)</li>
+                    <li>Version APIs: <code>/api/v1/…</code></li>
+                    <li>Token auth: <code>Authorization: Bearer …</code> → <code>protect</code> → <code>req.user</code></li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="express.html"><span class="rt">→ Express</span><span class="rc">Implement these routes and middleware</span></a>
+                    <a href="authentication-jwt.html"><span class="rt">→ Authentication &amp; JWT</span><span class="rc">Protect routes and verify tokens</span></a>
+                    <a href="nodejs.html"><span class="rt">→ Node.js</span><span class="rc">The runtime underneath the API</span></a>
+                    <a href="../07-database/mongodb-basics.html"><span class="rt">→ MongoDB Basics</span><span class="rc">Queries behind filter, sort, and pagination</span></a>
+                    <a href="../03-fundamentals/internet-web.html"><span class="rt">→ Internet &amp; Web Fundamentals</span><span class="rc">HTTP, CORS, and methods in depth</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

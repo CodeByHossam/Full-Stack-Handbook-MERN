@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clean Code &amp; Best Practices — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+      </a>
+      <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input
+          type="search"
+          id="navSearch"
+          placeholder="Search the library…"
+          autocomplete="off"
+          aria-label="Search the library"
+        />
+        <div id="navResults"></div>
+      </div>
+      <div class="topbar-actions">
+        <button
+          class="menu-toggle icon-btn"
+          id="menuToggle"
+          aria-label="Toggle navigation"
+        >
+          ☰
+        </button>
+        <button
+          class="icon-btn"
+          id="themeToggle"
+          title="Toggle theme"
+          aria-label="Toggle light or dark theme"
+        >
+          ☾
+        </button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+          <div class="toc-title">On this page</div>
+          <nav id="pageToc"></nav>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="doc" id="docContent">
+          <nav class="breadcrumb">
+            <a href="../index.html">Home</a>
+            <span class="sep">/</span>
+            <span>Practices</span>
+            <span class="sep">/</span>
+            <span>Clean Code &amp; Best Practices</span>
+          </nav>
+
+          <header class="page-header">
+            <h1>Clean Code &amp; Best Practices</h1>
+            <p class="subtitle">
+              The 55 everyday rules that make code easy to read, understand,
+              debug, change, test, and maintain — with a practical refactor
+              example.
+            </p>
+            <div class="tag-row">
+              <span class="badge b-primary">Practices</span>
+              <span class="badge b-purple">55 rules</span>
+              <span class="badge b-teal">Everyday habits</span>
+            </div>
+          </header>
+
+          <section class="section">
+            <h2 id="what-clean-code-means">What clean code means</h2>
+            <p>
+              The goal is code that is easy to read, understand, debug, change,
+              and test, and easy for another developer to maintain.
+            </p>
+            <aside class="callout key">
+              <span class="ct">Key point</span>
+              <p>
+                Good code is not the shortest code. Good code is code another
+                developer can understand without asking you what it does. The
+                underlying concepts live in
+                <a href="programming-principles.html">Programming Principles</a
+                >.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="naming">Naming: make names carry meaning</h2>
+            <p>
+              A name should explain <em>what</em> the value represents.
+              Functions are actions, variables are things, and booleans read
+              like yes/no questions.
+            </p>
+            <pre class="code-block" data-lang="javascript"><code>// bad
+const x = 10;
+const u = getUser();
+const p = 100;
+
+// good
+const maxRetries = 10;
+const user = getUser();
+const productPrice = 100;</code></pre>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// functions are verbs
+function getUser() {}
+function createProduct() {}
+function calculateTotal() {}
+function deleteUser() {}
+
+// variables are nouns
+const user = {};
+const totalPrice = 100;
+
+// booleans sound like questions
+const isActive = true;
+const isAdmin = false;
+const hasPermission = true;
+const canEdit = false;</code></pre>
+            <h3>Case conventions by identifier type</h3>
+            <p>
+              The convention depends on <em>what</em> the identifier is. Pick
+              one style per category and keep it consistent across the whole
+              codebase.
+            </p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Identifier</th>
+                    <th>Convention</th>
+                    <th>Example</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Variables</td>
+                    <td>camelCase</td>
+                    <td><code>userName</code></td>
+                  </tr>
+                  <tr>
+                    <td>Functions</td>
+                    <td>camelCase</td>
+                    <td><code>getUserById()</code></td>
+                  </tr>
+                  <tr>
+                    <td>Classes</td>
+                    <td>PascalCase</td>
+                    <td><code>ShoppingCart</code></td>
+                  </tr>
+                  <tr>
+                    <td>Constants</td>
+                    <td>SCREAMING_SNAKE_CASE</td>
+                    <td><code>MAX_RETRY_COUNT</code></td>
+                  </tr>
+                  <tr>
+                    <td>Private fields</td>
+                    <td><code>_</code> prefix</td>
+                    <td><code>_internalState</code></td>
+                  </tr>
+                  <tr>
+                    <td>Booleans</td>
+                    <td>
+                      <code>is</code>/<code>has</code>/<code>can</code> prefix
+                    </td>
+                    <td><code>isActive</code>, <code>hasPermission</code></td>
+                  </tr>
+                  <tr>
+                    <td>React components</td>
+                    <td>PascalCase</td>
+                    <td><code>UserProfile</code></td>
+                  </tr>
+                  <tr>
+                    <td>Interfaces / types (TS)</td>
+                    <td>PascalCase</td>
+                    <td><code>UserData</code></td>
+                  </tr>
+                  <tr>
+                    <td>Enums (TS)</td>
+                    <td>PascalCase</td>
+                    <td><code>Color</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>PascalCase, explained</h3>
+            <p>
+              <strong>What:</strong> every word starts with an uppercase letter,
+              including the first, with no separators. <strong>Why:</strong> it
+              visually signals "this is a type, class, or component", not a
+              value or action. <strong>When:</strong> classes, React components,
+              TypeScript interfaces/types/enums.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// PascalCase — types, components, classes
+class UserAccount {}
+function UserProfile() { return &lt;div&gt;...&lt;/div&gt;; }
+interface UserData {}
+type ResponseStatus = "success" | "error";
+
+// camelCase — values and actions
+const userName = "Alice";
+function getUser() {}</code></pre>
+            <aside class="callout info">
+              <span class="ct">Note</span>
+              <p>
+                Also called <em>UpperCamelCase</em>, because it looks like
+                camelCase with the first letter capitalized — like a camel's
+                humps.
+              </p>
+            </aside>
+
+            <h3>Enforce conventions with ESLint</h3>
+            <p>
+              ESLint's built-in <code>camelcase</code> rule cannot tell a
+              function apart from a class. For per-type rules, use
+              <code>@typescript-eslint/naming-convention</code> — it works in
+              plain <code>.js</code> files too.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="bash"
+            ><code>npm install -D @typescript-eslint/eslint-plugin @typescript-eslint/parser</code></pre>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// eslint.config.js
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsparser from "@typescript-eslint/parser";
+
+export default [
+  {
+    files: ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx"],
+    languageOptions: { parser: tsparser },
+    plugins: { "@typescript-eslint": tseslint },
+    rules: {
+      "@typescript-eslint/naming-convention": [
+        "error",
+        { selector: "variable",   format: ["camelCase", "UPPER_CASE"], leadingUnderscore: "allow" },
+        { selector: "function",   format: ["camelCase"] },
+        { selector: "parameter",  format: ["camelCase"], leadingUnderscore: "allow" },
+        { selector: "class",      format: ["PascalCase"] },
+        { selector: "interface",  format: ["PascalCase"] },
+        { selector: "typeAlias",  format: ["PascalCase"] },
+        { selector: "enum",       format: ["PascalCase"] },
+        { selector: "enumMember", format: ["UPPER_CASE", "PascalCase"] },
+        { selector: "objectLiteralProperty", format: ["camelCase", "UPPER_CASE", "snake_case"], leadingUnderscore: "allow" },
+        { selector: "variable", types: ["boolean"], format: ["PascalCase"], prefix: ["is", "has", "can", "should"] }
+      ]
+    }
+  }
+];</code></pre>
+            <aside class="callout warn">
+              <span class="ct">Watch out</span>
+              <p>
+                React components are functions but PascalCase — allow both
+                formats for functions if your project uses JSX, or use the
+                TypeScript <code>filter</code> option to scope the PascalCase
+                rule to capitalized names.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="functions">Functions: small, focused, early-return</h2>
+            <p>
+              Don't make functions too long, and give each one a single
+              responsibility. A function that validates, calculates, charges,
+              saves, emails, and updates inventory is impossible to test.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// bad: one function doing everything
+function createOrder() {
+    // validate user
+    // check products
+    // calculate prices
+    // process payment
+    // save order
+    // send email
+    // update inventory
+}
+
+// better: each step has its own function
+function createOrder() {
+    validateOrder();
+    const total = calculateOrderTotal();
+    const payment = processPayment(total);
+    const order = saveOrder(payment);
+    sendConfirmationEmail(order);
+}</code></pre>
+
+            <h3>Avoid deep nesting with early return</h3>
+            <p>
+              <strong>What:</strong> Guard clauses — checking each precondition
+              and returning early — flatten nested <code>if</code> blocks into a
+              linear sequence. <strong>Why:</strong> Deep nesting hides the
+              happy path inside indentation and makes edge cases hard to spot.
+              <strong>When:</strong> Use at the top of a function for validation
+              and permission checks, exactly like
+              <code>protect</code> middleware in Express.
+            </p>
+            <pre class="code-block" data-lang="javascript"><code>// bad
+if (user) {
+    if (user.isActive) {
+        if (user.isAdmin) {
+            if (user.hasPermission) {
+                // code
+            }
+        }
+    }
+}
+
+// better — guard clauses: each check exits early,
+// so the real logic stays at the top level
+if (!user) return;
+if (!user.isActive) return;
+if (!user.isAdmin) return;
+if (!user.hasPermission) return;
+// code</code></pre>
+
+            <h3>Don't use <code>else</code> unnecessarily</h3>
+            <p>
+              <strong>What:</strong> When a branch always returns, a trailing
+              <code>else</code> is dead weight. <strong>Why:</strong> Removing
+              it drops a nesting level and makes the default case explicit — the
+              reader sees "return early, otherwise fall through".
+              <strong>When:</strong> Any <code>if</code>/<code>else</code> where
+              both sides end in <code>return</code>, <code>throw</code>, or
+              <code>break</code>.
+            </p>
+            <pre class="code-block" data-lang="javascript"><code>// bad
+if (isAdmin) {
+    return "Admin";
+} else {
+    return "User";
+}
+
+// better — no else needed: "User" is simply the default
+if (isAdmin) {
+    return "Admin";
+}
+return "User";</code></pre>
+          </section>
+
+          <section class="section">
+            <h2 id="dry-and-abstraction">DRY — but don't over-abstract</h2>
+            <p>
+              Don't repeat yourself: extract repeated logic into a function. But
+              don't create a function for everything — abstract repeated or
+              meaningful logic, not every single line.
+            </p>
+            <pre class="code-block" data-lang="javascript"><code>// repeated
+const total1 = price1 + price1 * 0.05;
+const total2 = price2 + price2 * 0.05;
+
+// extracted
+function calculateWithTax(price) {
+    return price + price * 0.05;
+}
+const total = calculateWithTax(price1);</code></pre>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// over-abstracted
+function addNumbers(a, b) {
+    return a + b;
+}
+const result = addNumbers(2, 3);
+
+// simple is better here
+const result = 2 + 3;</code></pre>
+            <p>
+              Also keep related code together rather than scattering pieces
+              hundreds of lines apart.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2 id="magic-numbers-and-constants">
+              Magic numbers &amp; constants
+            </h2>
+            <p>
+              A bare number or string with no explanation is a magic value. Name
+              it.
+            </p>
+            <pre class="code-block" data-lang="javascript"><code>// bad
+if (age &gt; 18) {}
+setTimeout(function () {}, 86400000);
+
+// good
+const MINIMUM_AGE = 18;
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
+if (age &gt; MINIMUM_AGE) {}
+setTimeout(function () {}, ONE_DAY);
+
+// named role constants
+const ADMIN_ROLE = "admin";
+if (role === ADMIN_ROLE) {}</code></pre>
+          </section>
+
+          <section class="section">
+            <h2 id="react-component-discipline">React component discipline</h2>
+            <p>
+              One component, one clear responsibility. Split big pages into
+              focused pieces:
+            </p>
+            <pre class="flow">
+ProductPage.jsx          ProductPage.jsx
+  (1000 lines)     ->    ProductHeader.jsx
+                         ProductList.jsx
+                         ProductCard.jsx
+                         ProductFilters.jsx
+                         ProductPagination.jsx</pre
+            >
+            <p>The division of labour inside the frontend:</p>
+            <ul>
+              <li><strong>Component</strong> — UI responsibility</li>
+              <li><strong>Hook</strong> — logic responsibility</li>
+              <li><strong>Service</strong> — API responsibility</li>
+            </ul>
+            <pre class="flow">
+ProductPage -> useProducts() -> RTK Query -> API</pre
+            >
+            <p>
+              Don't scatter raw <code>fetch("/api/products")</code> across
+              components. Centralize API logic in one place such as RTK Query.
+            </p>
+            <pre class="code-block" data-lang="javascript"><code>// centralized
+const { data, isLoading } = useGetProductsQuery();</code></pre>
+            <aside class="callout info">
+              <span class="ct">Note</span>
+              <p>
+                Component design and hooks are detailed in
+                <a href="mern-architecture.html">MERN Architecture</a>;
+                server-state caching in
+                <a href="../05-frontend/redux-toolkit.html"
+                  >Redux Toolkit + RTK Query</a
+                >.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="modern-javascript-syntax">Modern JavaScript syntax</h2>
+            <p>
+              Modern JS (ES6+) is shorter, safer, and more predictable than
+              older idioms. <strong>Why:</strong> Manual loops, mutation, and
+              fragile conditional chains are more verbose and hide bugs.
+              <strong>When:</strong> Everywhere in MERN — this is the everyday
+              vocabulary of React components and Node/Express code.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// destructuring
+const { name, email } = user;
+
+// optional chaining: returns undefined instead of throwing
+// when any link in the chain is null/undefined
+console.log(user?.profile?.address?.city);
+
+// nullish coalescing: fallback only for null / undefined
+const displayName = user.name ?? "Guest";
+
+// immutable updates
+setUser({ ...user, name: "Alice" });
+
+// prefer array methods over manual loops
+const expensive = products.filter(product =&gt; product.price &gt; 100);
+
+// use map when you need a new array, not forEach + push
+const names = users.map(user =&gt; user.name);
+
+// strict equality
+if (userId === id) {}
+
+// const by default, let only when it changes
+const label = "Alice";
+let count = 0;
+count++;</code></pre>
+            <aside class="callout err">
+              <span class="ct">Common mistake</span>
+              <p>
+                Don't create pointless variables just to return them, but do
+                keep a variable when it improves readability:
+                <code>const fullName = `${firstName} ${lastName}`;</code>.
+              </p>
+            </aside>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Operator</th>
+                    <th>Returns fallback when...</th>
+                    <th>Common use</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>??</code></td>
+                    <td>left is <code>null</code>/<code>undefined</code></td>
+                    <td>
+                      safe default values (keeps <code>0</code>,
+                      <code>""</code>, <code>false</code>)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>||</code></td>
+                    <td>left is any falsy value</td>
+                    <td>broad fallbacks</td>
+                  </tr>
+                  <tr>
+                    <td><code>?.</code></td>
+                    <td>left is <code>null</code>/<code>undefined</code></td>
+                    <td>safe property access down a chain</td>
+                  </tr>
+                  <tr>
+                    <td><code>=&gt;</code></td>
+                    <td>always (it is a function)</td>
+                    <td>compact functions and callbacks</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <aside class="callout warn">
+              <span class="ct">Watch out</span>
+              <p>
+                <code>??</code> cannot be mixed with <code>||</code> or
+                <code>&amp;&amp;</code> without parentheses —
+                <code>a ?? b || c</code> throws a SyntaxError; write
+                <code>(a ?? b) || c</code>.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="comments-and-dead-code">Comments &amp; dead code</h2>
+            <p>
+              Comments explain WHY, not obvious WHAT. And unused functions,
+              variables, imports, files, and comments should be removed.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// bad: increment index
+index++;
+
+// good: Reset to the first item after
+// reaching the end of the array.
+index = (index + 1) % items.length;</code></pre>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// clean imports only
+import { useEffect, useState } from "react";</code></pre>
+          </section>
+
+          <section class="section">
+            <h2 id="formatting-and-linting">Formatting &amp; linting</h2>
+            <p>
+              Let tools enforce consistency so reviews focus on logic. Use
+              Prettier to format (VS Code: Shift + Alt + F) and ESLint to catch
+              unused variables, bad patterns, potential bugs, and style
+              problems.
+            </p>
+            <pre class="code-block" data-lang="bash"><code>npm install -D eslint
+# ESLint finds problems, Prettier fixes formatting — use both together</code></pre>
+          </section>
+
+          <section class="section">
+            <h2 id="error-handling-and-validation">
+              Error handling &amp; validate early
+            </h2>
+            <p>
+              Let centralized middleware handle API errors instead of logging
+              and swallowing them in every controller. And validate at the top
+              of a function — fail fast.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// bad: swallowed error
+try {
+    await saveUser();
+} catch (error) {
+    console.log(error);
+}
+
+// better: forward to centralized middleware
+try {
+    await saveUser();
+} catch (error) {
+    next(error);
+}</code></pre>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>function createUser(data) {
+    if (!data.email) {
+        throw new Error("Email is required");
+    }
+    // continue...
+}</code></pre>
+            <aside class="callout info">
+              <span class="ct">Note</span>
+              <p>
+                The centralized error middleware and custom error objects are
+                built in <a href="mern-architecture.html">MERN Architecture</a>;
+                Express-level error handling in
+                <a href="../06-backend/express.html">Express</a>.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="decoupling-and-separation">
+              Decoupling: keep each layer in its lane
+            </h2>
+            <p>
+              Separate business logic from routes, and keep database logic out
+              of React entirely.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// bad: 200 lines of logic inside the route
+router.post("/orders", async (req, res) =&gt; { /* ... */ });
+
+// better: delegate
+router.post("/orders", createOrder);
+// Route -> Controller -> Service -> Model</code></pre>
+            <ul>
+              <li>
+                React should know the <strong>API</strong> (e.g.
+                <code>GET /api/products</code>), never MongoDB or Mongoose.
+              </li>
+              <li>
+                The backend owns the database, fields, security, and business
+                rules.
+              </li>
+              <li>
+                Don't expose database structure — return a useful, deliberate
+                API response.
+              </li>
+            </ul>
+          </section>
+
+          <section class="section">
+            <h2 id="security">Security</h2>
+            <p>
+              Never trust <code>req.body</code>, <code>req.params</code>,
+              <code>req.query</code>, or any value the frontend claims (role,
+              price, payment status). Always validate on the backend.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// never store passwords directly
+// bad
+password: "123456";
+
+// good
+password: await bcrypt.hash(password, 10);</code></pre>
+            <p>
+              Never commit secrets such as <code>MONGO_URI</code>,
+              <code>JWT_SECRET</code>, or <code>STRIPE_SECRET_KEY</code>. Put
+              them in <code>.env</code> and list <code>.env</code> in
+              <code>.gitignore</code>.
+            </p>
+            <aside class="callout warn">
+              <span class="ct">Warning</span>
+              <p>
+                Secrets and environment variables are owned by
+                <a href="../06-backend/nodejs.html">Node.js</a>; hashing and
+                tokens by
+                <a href="../06-backend/authentication-jwt.html"
+                  >Authentication &amp; JWT</a
+                >.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="logging">Logging</h2>
+            <p>
+              Use <code>console.log()</code> in development, and a real logger
+              (Pino or Winston) in production. Log errors, requests, and
+              important events.
+            </p>
+            <p>Never log passwords, JWTs, credit card data, or API secrets.</p>
+          </section>
+
+          <section class="section">
+            <h2 id="database-api-and-ux">
+              Database, API &amp; frontend UX best practices
+            </h2>
+            <p>
+              Three surfaces of a MERN app where small habits prevent large
+              problems later: keep queries cheap, URLs meaningful, and every
+              view honest about its four states.
+            </p>
+
+            <h3>Database — keep queries cheap</h3>
+            <p>
+              MongoDB makes it effortless to write expensive queries. Small
+              habits at the query layer stop the database becoming the
+              bottleneck at scale.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>// project only what you need
+const users = await User.find({}, { name: 1, email: 1 });
+
+// index what you filter and sort on — before you need it
+userSchema.index({ email: 1 }, { unique: true });
+orderSchema.index({ userId: 1, createdAt: -1 });
+
+// paginate by default
+const posts = await Post.find({ _id: { $lt: cursor } })
+    .sort({ _id: -1 })
+    .limit(20);
+
+// avoid N+1: one query, not one per document
+const posts = await Post.find().populate("authorId", "name avatar");
+
+// .lean() for read-only responses — 3–5× faster hydration
+const items = await Item.find().lean();</code></pre>
+            <aside class="callout key">
+              <span class="ct">Key point</span>
+              <p>
+                An unindexed query works fine with 100 documents in development
+                and does a collection scan on every request at 100k documents in
+                production. The habit costs seconds today; retrofitting costs
+                days later.
+              </p>
+            </aside>
+
+            <h3>API — keep URLs meaningful</h3>
+            <p>
+              Your URLs are a public contract. Once clients depend on them,
+              changing them is a breaking change. Use nouns for resources, verbs
+              only for actions, and let HTTP status codes speak.
+            </p>
+            <pre class="code-block" data-lang="text"><code>GET    /api/v1/users
+POST   /api/v1/posts
+DELETE /api/v1/users/42
+GET    /api/v1/users/42/orders
+GET    /api/v1/products?category=shoes&amp;sort=-price&amp;page=2</code></pre>
+            <ul>
+              <li>
+                Pluralise consistently — <code>/users</code>, not
+                <code>/user</code> in one place and <code>/orders</code> in
+                another.
+              </li>
+              <li>
+                Version from the start — <code>/api/v1</code> costs nothing now
+                and saves everything later.
+              </li>
+              <li>
+                Nest only when the relationship is truly hierarchical; flatten
+                otherwise with query params.
+              </li>
+              <li>
+                Return real status codes — <code>201</code> on create,
+                <code>204</code> on delete, <code>404</code> not found,
+                <code>422</code> invalid input.
+              </li>
+            </ul>
+            <aside class="callout info">
+              <span class="ct">Note</span>
+              <p>
+                HTTP methods, status codes, and REST naming are owned by
+                <a href="../06-backend/rest-api.html">REST API</a>.
+              </p>
+            </aside>
+
+            <h3>Frontend UX — every view honest about its four states</h3>
+            <p>
+              Every API-driven component has four states, not one. A view that
+              only handles success lies to the user on slow connections, when
+              the API is down, and when a new user has zero items.
+            </p>
+            <pre
+              class="code-block"
+              data-lang="text"
+            ><code>Loading: "Loading products..."
+Error:   "Unable to load products." + Retry
+Empty:   "No products found." + action
+Success: show the products.</code></pre>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>function ProductList() {
+    const { status, data, error, refetch } = useGetProductsQuery();
+
+    if (status === "loading") return &lt;Skeleton rows={5} /&gt;;
+    if (status === "error")   return &lt;ErrorState message={error} onRetry={refetch} /&gt;;
+    if (data.length === 0)    return &lt;EmptyState message="No products found" /&gt;;
+
+    return &lt;ul&gt;{data.map(p =&gt; &lt;ProductCard key={p._id} product={p} /&gt;)}&lt;/ul&gt;;
+}</code></pre>
+            <aside class="callout warn">
+              <span class="ct">Watch out</span>
+              <p>
+                Empty and loading are different states. A blank panel while
+                loading looks broken; a blank panel when empty looks broken too.
+                Handle both explicitly.
+              </p>
+            </aside>
+          </section>
+          <section class="section">
+            <h2 id="accessibility-and-responsiveness">
+              Accessibility &amp; responsiveness
+            </h2>
+            <ul>
+              <li>
+                Use <code>&lt;button&gt;</code>, not a clickable
+                <code>&lt;div&gt;</code>.
+              </li>
+              <li>Use <code>&lt;label&gt;</code> for inputs.</li>
+              <li>Give images descriptive <code>alt</code> text.</li>
+              <li>Make buttons keyboard accessible.</li>
+            </ul>
+            <p>
+              Don't design only for desktop — consider mobile, tablet, desktop,
+              and large screens, and test real screen sizes.
+            </p>
+            <aside class="callout info">
+              <span class="ct">Note</span>
+              <p>
+                Layout mechanics and responsive CSS are owned by
+                <a href="../05-frontend/css.html">CSS</a> and
+                <a href="../05-frontend/html.html">HTML</a>.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="performance">Performance</h2>
+            <p>
+              Don't optimize everything immediately: make it work, then measure,
+              then optimize.
+            </p>
+            <ul>
+              <li>Lazy loading</li>
+              <li>Memoization</li>
+              <li>Pagination</li>
+              <li>Caching</li>
+              <li>Image optimization</li>
+              <li>Code splitting</li>
+            </ul>
+            <aside class="callout info">
+              <span class="ct">Note</span>
+              <p>
+                Reason about growth before optimizing with
+                <a href="big-o-time-complexity.html">Big O / Time Complexity</a
+                >.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="folders-and-commits">Clean folders &amp; commits</h2>
+            <p>
+              Name folders by purpose — <code>components/</code>,
+              <code>services/</code>, <code>controllers/</code>,
+              <code>models/</code>, <code>middleware/</code> — not
+              <code>stuff/</code>, <code>misc/</code>, <code>new/</code>,
+              <code>test2/</code>, or <code>final/</code>.
+            </p>
+            <pre class="code-block" data-lang="bash"><code># bad
+git commit -m "changes"
+git commit -m "fix"
+
+# good
+git commit -m "Add product filtering"
+git commit -m "Fix login validation"
+git commit -m "Add JWT authentication"</code></pre>
+          </section>
+
+          <section class="section">
+            <h2 id="pre-commit-workflow">Pre-commit workflow</h2>
+            <p>Run this always before committing:</p>
+            <pre class="code-block" data-lang="bash"><code>git status
+npm run lint
+npm test
+npm run build
+
+git add .
+git commit -m "Your message"
+git push</code></pre>
+          </section>
+
+          <section class="section">
+            <h2 id="code-review-checklist">Code review checklist</h2>
+            <p>
+              Run through this list before pushing or opening a pull request.
+              Each check maps to a rule from this page — a "no" anywhere means
+              the change is not finished.
+            </p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Check</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Does the name make sense?</td>
+                    <td>Readability</td>
+                  </tr>
+                  <tr>
+                    <td>Is the function too long?</td>
+                    <td>Single responsibility</td>
+                  </tr>
+                  <tr>
+                    <td>Is code duplicated?</td>
+                    <td>DRY</td>
+                  </tr>
+                  <tr>
+                    <td>Can this be simplified?</td>
+                    <td>KISS</td>
+                  </tr>
+                  <tr>
+                    <td>Is there unnecessary nesting?</td>
+                    <td>Early return</td>
+                  </tr>
+                  <tr>
+                    <td>Are errors handled?</td>
+                    <td>Reliability</td>
+                  </tr>
+                  <tr>
+                    <td>Is user input validated?</td>
+                    <td>Security</td>
+                  </tr>
+                  <tr>
+                    <td>Are secrets protected?</td>
+                    <td>Security</td>
+                  </tr>
+                  <tr>
+                    <td>Are unused imports removed?</td>
+                    <td>Tidiness</td>
+                  </tr>
+                  <tr>
+                    <td>Is the code formatted?</td>
+                    <td>Consistency</td>
+                  </tr>
+                  <tr>
+                    <td>Does ESLint pass?</td>
+                    <td>Correctness</td>
+                  </tr>
+                  <tr>
+                    <td>Do tests pass?</td>
+                    <td>Confidence</td>
+                  </tr>
+                  <tr>
+                    <td>Does production build work?</td>
+                    <td>Deployability</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 id="make-it-clean-process">The "make it clean" process</h2>
+            <p>
+              Clean code is a sequence, not a single act.
+              <strong>Why:</strong> code that only "works" still costs time on
+              the next change. <strong>When:</strong> run these steps in order
+              on every feature or bug fix, always after your solution already
+              works.
+            </p>
+            <pre class="flow">
+1  Make it work           7  Validate inputs
+2  Make it readable       8  Test
+3  Remove duplication     9  Format with Prettier
+4  Split large functions  10 Check with ESLint
+5  Separate responsibilities 11 Review security
+6  Handle errors          12 Commit</pre
+            >
+            <aside class="callout key">
+              <span class="ct">Key point</span>
+              <p>
+                The most important rule: good code is not the shortest code — it
+                is code another developer can understand without asking you what
+                it does.
+              </p>
+            </aside>
+          </section>
+
+          <section class="section">
+            <h2 id="refactor-example">
+              Worked example: the getProducts refactor
+            </h2>
+            <p>
+              A controller with bad names, no explicit status, database logic
+              inline, and poor error handling:
+            </p>
+            <pre class="code-block" data-lang="javascript"><code>// bad
+const f = async (r, s) =&gt; {
+    try {
+        const x = await Product.find();
+        s.json(x);
+    } catch (e) {
+        s.status(500).json({ message: e.message });
+    }
+};
+
+// Problems:
+// - Bad names
+// - No explicit status code
+// - Database logic in the controller
+// - Poor error handling
+// - Hard to maintain</code></pre>
+            <p>The same endpoint, cleaned up:</p>
+            <pre
+              class="code-block"
+              data-lang="javascript"
+            ><code>const getProducts = async (req, res, next) =&gt; {
+    try {
+        const products = await productService.getAllProducts();
+
+        res.status(200).json({
+            success: true,
+            data: products
+        });
+    } catch (error) {
+        next(error);   // forward to the centralized error middleware
+    }
+};</code></pre>
+            <p>
+              Clear names, an explicit status, logic delegated to a service, and
+              errors forwarded to centralized middleware.
+            </p>
+
+            <h3>Professional mental model</h3>
+            <p>
+              The questions a senior developer silently asks for every block
+              they write or review. Working through them in order turns "it
+              works" into "it will keep working".
+            </p>
+            <pre class="flow">
+WHAT does this code do?
+  -> WHY does it do it?
+    -> WHO is responsible for it?
+      -> CAN I reuse it?
+        -> WHAT happens if it fails?
+          -> CAN another developer understand it?</pre
+            >
+          </section>
+
+          <section class="section recap">
+            <h2 id="quick-recap">Quick recap</h2>
+            <ul>
+              <li>
+                Meaningful names; verbs for functions, nouns for variables,
+                questions for booleans
+              </li>
+              <li>
+                Small, single-responsibility functions; early return; no
+                unnecessary <code>else</code>
+              </li>
+              <li>
+                DRY, but don't over-abstract; name magic values as constants
+              </li>
+              <li>
+                Keep components small; logic in hooks, API calls centralized
+              </li>
+              <li>
+                Use destructuring, optional chaining, nullish coalescing,
+                immutability, <code>===</code>, <code>const</code>
+              </li>
+              <li>Comment WHY; remove dead code and unused imports</li>
+              <li>Format with Prettier, enforce with ESLint</li>
+              <li>Centralize errors, validate early, fail fast</li>
+              <li>
+                Keep business logic out of routes and DB logic out of React
+              </li>
+              <li>
+                Never trust input, never store plain passwords, never commit
+                secrets
+              </li>
+              <li>Log properly and never log sensitive data</li>
+              <li>
+                Handle loading, error, success, and empty states; be accessible
+                and responsive
+              </li>
+              <li>
+                Clean folders, meaningful commits, self-review before pushing
+              </li>
+            </ul>
+          </section>
+
+          <footer class="doc-footer">
+            <div class="related-nav">
+              <a href="programming-principles.html"
+                ><span class="rt">→ Programming Principles</span
+                ><span class="rc">The why behind each rule</span></a
+              >
+              <a href="mern-architecture.html"
+                ><span class="rt">→ MERN Architecture</span
+                ><span class="rc"
+                  >Where these rules land in a real project's structure</span
+                ></a
+              >
+              <a href="problem-solving.html"
+                ><span class="rt">→ Problem Solving</span
+                ><span class="rc">Clean code starts with a clear plan</span></a
+              >
+              <a href="../06-backend/express.html"
+                ><span class="rt">→ Express</span
+                ><span class="rc"
+                  >Routes, middleware, and centralized error handling</span
+                ></a
+              >
+              <a href="../08-testing/testing.html"
+                ><span class="rt">→ Testing</span
+                ><span class="rc">Prove your clean code actually works</span></a
+              >
+            </div>
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <script src="../assets/js/nav.js" data-base="../"></script>
+    <script src="../assets/js/app.js"></script>
+  </body>
+</html>

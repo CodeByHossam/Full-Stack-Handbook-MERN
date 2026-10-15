@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSH into Docker — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Deployment</span>
+                <span class="sep">/</span>
+                <span>SSH into Docker</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>SSH into a Docker Container</h1>
+                <p class="subtitle">A practical, step-by-step reference for building a container with an SSH server, generating and installing SSH keys, connecting over key authentication, and reading the Linux environment once you are inside.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Deployment</span>
+                    <span class="badge b-purple">SSH</span>
+                    <span class="badge b-teal">Docker</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="mission-architecture">Mission and architecture</h2>
+                <p><strong>Goal:</strong> connect from a client machine to an Ubuntu Docker container running on a host machine, using SSH keys instead of a password.</p>
+                <pre class="flow">Client machine  ──SSH──►  Host machine  ──Docker──►  Ubuntu container
+private key               port 2222                    public key
+IP: 192.168.1.10          IP: 192.168.1.20             hostname: abc123</pre>
+                <p>This setup is useful because it teaches the same SSH key authentication that GitHub, AWS, and production servers use, and because a container behaves exactly like a remote Linux server while staying a safe sandbox.</p>
+                <aside class="callout key"><span class="ct">Core idea</span><p>A public key is a padlock you give to the server. The private key is the only key that opens it — and it never leaves your client machine.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="build-container">Build a container with an SSH server</h2>
+                <p>Run the container on the host machine, publishing the SSH port. The official Ubuntu image does not include an SSH server, so you install and start one inside it.</p>
+                <pre class="code-block" data-lang="bash"><code># 1. create and start the container, mapping host port 2222 to container port 22
+docker run -it -d --name ubuntu-ssh -p 2222:22 ubuntu:22.04
+
+# 2. open a shell inside the running container
+docker exec -it ubuntu-ssh bash
+
+# 3. install the SSH server (sshd)
+apt update &amp;&amp; apt install -y openssh-server
+
+# 4. create the runtime directory and start the daemon
+mkdir -p /var/run/sshd &amp;&amp; service ssh start
+
+# 5. set a temporary root password so you can log in once while setting up keys
+passwd root
+
+# 6. allow root login over SSH for this test container
+echo "PermitRootLogin yes" &gt;&gt; /etc/ssh/sshd_config &amp;&amp; service ssh restart</code></pre>
+                <p>The <code>docker run</code> flags:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Flag</th><th>Meaning</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>-it</code></td><td>Interactive plus a terminal.</td></tr>
+                            <tr><td><code>-d</code></td><td>Detached — run in the background.</td></tr>
+                            <tr><td><code>--name ubuntu-ssh</code></td><td>Give the container a friendly name.</td></tr>
+                            <tr><td><code>-p 2222:22</code></td><td>Map host port 2222 to container port 22.</td></tr>
+                            <tr><td><code>ubuntu:22.04</code></td><td>Use the official Ubuntu 22.04 image.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout-warn"><span class="ct">Warning</span><p>Ports must be published at creation time. You cannot add <code>-p</code> to a running container. On a real internet-facing server, never allow direct root login — use a normal user with <code>sudo</code> instead.</p></aside>
+                <aside class="callout-err"><span class="ct">Common mistake</span><p>Starting the SSH daemon is the step people miss. If <code>sshd</code> is not running, every connection fails with <em>"Connection closed by remote host"</em>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="generate-ssh-keys">Generate SSH keys</h2>
+                <p>On the client machine, create a key pair:</p>
+                <pre class="code-block" data-lang="bash"><code>ssh-keygen -t ed25519 -C "your-email@example.com"   # -t type, -C comment label</code></pre>
+                <p>Press Enter three times to accept the default location and skip the passphrase. <code>-t ed25519</code> selects a modern elliptic-curve algorithm; <code>-C</code> adds a comment so you can identify the key later.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>File</th><th>Role</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>id_ed25519</code></td><td><strong>Private key</strong> — stays on the client. Never share it or copy it to a server.</td></tr>
+                            <tr><td><code>id_ed25519.pub</code></td><td><strong>Public key</strong> — copied to the server. Safe to share.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Verify the keys are in the default SSH folder. SSH clients only look in <code>~/.ssh/</code>:</p>
+                <pre class="code-block" data-lang="bash"><code># Windows
+dir %USERPROFILE%\.ssh
+
+# Linux / macOS
+ls ~/.ssh</code></pre>
+                <p>If the keys were saved somewhere else, move them into the default folder:</p>
+                <pre class="code-block" data-lang="bash"><code># Windows example
+mkdir %USERPROFILE%\.ssh 2&gt;nul
+copy D:\test\id_ed25519 %USERPROFILE%\.ssh\
+copy D:\test\id_ed25519.pub %USERPROFILE%\.ssh\</code></pre>
+                <p>Display the public key so you can copy it into the server:</p>
+                <pre class="code-block" data-lang="bash"><code>type %USERPROFILE%\.ssh\id_ed25519.pub</code></pre>
+                <p>The output is one long line starting with <code>ssh-ed25519 AAAA...</code>. That entire line is the public key.</p>
+                <aside class="callout-err"><span class="ct">Common mistake</span><p>Keys saved outside <code>~/.ssh/</code> are ignored by the SSH client, which produces a "no such file" style error even though the keys exist.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="install-public-key">Install the public key on the server</h2>
+                <p>Inside the container, create the directory SSH looks in and lock it down:</p>
+                <pre class="code-block" data-lang="bash"><code>mkdir -p /root/.ssh   # -p creates parents and ignores "already exists"
+chmod 700 /root/.ssh  # owner-only; sshd refuses a world-readable directory</code></pre>
+                <p>Write the public key into <code>authorized_keys</code>:</p>
+                <pre class="code-block" data-lang="bash"><code>echo "ssh-ed25519 AAAAC3...yourPublicKeyHere your-email@example.com" &gt; /root/.ssh/authorized_keys  # &gt; replaces the file</code></pre>
+                <p>Then fix the file permissions:</p>
+                <pre class="code-block" data-lang="bash"><code>chmod 600 /root/.ssh/authorized_keys   # owner read/write only; sshd rejects looser modes</code></pre>
+                <aside class="callout-info"><span class="ct">Note</span><p>Use <code>&gt;</code> to replace the file with exactly one line. Using <code>&gt;&gt;</code> appends, which creates duplicate keys and can confuse the SSH server. The container now trusts the client's public key.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="connect-and-test">Connect and test</h2>
+                <p>On the host machine, find the real network IP the client must reach:</p>
+                <pre class="code-block" data-lang="bash"><code>ipconfig        # Windows
+ip addr         # Linux / macOS</code></pre>
+                <p>Use the physical Wi-Fi adapter's IP. Ignore virtual adapters such as WSL or VirtualBox — they return addresses like <code>172.x.x.x</code> that other machines cannot reach.</p>
+                <p>Open the mapped port in the host firewall so incoming SSH traffic can reach the container:</p>
+                <pre class="code-block" data-lang="bash"><code>netsh advfirewall firewall add rule name="Docker SSH 2222" dir=in action=allow protocol=TCP localport=2222  # open the mapped port</code></pre>
+                <p>From the client machine, connect with verbose output so you can see what SSH is doing:</p>
+                <pre class="code-block" data-lang="bash"><code>ssh -v root@192.168.1.20 -p 2222</code></pre>
+                <p>Watch for <code>Authentication succeeded (publickey)</code> — that confirms the key worked. The prompt then changes to something like <code>root@abc123:~#</code>, meaning you are inside the container with no password needed.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="mistakes-fixed">Mistakes and how to fix them</h2>
+                <p>Nearly every failure in this setup maps to one of these symptoms — the fix is usually a missing daemon, a closed port, or a misplaced key file.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Error</th><th>Cause</th><th>Fix</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>Connection timed out</code></td><td>Connected to a virtual adapter IP such as <code>172.26.240.1</code></td><td>Use the real Wi-Fi IP, for example <code>192.168.1.20</code></td></tr>
+                            <tr><td><code>Connection closed by remote host</code></td><td><code>sshd</code> not running inside the container</td><td><code>service ssh start</code></td></tr>
+                            <tr><td><code>kex_exchange_identification: Connection closed</code></td><td>Same cause — the server closed before SSH started</td><td>Start the daemon</td></tr>
+                            <tr><td>Duplicate key in <code>authorized_keys</code></td><td>Used <code>&gt;&gt;</code> twice</td><td>Use <code>&gt;</code> to replace</td></tr>
+                            <tr><td><code>The system cannot find the path specified</code></td><td>Keys saved outside <code>~/.ssh/</code></td><td>Copy them into the default SSH folder</td></tr>
+                            <tr><td><code>ls</code> shows nothing</td><td>You are in <code>/root</code>, which is empty</td><td><code>cd /</code> then <code>ls</code></td></tr>
+                            <tr><td><code>cd: etc: No such file or directory</code></td><td>Missing the leading slash</td><td>Use <code>cd /etc</code></td></tr>
+                            <tr><td><code>dir</code> does nothing</td><td><code>dir</code> is a Windows command</td><td>Use <code>ls</code> on Linux</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout-err"><span class="ct">Common mistake</span><p>Most SSH failures come from three causes: the daemon is not running, the port is not open in the firewall, or the key files are in the wrong location.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="reading-linux-prompt">Reading the Linux prompt</h2>
+                <p>The prompt is your position indicator — it tells you where you are in the filesystem.</p>
+                <pre class="flow">root@abc123:~#
+|    |       | |
+|    |       | # you are root (superuser)
+|    |       ~ your home folder (/root)
+|    hostname of the container
+user = root</pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Prompt</th><th>You are in</th><th>Meaning</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>root@abc:~#</code></td><td><code>/root</code></td><td>Home folder (often empty)</td></tr>
+                            <tr><td><code>root@abc:/#</code></td><td><code>/</code></td><td>Filesystem root</td></tr>
+                            <tr><td><code>root@abc:/etc#</code></td><td><code>/etc</code></td><td>Configuration files</td></tr>
+                            <tr><td><code>root@abc:/var/log#</code></td><td><code>/var/log</code></td><td>Logs</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout-info"><span class="ct">Note</span><p><code>ls</code> lists the <em>current</em> folder, not all files on the system. If you were in an empty <code>/root</code>, you saw nothing. After <code>cd /</code>, you see the real root: <code>bin boot dev etc home lib ...</code></p></aside>
+                <p>The Linux filesystem at a glance:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Folder</th><th>What is inside</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>/bin</code></td><td>Basic commands (<code>ls</code>, <code>cat</code>, <code>bash</code>).</td></tr>
+                            <tr><td><code>/sbin</code></td><td>System commands for root.</td></tr>
+                            <tr><td><code>/etc</code></td><td>Configuration files.</td></tr>
+                            <tr><td><code>/home</code></td><td>Home folders for normal users.</td></tr>
+                            <tr><td><code>/root</code></td><td>The root user's home folder.</td></tr>
+                            <tr><td><code>/var</code></td><td>Logs, caches, and databases.</td></tr>
+                            <tr><td><code>/tmp</code></td><td>Temporary files (cleared on reboot).</td></tr>
+                            <tr><td><code>/usr</code></td><td>Most installed programs.</td></tr>
+                            <tr><td><code>/proc</code>, <code>/sys</code></td><td>Virtual — live kernel and hardware info.</td></tr>
+                            <tr><td><code>/dev</code></td><td>Device files.</td></tr>
+                            <tr><td><code>/mnt</code>, <code>/media</code></td><td>Mount points (USB drives, shares).</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="command-cheatsheets">Command cheat sheets</h2>
+                <p>Quick references for the commands you will use most once you are inside the container.</p>
+                <h3>Linux navigation</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>pwd</code></td><td>Print the current folder.</td></tr>
+                            <tr><td><code>ls</code></td><td>List files here.</td></tr>
+                            <tr><td><code>ls -la</code></td><td>List all files, including hidden, with details.</td></tr>
+                            <tr><td><code>cd /etc</code></td><td>Go to a folder using an absolute path.</td></tr>
+                            <tr><td><code>cd ..</code></td><td>Go up one level.</td></tr>
+                            <tr><td><code>cd ~</code></td><td>Go to the home folder.</td></tr>
+                            <tr><td><code>cd /</code></td><td>Go to the filesystem root.</td></tr>
+                            <tr><td><code>cat file</code></td><td>Show a file's contents.</td></tr>
+                            <tr><td><code>clear</code></td><td>Clear the screen.</td></tr>
+                            <tr><td><code>exit</code></td><td>Leave the container.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Windows vs Linux equivalents</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Windows (CMD)</th><th>Linux</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>dir</code></td><td><code>ls</code></td></tr>
+                            <tr><td><code>type file</code></td><td><code>cat file</code></td></tr>
+                            <tr><td><code>copy</code></td><td><code>cp</code></td></tr>
+                            <tr><td><code>move</code></td><td><code>mv</code></td></tr>
+                            <tr><td><code>del</code></td><td><code>rm</code></td></tr>
+                            <tr><td><code>cls</code></td><td><code>clear</code></td></tr>
+                            <tr><td><code>ipconfig</code></td><td><code>ip a</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Docker</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>docker ps</code></td><td>List running containers.</td></tr>
+                            <tr><td><code>docker ps -a</code></td><td>List all containers, including stopped.</td></tr>
+                            <tr><td><code>docker start ubuntu-ssh</code></td><td>Start a stopped container.</td></tr>
+                            <tr><td><code>docker stop ubuntu-ssh</code></td><td>Stop a running container.</td></tr>
+                            <tr><td><code>docker exec -it ubuntu-ssh bash</code></td><td>Open a shell inside the container.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>SSH</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>ssh-keygen -t ed25519</code></td><td>Generate a key pair.</td></tr>
+                            <tr><td><code>ssh root@IP -p 2222</code></td><td>Connect to the container.</td></tr>
+                            <tr><td><code>ssh -v ...</code></td><td>Verbose mode — debug the connection.</td></tr>
+                            <tr><td><code>ssh -i keyfile ...</code></td><td>Use a specific private key.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="definitions">Key concepts and definitions</h2>
+                <p>The vocabulary behind this workflow, grouped by area.</p>
+                <h3>SSH</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Term</th><th>Definition</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>SSH</strong></td><td>Secure Shell — an encrypted protocol for logging into remote machines.</td></tr>
+                            <tr><td><strong>sshd</strong></td><td>The SSH <em>server</em> daemon that listens for connections.</td></tr>
+                            <tr><td><strong>Client</strong></td><td>The machine you type from.</td></tr>
+                            <tr><td><strong>Server</strong></td><td>The machine you connect to.</td></tr>
+                            <tr><td><strong>Port 22</strong></td><td>The default SSH port inside Linux.</td></tr>
+                            <tr><td><strong>Port 2222</strong></td><td>The host-side port mapped to port 22.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Keys</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Term</th><th>Definition</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Public key</strong></td><td>The padlock — placed on the server in <code>authorized_keys</code>.</td></tr>
+                            <tr><td><strong>Private key</strong></td><td>The key — stays on the client and is never shared.</td></tr>
+                            <tr><td><strong>ed25519</strong></td><td>A modern elliptic-curve algorithm that is fast and strong.</td></tr>
+                            <tr><td><strong>authorized_keys</strong></td><td>The file listing which public keys may log in.</td></tr>
+                            <tr><td><strong>known_hosts</strong></td><td>The file remembering server fingerprints, avoiding warnings.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Permissions</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Value</th><th>Meaning</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>700</code></td><td>Owner: read/write/execute — nobody else.</td></tr>
+                            <tr><td><code>600</code></td><td>Owner: read/write — nobody else.</td></tr>
+                            <tr><td><code>755</code></td><td>Owner: full; others: read and execute.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Docker</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Term</th><th>Definition</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Image</strong></td><td>A read-only template such as <code>ubuntu:22.04</code>.</td></tr>
+                            <tr><td><strong>Container</strong></td><td>A running instance of an image — an isolated Linux system.</td></tr>
+                            <tr><td><strong>Port mapping</strong></td><td><code>-p 2222:22</code> — forwards a host port to a container port.</td></tr>
+                            <tr><td><strong>Volume</strong></td><td>A shared folder between host and container.</td></tr>
+                            <tr><td><strong>Detached (-d)</strong></td><td>Run the container in the background.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="key-auth-handshake">How key authentication works</h2>
+                <p>The SSH key handshake proves identity without ever sending the private key over the network:</p>
+                <pre class="flow">1. Client: "I want to log in as root."
+2. Server: "Prove it — here is a random challenge."
+3. Client: encrypts the challenge with its PRIVATE key.
+4. Server: checks the result against the stored PUBLIC key.
+5. Match?  login granted.   No match?  access denied.</pre>
+                <aside class="callout key"><span class="ct">Why it is safe</span><p>The private key never travels over the network. Even if someone records the entire conversation, they cannot replay it to gain access.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="next-steps">Next steps</h2>
+                <p>Once you can SSH into a container, these are natural follow-ups:</p>
+                <ul>
+                    <li><strong>Auto-start SSH with a Dockerfile</strong> so <code>sshd</code> launches automatically every time the container starts.</li>
+                    <li><strong>Browse files over SSH</strong> with a GUI client such as WinSCP or FileZilla, using the same host, port, user, and private key.</li>
+                    <li><strong>Use VS Code Remote-SSH</strong> to edit code inside the container as if it were a local folder.</li>
+                    <li><strong>Mount a host folder</strong> into the container with <code>-v</code> so both sides see the same files.</li>
+                    <li><strong>Disable password login</strong> for pure key-only authentication.</li>
+                </ul>
+                <p>A Dockerfile that starts the SSH server automatically:</p>
+                <pre class="code-block" data-lang="text"><code>FROM ubuntu:22.04
+RUN apt update &amp;&amp; apt install -y openssh-server   # install the daemon
+RUN mkdir /var/run/sshd                           # runtime dir the daemon needs
+EXPOSE 22                                         # the container's SSH port
+CMD ["/usr/sbin/sshd", "-D"]                      # run sshd in the foreground</code></pre>
+                <p>Key-only authentication in <code>/etc/ssh/sshd_config</code>:</p>
+                <pre class="code-block" data-lang="text"><code>PasswordAuthentication no          # allow keys only, no passwords
+PermitRootLogin prohibit-password  # root may log in with a key, not a password</code></pre>
+                <aside class="callout-warn"><span class="ct">Warning</span><p>Two things to remember: if the host restarts the container, SSH stops and you must run <code>docker exec -it ubuntu-ssh service ssh start</code> again. If the host IP changes, re-check it and use the new address.</p></aside>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Publish the SSH port at container creation with <code>-p 2222:22</code>.</li>
+                    <li>Install and start <code>openssh-server</code> inside the container.</li>
+                    <li>Generate an ed25519 key pair with <code>ssh-keygen</code>.</li>
+                    <li>Keep the private key on the client; install the public key in <code>authorized_keys</code>.</li>
+                    <li>Use <code>700</code> on <code>.ssh</code> and <code>600</code> on <code>authorized_keys</code>.</li>
+                    <li>Connect with <code>ssh -v root@IP -p 2222</code> and look for publickey success.</li>
+                    <li>The private key never leaves the client — that is what makes key auth safe.</li>
+                    <li>Read the prompt to know where you are in the filesystem.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="docker.html"><span class="rt">→ Docker &amp; Deployment</span><span class="rc">Images, containers, Compose, and production</span></a>
+                    <a href="deploy-linux-nginx.html"><span class="rt">→ Deploy on Linux (Nginx/PM2)</span><span class="rc">SSH into a real server and deploy</span></a>
+                    <a href="../03-fundamentals/terminal.html"><span class="rt">→ Terminal &amp; Command Line</span><span class="rc">The shell behind every SSH session</span></a>
+                    <a href="../03-fundamentals/internet-web.html"><span class="rt">→ Internet &amp; Web Fundamentals</span><span class="rc">Ports, IPs, and network addresses</span></a>
+                    <a href="../index.html"><span class="rt">← Library Home</span><span class="rc">Browse all categories</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

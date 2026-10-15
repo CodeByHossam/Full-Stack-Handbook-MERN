@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS RDS MySQL Guide — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Database</span>
+                <span class="sep">/</span>
+                <span>AWS RDS MySQL Guide</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>AWS RDS MySQL + Node.js</h1>
+                <p class="subtitle">A complete lifecycle guide: create an AWS account, provision an RDS MySQL database, connect from MySQL Workbench and Node.js, and fix the ten problems that come up in practice.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Database</span>
+                    <span class="badge b-purple">AWS RDS</span>
+                    <span class="badge b-teal">MySQL + mysql2</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="introduction">1. Introduction</h2>
+                <p>This guide walks through the full lifecycle of setting up a relational database (MySQL) on AWS using <strong>RDS (Relational Database Service)</strong>, then connecting it to <strong>MySQL Workbench</strong> for administration and to <strong>Node.js</strong> using the <code>mysql2</code> package.</p>
+                <aside class="callout info"><span class="ct">Note</span><p>Every step explains <em>why</em> it matters, not just <em>how</em> to do it. No prior AWS experience is assumed.</p></aside>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Layer</th><th>Choice</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Cloud provider</td><td>AWS</td></tr>
+                            <tr><td>Database engine</td><td>MySQL 8.x</td></tr>
+                            <tr><td>DB service</td><td>Amazon RDS (free tier eligible)</td></tr>
+                            <tr><td>GUI client</td><td>MySQL Workbench</td></tr>
+                            <tr><td>Backend runtime</td><td>Node.js (v18+)</td></tr>
+                            <tr><td>Node driver</td><td><code>mysql2/promise</code></td></tr>
+                            <tr><td>Config management</td><td><code>dotenv</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="aws-account">2. AWS account creation</h2>
+                <p>AWS hosts your managed MySQL database. RDS is a managed service: AWS handles backups, patching, and hardware, while you handle the schema and data.</p>
+                <h3>Sign up</h3>
+                <ol>
+                    <li>Go to <code>https://aws.amazon.com/</code> and click Create an AWS Account.</li>
+                    <li>Enter an email address (verification is required), a strong password, and an account name such as <code>my-dev-account</code>.</li>
+                    <li>Choose Personal or Business account type.</li>
+                    <li>Enter payment information — a card is required even for the free tier.</li>
+                    <li>Verify your identity via phone/SMS.</li>
+                    <li>Select the Basic Support Plan (Free).</li>
+                    <li>Sign in to the AWS Management Console at <code>https://console.aws.amazon.com/</code>.</li>
+                </ol>
+                <h3>IAM best practices</h3>
+                <p>Do not use the root account for daily work. Instead:</p>
+                <ol>
+                    <li>In the Console, search for IAM.</li>
+                    <li>Go to Users → Create user.</li>
+                    <li>Name it, for example <code>dev-admin</code>.</li>
+                    <li>Attach the policy <code>AmazonRDSFullAccess</code>.</li>
+                    <li>Enable console access and set a password.</li>
+                    <li>Optionally enable MFA.</li>
+                    <li>Use this user for all RDS-related work.</li>
+                </ol>
+                <aside class="callout key"><span class="ct">Key point</span><p>The root account is the master key to your entire AWS kingdom. Lock it away, enable MFA, and never use it for day-to-day tasks.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="choose-region">3. Choosing a region</h2>
+                <p>Pick a region close to you (for example <code>us-east-1</code>, <code>eu-west-1</code>, or <code>ap-south-1</code>). This reduces latency and can affect free tier availability.</p>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Stick to one region for all resources. Cross-region resources incur data transfer costs.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="create-rds">4. Creating an RDS MySQL database</h2>
+                <h3>Navigate to RDS</h3>
+                <ol>
+                    <li>In the AWS Console search bar, type RDS.</li>
+                    <li>Open the RDS Console at <code>https://console.aws.amazon.com/rds/</code>.</li>
+                    <li>Ensure you are in the correct region (top-right corner).</li>
+                </ol>
+                <h3>Choose a creation method</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Method</th><th>When to use</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Easy Create</td><td>Learning, prototypes, minimal config</td></tr>
+                            <tr><td>Standard Create</td><td>Production, custom config, control</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Use <strong>Standard Create</strong> — it teaches you what each option does.</p>
+                <h3>Engine options</h3>
+                <ul>
+                    <li>Engine type: MySQL</li>
+                    <li>Edition: MySQL Community (free)</li>
+                    <li>Version: latest stable, for example MySQL 8.0.x</li>
+                </ul>
+                <h3>Templates</h3>
+                <ul>
+                    <li><strong>Free tier</strong> — <code>db.t4g.micro</code>, 20 GB storage, single-AZ. Best for learning.</li>
+                    <li><strong>Dev/Test</strong> — slightly larger, still cheap.</li>
+                    <li><strong>Production</strong> — multi-AZ, larger instances, higher cost.</li>
+                </ul>
+                <h3>Settings</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Field</th><th>Example value</th><th>Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>DB instance identifier</td><td><code>my-app-mysql</code></td><td>Unique per region</td></tr>
+                            <tr><td>Master username</td><td><code>admin</code></td><td>Cannot be <code>root</code> on RDS</td></tr>
+                            <tr><td>Credentials management</td><td>Self-managed</td><td>Or use Secrets Manager</td></tr>
+                            <tr><td>Master password</td><td><code>Str0ngPass!2024</code></td><td>Min 8 chars; avoid special chars that break the CLI</td></tr>
+                            <tr><td>Confirm password</td><td>same</td><td></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout key"><span class="ct">Key point</span><p>Save your password in a password manager. RDS will not show it again.</p></aside>
+                <h3>Instance configuration</h3>
+                <ul>
+                    <li>DB instance class: <code>db.t4g.micro</code> (free tier)</li>
+                    <li>Storage type: <code>gp3</code> (General Purpose SSD)</li>
+                    <li>Allocated storage: <code>20 GB</code></li>
+                    <li>Storage autoscaling: enable (set max to 100 GB)</li>
+                </ul>
+                <h3>Connectivity</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Compute resource</td><td>Don't connect to EC2</td><td>Connecting from a local machine</td></tr>
+                            <tr><td>Network type</td><td>IPv4</td><td>Standard</td></tr>
+                            <tr><td>VPC</td><td>Default VPC</td><td>Simplest for learning</td></tr>
+                            <tr><td>DB subnet group</td><td>Default</td><td>Auto-created</td></tr>
+                            <tr><td>Public access</td><td>Yes</td><td>Required for local Workbench/Node connection</td></tr>
+                            <tr><td>VPC security group</td><td>Create new → <code>rds-mysql-sg</code></td><td>Edited next</td></tr>
+                            <tr><td>Availability Zone</td><td>No preference</td><td></td></tr>
+                            <tr><td>Database port</td><td><code>3306</code></td><td>Default MySQL port</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Database authentication</h3>
+                <ul>
+                    <li><strong>Password authentication</strong> — simplest, use this.</li>
+                    <li>IAM authentication — advanced, requires token generation.</li>
+                    <li>Kerberos — enterprise only.</li>
+                </ul>
+                <h3>Additional configuration</h3>
+                <ul>
+                    <li>Initial database name: <code>appdb</code> — RDS does <strong>not</strong> create a default database otherwise.</li>
+                    <li>Backup retention: 7 days (free tier max is fine).</li>
+                    <li>Encryption: enabled by default.</li>
+                    <li>Monitoring: enhanced monitoring optional.</li>
+                    <li>Maintenance window: no preference.</li>
+                </ul>
+                <h3>Create the database</h3>
+                <p>Click Create database. Provisioning takes 5–10 minutes. Status goes from <code>Creating</code> to <code>Available</code>. Then copy the <strong>Endpoint</strong>, for example <code>my-app-mysql.abc123.us-east-1.rds.amazonaws.com</code>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="security-groups">5. Configuring security groups</h2>
+                <p>A security group is a virtual firewall. By default RDS blocks all inbound traffic, so you must explicitly allow your IP.</p>
+                <ol>
+                    <li>On the RDS instance page, scroll to Connectivity &amp; security.</li>
+                    <li>Click the VPC security group link (for example <code>sg-0abc123...</code>).</li>
+                    <li>In the Inbound rules tab, click Edit inbound rules.</li>
+                    <li>Add a rule:</li>
+                </ol>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Type</th><th>Protocol</th><th>Port</th><th>Source</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>MySQL/Aurora</td><td>TCP</td><td>3306</td><td>My IP</td><td>Local dev access</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Never use <code>0.0.0.0/0</code> (anywhere) in production — it exposes your database to the entire internet. Use My IP or a specific CIDR range.</p></aside>
+                <p>Outbound rules are typically <code>All traffic</code> by default — leave them as-is.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="mysql-workbench">6. Connecting with MySQL Workbench</h2>
+                <p>Install from <code>https://dev.mysql.com/downloads/workbench/</code>, then create a connection:</p>
+                <ol>
+                    <li>Open MySQL Workbench.</li>
+                    <li>Click the <code>+</code> icon next to MySQL Connections.</li>
+                    <li>Fill in the fields below.</li>
+                </ol>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Field</th><th>Value</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Connection Name</td><td><code>AWS RDS - appdb</code></td></tr>
+                            <tr><td>Connection Method</td><td>Standard (TCP/IP)</td></tr>
+                            <tr><td>Hostname</td><td><code>&lt;your-rds-endpoint&gt;</code></td></tr>
+                            <tr><td>Port</td><td><code>3306</code></td></tr>
+                            <tr><td>Username</td><td><code>admin</code></td></tr>
+                            <tr><td>Password</td><td>Store in Vault → enter your password</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Common Workbench errors &amp; fixes</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Error</th><th>Cause</th><th>Fix</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>Can't connect to MySQL server (10060)</code></td><td>Security group blocks your IP</td><td>Add an inbound rule for MySQL/Aurora on port 3306 from My IP</td></tr>
+                            <tr><td><code>Access denied for user 'admin'</code></td><td>Wrong password or username</td><td>Re-check credentials in the RDS console</td></tr>
+                            <tr><td><code>SSL connection error</code></td><td>Workbench SSL mismatch</td><td>SSL tab → set to <code>If available</code> or <code>Required</code></td></tr>
+                            <tr><td><code>Lost connection ... reading initial communication packet</code></td><td>Public access disabled</td><td>Modify RDS → Connectivity → Publicly accessible: Yes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Run your first query</h3>
+                <p>Workbench is a great shell for schema work: create the table here once, and every Node script afterwards can reuse it.</p>
+                <pre class="code-block" data-lang="sql"><code>SHOW DATABASES;
+USE appdb;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+SELECT * FROM users;</code></pre>
+                <p>You now have a working table.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="nodejs-setup">7. Connecting with Node.js</h2>
+                <p>Node connects to RDS through the <code>mysql2</code> driver. Set up a small project, load credentials from <code>.env</code>, then verify the connection with a trivial query before writing real code.</p>
+                <pre class="code-block" data-lang="bash"><code>mkdir aws-rds-node-demo
+cd aws-rds-node-demo
+npm init -y
+npm install mysql2 dotenv</code></pre>
+                <ul>
+                    <li><code>mysql2</code> — promise-based MySQL driver for Node.js, faster and more modern than <code>mysql</code>.</li>
+                    <li><code>dotenv</code> — loads environment variables from a <code>.env</code> file.</li>
+                </ul>
+                <h3>Create the .env file</h3>
+                <p>Credentials go in the environment, never in source. Each variable matches a <code>mysql2</code> connection option so the config stays a one-line mapping.</p>
+                <pre class="code-block" data-lang="text"><code>DB_HOST=my-app-mysql.abc123.us-east-1.rds.amazonaws.com
+DB_PORT=3306
+DB_USER=admin
+DB_PASSWORD=Str0ngPass!2024
+DB_NAME=appdb</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Add <code>.env</code> to <code>.gitignore</code> immediately. Never commit credentials to Git.</p></aside>
+                <h3>Add .gitignore</h3>
+                <p>Ignore dependencies, secrets, and logs so a careless <code>git add .</code> cannot push your database password.</p>
+                <pre class="code-block" data-lang="text"><code>node_modules/
+.env
+*.log</code></pre>
+                <h3>Basic connection test</h3>
+                <p>A sanity-check script connects, runs <code>SELECT 1</code>, prints the result, and closes the connection — the smallest possible proof that your credentials, security group, and endpoint are all correct.</p>
+                <pre class="code-block" data-lang="javascript"><code>require("dotenv").config();
+const mysql = require("mysql2/promise");
+
+async function main() {
+    const connection = await mysql.createConnection({
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),  // env vars are strings — cast to number
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+    });
+
+    try {
+        const [rows] = await connection.query("SELECT 1 + 1 AS result");
+        console.log("Connection OK. Result:", rows[0].result);
+    } catch (err) {
+        console.error("Connection failed:", err.message);
+    } finally {
+        await connection.end();
+    }
+}
+
+main();</code></pre>
+                <pre class="code-block" data-lang="bash"><code>node test-connection.js
+# Connection OK. Result: 2</code></pre>
+                <h3>Understanding the connection object</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Field</th><th>Purpose</th><th>Common mistake</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>host</code></td><td>RDS endpoint</td><td>Using the wrong region's endpoint</td></tr>
+                            <tr><td><code>port</code></td><td>MySQL port (3306)</td><td>Passing a string instead of a number</td></tr>
+                            <tr><td><code>user</code></td><td>Master username</td><td>Assuming it is <code>root</code></td></tr>
+                            <tr><td><code>password</code></td><td>Master password</td><td>Whitespace or special characters in <code>.env</code></td></tr>
+                            <tr><td><code>database</code></td><td>Initial DB name</td><td>Forgetting to set it during RDS creation</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Using a connection pool (production pattern)</h3>
+                <p>Export a single pool instead of opening a connection per request: connections are reused, so latency drops and concurrency scales under load.</p>
+                <pre class="code-block" data-lang="javascript"><code>require("dotenv").config();
+const mysql = require("mysql2/promise");
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,   // queue a request while all connections are busy
+    connectionLimit: 10,
+    queueLimit: 0               // unlimited queue size
+});
+
+module.exports = pool;</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>const pool = require("./db");
+
+async function getUsers() {
+    const [rows] = await pool.query("SELECT * FROM users");
+    return rows;
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Pools reuse connections, reduce latency, and handle concurrency gracefully. Never open a new connection per request in production.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="insert-example">8. Full working example: insertData.js</h2>
+                <h3>Project structure</h3>
+                <p>The demo is deliberately flat: one small script per task, so you can run each step in isolation. <code>test-connection.js</code> proves connectivity, <code>insertData.js</code> writes rows, and <code>readData.js</code> reads them back. Only <code>.env</code> and <code>node_modules/</code> must never be committed.</p>
+                <pre class="code-block" data-lang="text"><code>aws-rds-node-demo/
+├── .env
+├── .gitignore
+├── package.json
+├── test-connection.js
+├── insertData.js
+└── readData.js</code></pre>
+                <h3>insertData.js</h3>
+                <p>Writes two rows in one statement using <code>?</code> placeholders. The values array fills them in order — never concatenate them into the SQL string.</p>
+                <pre class="code-block" data-lang="javascript"><code>require("dotenv").config();
+const mysql = require("mysql2/promise");
+
+async function main() {
+    const connection = await mysql.createConnection({
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+    });
+
+    try {
+        await connection.query(
+            `
+            INSERT INTO users (name, email)
+            VALUES (?, ?), (?, ?)
+            `,
+            [
+                "John Smith",
+                "john@example.com",
+                "Sarah Johnson",
+                "sarah@example.com"
+            ]
+        );
+
+        console.log("2 users inserted successfully");
+    } catch (error) {
+        console.error("Database error:", error);
+    } finally {
+        await connection.end();
+    }
+}
+
+main();</code></pre>
+                <h3>readData.js (verify)</h3>
+                <p>This script mirrors <code>insertData.js</code> but runs a <code>SELECT</code> and prints the rows with <code>console.table()</code>, the quickest way to confirm the writes actually landed. Seeing the same rows later in Workbench proves both tools hit the same database.</p>
+                <pre class="code-block" data-lang="javascript"><code>require("dotenv").config();
+const mysql = require("mysql2/promise");
+
+async function main() {
+    const connection = await mysql.createConnection({
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+    });
+
+    try {
+        const [rows] = await connection.query("SELECT * FROM users");  // mysql2 returns [rows, fields]
+        console.table(rows);   // destructure: first element is the result rows
+    } catch (error) {
+        console.error("Database error:", error);
+    } finally {
+        await connection.end();
+    }
+}
+
+main();</code></pre>
+                <p>Run both, then verify in Workbench with <code>SELECT * FROM users;</code>. The same two rows confirm Node.js and Workbench hit the same RDS database.</p>
+                <h3>package.json scripts</h3>
+                <p>Give each demo a named shortcut so the workflow becomes <code>npm run insert</code> and <code>npm run read</code>.</p>
+                <pre class="code-block" data-lang="json"><code>{
+  "scripts": {
+    "test:conn": "node test-connection.js",
+    "insert": "node insertData.js",
+    "read": "node readData.js"
+  }
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="troubleshooting">9. Troubleshooting &amp; problems solved</h2>
+                <p>These are real problems encountered during RDS + Node.js + Workbench setups, with their likely causes and fixes.</p>
+
+                <aside class="callout err"><span class="ct">Problem 1 — ECONNREFUSED / connection timeout</span>
+                <p><strong>Symptom:</strong> <code>connect ETIMEDOUT</code> or <code>connect ECONNREFUSED &lt;endpoint&gt;:3306</code>.</p>
+                <p><strong>Cause:</strong> The RDS instance is not publicly accessible and/or the security group does not allow your IP.</p>
+                <p><strong>Fix:</strong> Modify RDS → Connectivity → Publicly accessible: Yes, then add an inbound security group rule for MySQL/Aurora on port 3306 from My IP. Wait 1–2 minutes and retest with <code>telnet &lt;endpoint&gt; 3306</code>.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 2 — Access denied for user 'admin'</span>
+                <p><strong>Symptom:</strong> <code>Access denied for user 'admin'@'&lt;ip&gt;' (using password: YES)</code> even though the password looks correct.</p>
+                <p><strong>Cause:</strong> Wrong password (typo or leftover whitespace in <code>.env</code>), username mismatch (the master user is not <code>root</code>), or special characters that broke parsing.</p>
+                <p><strong>Fix:</strong> Remove trailing spaces and quotes in <code>.env</code>, use a password without shell-problematic characters (<code>!</code>, <code>$</code>, <code>#</code>) for CLI work, and re-verify the username from the RDS console.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 3 — ER_NOT_SUPPORTED_AUTH_MODE</span>
+                <p><strong>Symptom:</strong> <code>Client does not support authentication protocol requested by server</code>.</p>
+                <p><strong>Cause:</strong> MySQL 8 defaults to <code>caching_sha2_password</code>, which the older <code>mysql</code> package does not support.</p>
+                <p><strong>Fix:</strong> Use <code>mysql2</code>, which supports it natively. Alternatively: <code>ALTER USER 'admin'@'%' IDENTIFIED WITH mysql_native_password BY 'YourPassword'; FLUSH PRIVILEGES;</code></p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 4 — IAM authentication works in CLI but not Node.js</span>
+                <p><strong>Symptom:</strong> The MySQL CLI connects with an IAM token, but <code>mysql2</code> throws Access denied.</p>
+                <p><strong>Cause:</strong> The <code>mysql2</code> driver needs the cleartext plugin enabled when using IAM tokens as passwords.</p>
+                <p><strong>Fix:</strong> Add <code>enableCleartextPlugin: true</code> to the connection config. Check the <code>mysql2</code> docs for the exact option name in your version.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 5 — ETIMEDOUT only from Node.js</span>
+                <p><strong>Symptom:</strong> Workbench connects but Node.js times out.</p>
+                <p><strong>Cause:</strong> A corporate VPN/firewall blocking Node's outbound traffic, or <code>DB_PORT</code> read as a string instead of a number.</p>
+                <p><strong>Fix:</strong> Cast the port with <code>port: Number(process.env.DB_PORT)</code>. Always cast environment variables to their expected types.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 6 — Free tier instance not available</span>
+                <p><strong>Symptom:</strong> The Free tier template is greyed out or missing.</p>
+                <p><strong>Cause:</strong> You already have an active RDS instance, the account predates a Free Tier rule change, or the region does not support the free tier class.</p>
+                <p><strong>Fix:</strong> Delete unused instances, switch to a supported region such as <code>us-east-1</code>, or use the Sandbox option.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 7 — Node.js script hangs and never exits</span>
+                <p><strong>Symptom:</strong> <code>node insertData.js</code> prints success but the terminal never returns to the prompt.</p>
+                <p><strong>Cause:</strong> The MySQL connection was not closed, so the open socket keeps the event loop alive.</p>
+                <p><strong>Fix:</strong> Always close the connection in a <code>finally</code> block with <code>await connection.end()</code>. In production, use a pool that manages lifecycle automatically.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 8 — ER_NO_SUCH_TABLE</span>
+                <p><strong>Symptom:</strong> <code>Table 'appdb.users' doesn't exist</code>.</p>
+                <p><strong>Cause:</strong> RDS does not auto-create tables — the initial database exists but has no schema.</p>
+                <p><strong>Fix:</strong> Run <code>CREATE TABLE users (...)</code> in Workbench before running <code>insertData.js</code>. Use a migration tool (knex, sequelize, prisma) to manage schema in code.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 9 — ER_ACCESS_DENIED_ERROR after changing the password</span>
+                <p><strong>Symptom:</strong> After rotating the master password, Node.js fails but Workbench works.</p>
+                <p><strong>Cause:</strong> Node cached the old connection or <code>.env</code> was not updated.</p>
+                <p><strong>Fix:</strong> Update <code>.env</code>, restart the Node process (env vars load at startup), and restart the app if using a pool. Use AWS Secrets Manager for automatic rotation.</p></aside>
+
+                <aside class="callout err"><span class="ct">Problem 10 — SSL/TLS required by RDS</span>
+                <p><strong>Symptom:</strong> <code>Connections using insecure transport are prohibited</code>.</p>
+                <p><strong>Cause:</strong> RDS enforces SSL for some MySQL versions (<code>require_secure_transport = ON</code>).</p>
+                <p><strong>Fix:</strong> Add SSL config pointing at the RDS CA bundle, for example <code>ssl: { ca: fs.readFileSync("./global-bundle.pem") }</code>. Download it from the AWS RDS SSL documentation.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="cleanup">10. Cleanup &amp; cost management</h2>
+                <p>RDS is not free forever — even the free tier expires after 12 months.</p>
+                <ol>
+                    <li>Go to the RDS Console and select your instance.</li>
+                    <li>Actions → Delete.</li>
+                    <li>Uncheck Create final snapshot (for dev) or check it (for prod).</li>
+                    <li>Type <code>delete me</code> to confirm.</li>
+                </ol>
+                <p>Also check for manual <strong>snapshots</strong>, unused <strong>Elastic IPs</strong>, and accumulated <strong>CloudWatch Logs</strong>. Set a <strong>Billing Alarm</strong> for $1 to be notified early.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="quick-reference">11. Quick reference cheat sheet</h2>
+                <h3>RDS creation</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Item</th><th>Value</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Console</td><td><code>https://console.aws.amazon.com/rds/</code></td></tr>
+                            <tr><td>Engine</td><td>MySQL 8.x</td></tr>
+                            <tr><td>Template</td><td>Free Tier</td></tr>
+                            <tr><td>Instance class</td><td><code>db.t4g.micro</code></td></tr>
+                            <tr><td>Storage</td><td>20 GB <code>gp3</code></td></tr>
+                            <tr><td>Public access</td><td>Yes (dev only)</td></tr>
+                            <tr><td>Port</td><td><code>3306</code></td></tr>
+                            <tr><td>Initial DB name</td><td><code>appdb</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Security group rule</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Type</th><th>Protocol</th><th>Port</th><th>Source</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>MySQL/Aurora</td><td>TCP</td><td>3306</td><td>My IP</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Workbench connection</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Field</th><th>Value</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Hostname</td><td><code>&lt;rds-endpoint&gt;</code></td></tr>
+                            <tr><td>Port</td><td><code>3306</code></td></tr>
+                            <tr><td>Username</td><td><code>admin</code></td></tr>
+                            <tr><td>Password</td><td>stored in vault</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Node.js .env</h3>
+                <p>The five variables every connection shares, with your endpoint and credentials substituted in.</p>
+                <pre class="code-block" data-lang="text"><code>DB_HOST=&lt;rds-endpoint&gt;
+DB_PORT=3306
+DB_USER=admin
+DB_PASSWORD=&lt;your-password&gt;
+DB_NAME=appdb</code></pre>
+                <h3>Essential SQL</h3>
+                <p>These statements take you from an empty RDS instance to queryable data: create the database, select it, define the table, insert a row, then read it back. Run them in order the first time, since each step assumes the previous one exists.</p>
+                <pre class="code-block" data-lang="sql"><code>CREATE DATABASE appdb;
+USE appdb;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO users (name, email) VALUES ('John', 'john@example.com');
+SELECT * FROM users;</code></pre>
+                <p>For the full MySQL command set — <code>SHOW</code> / <code>USE</code> / <code>DESCRIBE</code>, <code>ALTER TABLE</code>, transactions (<code>COMMIT</code>, <code>ROLLBACK</code>, <code>AUTOCOMMIT</code>), and <code>JOIN</code> / <code>GROUP BY</code> queries — see the <a href="database-mongo-sql.html#mysql-command-reference">MySQL command reference</a> on the Database Complete Reference page.</p>
+                <h3>Troubleshooting matrix</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>ETIMEDOUT</code></td><td>Not public / SG blocks IP</td><td>Enable public access; add SG rule</td></tr>
+                            <tr><td>Access denied</td><td>Wrong creds / whitespace</td><td>Fix <code>.env</code>, verify username</td></tr>
+                            <tr><td><code>ER_NOT_SUPPORTED_AUTH_MODE</code></td><td>Using <code>mysql</code> not <code>mysql2</code></td><td>Switch to <code>mysql2</code></td></tr>
+                            <tr><td>IAM auth fails in Node</td><td>Missing cleartext plugin</td><td>Add <code>enableCleartextPlugin: true</code></td></tr>
+                            <tr><td>Script hangs</td><td>Connection not closed</td><td><code>await connection.end()</code> in <code>finally</code></td></tr>
+                            <tr><td><code>ER_NO_SUCH_TABLE</code></td><td>Table not created</td><td>Run <code>CREATE TABLE</code> first</td></tr>
+                            <tr><td>Free tier missing</td><td>Ineligible account/region</td><td>Delete instances, change region</td></tr>
+                            <tr><td>SSL required</td><td><code>require_secure_transport = ON</code></td><td>Add <code>ssl</code> config with CA bundle</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Create an AWS account, lock the root user away, and work through an IAM user with <code>AmazonRDSFullAccess</code>.</li>
+                    <li>Pick one region and stay in it to avoid cross-region transfer costs.</li>
+                    <li>Use Standard Create with the Free tier template, <code>db.t4g.micro</code>, 20 GB <code>gp3</code>, port 3306.</li>
+                    <li>Make the instance publicly accessible and open inbound 3306 to My IP only.</li>
+                    <li>Connect from Workbench, then from Node with <code>mysql2/promise</code> and a <code>.env</code> file ignored by Git.</li>
+                    <li>Use a connection pool in production; always <code>end()</code> a single connection in <code>finally</code>.</li>
+                    <li>Parameters are placeholders (<code>?</code>) — never string-concatenate SQL.</li>
+                    <li>Most failures are network access, credentials, the wrong driver, a missing table, or SSL.</li>
+                    <li>Delete the instance when finished and set a billing alarm.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="database-mongo-sql.html"><span class="rt">→ Database Complete Reference</span><span class="rc">MongoDB Atlas vs SQL, Prisma, and when to use each</span></a>
+                    <a href="mongodb-basics.html"><span class="rt">→ MongoDB Basics</span><span class="rc">Compare the document model with this relational setup</span></a>
+                    <a href="../06-backend/nodejs.html"><span class="rt">→ Node.js</span><span class="rc">Env vars, secrets, and server setup</span></a>
+                    <a href="../06-backend/express.html"><span class="rt">→ Express</span><span class="rc">Turn this connection into REST routes</span></a>
+                    <a href="../12-practices/mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">Where the SQL data layer fits the stack</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

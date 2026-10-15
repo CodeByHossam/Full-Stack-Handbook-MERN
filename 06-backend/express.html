@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Backend</span>
+                <span class="sep">/</span>
+                <span>Express</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Express</h1>
+                <p class="subtitle">The minimal Node.js web framework behind every MERN API — routing, middleware, controllers, and error handling, all in one place.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Backend</span>
+                    <span class="badge b-purple">Framework</span>
+                    <span class="badge b-teal">Routes · Middleware</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="what-express-does">What Express does</h2>
+                <p>Express is a Node.js web framework that turns raw HTTP handling into clean routes and middleware. A request travels like this:</p>
+                <pre class="flow">React
+  ↓
+HTTP Request
+  ↓
+Express Route
+  ↓
+Controller
+  ↓
+Mongoose
+  ↓
+MongoDB
+  ↓
+Response</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="create-server">Create an Express server</h2>
+                <p><code>express()</code> creates the application object; <code>app.listen()</code> binds it to a port and starts accepting requests. This is the entry point of every MERN backend (<code>server.js</code>).</p>
+                <pre class="code-block" data-lang="javascript"><code>const express = require("express");
+
+const app = express();   // the application: routes + middleware attach to it
+
+const PORT = 5000;       // often process.env.PORT in real apps
+
+app.listen(PORT, () =&gt; {
+    console.log(`Server running on port ${PORT}`);  // server is now live
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="middleware">Middleware</h2>
+                <p>Middleware functions run in order on every request and receive <code>(req, res, next)</code>. They are how you parse bodies, log, authenticate, and pre-process a request before it reaches a route — Express is essentially a chain of these functions.</p>
+                <pre class="code-block" data-lang="javascript"><code>// read JSON from the request body into req.body
+app.use(express.json());
+
+// read URL-encoded form data (HTML form posts)
+app.use(express.urlencoded({ extended: true }));
+
+// custom middleware — runs for every request that follows it
+app.use((req, res, next) =&gt; {
+    console.log(req.method, req.url);   // e.g. GET /api/users
+    next();                             // without this the request hangs
+});</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Call <code>next()</code> to pass control to the following middleware. Forgetting it makes the request hang.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="basic-route">Basic route</h2>
+                <p><code>app.get(path, handler)</code> answers the HTTP <code>GET</code> for a path with the handler function. It is the smallest unit of an API — the same shape (<code>app.METHOD</code>) is reused for every verb and endpoint.</p>
+                <pre class="code-block" data-lang="javascript"><code>app.get("/", (req, res) =&gt; {   // when GET / arrives...
+    res.send("Hello World");    // ...respond with text
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="http-methods">Routes and HTTP methods</h2>
+                <p>Each verb maps to an action. The full method table and CRUD mapping are owned by <a href="rest-api.html">REST API</a>.</p>
+                <pre class="code-block" data-lang="javascript"><code>// GET → read data
+app.get("/api/users", (req, res) =&gt; {
+    res.json({ message: "Get users" });
+});
+
+// POST → create data
+app.post("/api/users", (req, res) =&gt; {
+    res.json({ message: "Create user" });
+});
+
+// PUT → replace/update data
+app.put("/api/users/:id", (req, res) =&gt; {
+    res.json({ message: "Update user" });
+});
+
+// PATCH → update part of data
+app.patch("/api/users/:id", (req, res) =&gt; {
+    res.json({ message: "Update part of user" });
+});
+
+// DELETE → delete data
+app.delete("/api/users/:id", (req, res) =&gt; {
+    res.json({ message: "Delete user" });
+});</code></pre>
+                <p>Status codes are documented on <a href="rest-api.html">REST API</a>. The essentials: <code>200</code>/<code>201</code>/<code>204</code> success, <code>400</code>/<code>401</code>/<code>403</code>/<code>404</code>/<code>409</code> client errors, <code>500</code> server error.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="request-object">The request object: req</h2>
+                <p><code>req</code> wraps everything the client sent. Use <code>req.params</code> to identify a resource, <code>req.query</code> to filter/paginate, <code>req.body</code> for create/update data, and <code>req.headers</code> for metadata such as auth tokens.</p>
+                <pre class="code-block" data-lang="javascript"><code>// URL parameter — part of the path
+// GET /api/users/123
+app.get("/api/users/:id", (req, res) =&gt; {
+    console.log(req.params.id);   // "123"
+});
+
+// query parameters — after the "?"
+// GET /api/users?page=2&amp;limit=10
+app.get("/api/users", (req, res) =&gt; {
+    console.log(req.query.page);   // "2" (strings, not numbers)
+    console.log(req.query.limit);  // "10"
+});
+
+// request body (needs express.json())
+app.post("/api/users", (req, res) =&gt; {
+    console.log(req.body);   // parsed object from the JSON payload
+});
+
+// headers
+app.get("/api/users", (req, res) =&gt; {
+    console.log(req.headers.authorization);  // "Bearer &lt;token&gt;"
+});</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Source</th><th>Access</th><th>Example URL</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>URL parameters</td><td><code>req.params</code></td><td><code>/api/users/123</code></td></tr>
+                            <tr><td>Query string</td><td><code>req.query</code></td><td><code>/api/users?page=2</code></td></tr>
+                            <tr><td>Body</td><td><code>req.body</code></td><td><code>POST</code> JSON payload</td></tr>
+                            <tr><td>Headers</td><td><code>req.headers</code></td><td><code>Authorization: Bearer …</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="response-object">The response object: res</h2>
+                <p><code>res</code> builds the reply. Pick the method by payload (<code>send</code> for text/HTML, <code>json</code> for data) and always set the right status code so clients know what happened.</p>
+                <pre class="code-block" data-lang="javascript"><code>// send text (Content-Type: text/html)
+res.send("Hello");
+
+// send JSON (Content-Type: application/json)
+res.json({ name: "Alice" });
+
+// status code + JSON — status must come before the body call
+res.status(200).json({ message: "Success" });
+
+// error response — 400 tells the client the request was invalid
+res.status(400).json({ message: "Bad request" });
+
+// redirect the client to another URL (302)
+res.redirect("/login");</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p>Send exactly one response per request. Calling <code>res.json()</code> and then <code>res.send()</code> throws "Cannot set headers after they are sent".</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="router-and-mounting">Router and mounting</h2>
+                <p>Routers group related routes into their own module. Define the routes, export the router, then mount it under a base path — this keeps <code>server.js</code> small as the API grows.</p>
+                <pre class="code-block" data-lang="javascript"><code>// routes/userRoutes.js
+const express = require("express");
+const router = express.Router();   // a mini-app for this resource
+
+router.get("/", (req, res) =&gt; {    // relative to the mount path
+    res.json({ message: "Get users" });
+});
+
+router.post("/", (req, res) =&gt; {
+    res.json({ message: "Create user" });
+});
+
+module.exports = router;   // hand the router back to server.js</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// server.js
+const userRoutes = require("./routes/userRoutes");
+
+app.use("/api/users", userRoutes);   // prefix every route inside the router
+
+// now available:
+// GET  /api/users
+// POST /api/users</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="controllers">Controllers and the route → controller flow</h2>
+                <p>A controller is a function that handles a route. Routing files stay thin; controllers hold the logic — this separation is what keeps a real API maintainable.</p>
+                <pre class="code-block" data-lang="javascript"><code>// routes/userRoutes.js — just wires a path to a handler
+router.get("/", getUsers);
+
+// controllers/userController.js — the actual work
+const getUsers = async (req, res) =&gt; {
+    const users = await User.find();
+    res.status(200).json(users);   // 200 OK with the data
+};</code></pre>
+                <pre class="flow">router.get("/", getUsers);
+        ↓
+const getUsers = async (req, res) =&gt; {
+    const users = await User.find();
+    res.json(users);
+};</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="async-await-try-catch">async / await and try / catch</h2>
+                <p>Database calls are asynchronous, so route handlers are usually <code>async</code> and <code>await</code> the query. Wrap the work in <code>try</code>/<code>catch</code>: without it a failed query becomes an unhandled rejection instead of a clean error response.</p>
+                <pre class="code-block" data-lang="javascript"><code>router.get("/", async (req, res) =&gt; {   // async so we can await
+    try {
+        const users = await User.find();   // waits for the DB
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });  // respond, don't crash
+    }
+});</code></pre>
+                <p>In larger apps, forward the error with <code>next(error)</code> so the central error handler formats it (see below).</p>
+            </section>
+
+            <section class="section">
+                <h2 id="next-function">next()</h2>
+                <p><code>next()</code> hands control to the next middleware or route handler. Use it for guards such as authentication: if the check passes call <code>next()</code>, otherwise respond and stop.</p>
+                <pre class="code-block" data-lang="javascript"><code>const authMiddleware = (req, res, next) =&gt; {
+    const token = req.headers.authorization;
+
+    if (!token) {
+        return res.status(401).json({ message: "Not authorized" }); // stop here
+    }
+
+    next();   // token present -> continue to the route
+};
+
+router.get("/profile", authMiddleware, getProfile);</code></pre>
+                <pre class="flow">Request
+   ↓
+authMiddleware
+   ↓
+next()
+   ↓
+getProfile</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="error-handling-middleware">Error-handling middleware</h2>
+                <p>This page owns the central error handler. It is identified by its <strong>four parameters</strong>: <code>(err, req, res, next)</code>. Express calls it whenever a handler passes an error to <code>next(error)</code> or throws synchronously.</p>
+                <pre class="code-block" data-lang="javascript"><code>app.use((err, req, res, next) =&gt; {   // 4 params = error handler
+    console.error(err);   // log for debugging
+
+    res.status(err.statusCode || 500).json({   // use the error's status if set
+        message: err.message || "Server Error"
+    });
+});</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Error middleware must have all four parameters. If you declare only three, Express treats it as normal middleware and never calls it for errors.</p></aside>
+                <aside class="callout info"><span class="ct">Note</span><p>Register this <strong>after</strong> all routes so it catches errors from everything above it. A consistent JSON error shape lets the React client show a reliable message.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="static-files">Static files</h2>
+                <p><code>express.static</code> serves plain files (images, CSS, a built React <code>dist/</code>) without writing a route for each one. Express maps each file to a URL automatically.</p>
+                <pre class="code-block" data-lang="javascript"><code>app.use(express.static("public"));   // serve the public/ folder at the site root</code></pre>
+                <p>Files inside <code>public/</code> are served directly at the root URL (for example, <code>public/logo.png</code> → <code>/logo.png</code>).</p>
+            </section>
+
+            <section class="section">
+                <h2 id="route-and-query-params">Multiple route params and query params</h2>
+                <p>A path can capture several named segments at once, and query parameters layer on top for options that do not identify the resource. This is how nested resources (a user's orders) and filters are addressed.</p>
+                <pre class="code-block" data-lang="javascript"><code>// single param
+router.get("/users/:id", (req, res) =&gt; {
+    const { id } = req.params;   // destructure the captured segment
+    console.log(id);
+});
+
+// multiple params
+router.get("/users/:userId/orders/:orderId", (req, res) =&gt; {
+    const { userId, orderId } = req.params;   // both captured from the path
+});</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// GET /api/products?category=phone&amp;page=2&amp;limit=10
+router.get("/products", (req, res) =&gt; {
+    const { category, page, limit } = req.query;   // all strings
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="validation">Validation</h2>
+                <p>Never trust the incoming body — the client can send anything. Validate before touching the database so bad data never reaches it and the client gets a clear <code>400</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>router.post("/users", async (req, res) =&gt; {
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+        return res.status(400).json({   // 400 = client sent invalid input
+            message: "Name and email are required"
+        });
+    }
+});</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>For anything beyond a few fields, use a schema validator such as <strong>Zod</strong>, <strong>Joi</strong>, or <strong>express-validator</strong>. See <a href="rest-api.html#validation">REST API · Validation</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="crud-structure">CRUD structure</h2>
+                <p>Every resource follows the same layered path — routes decide the URL, controllers hold logic, models talk to MongoDB. Learning this pattern once lets you add any new resource quickly.</p>
+                <pre class="flow">routes
+   ↓
+controllers
+   ↓
+models
+   ↓
+database</pre>
+                <pre class="code-block" data-lang="javascript"><code>// routes/productRoutes.js — one line per CRUD action
+router.get("/", getProducts);        // list
+router.post("/", createProduct);     // create
+router.put("/:id", updateProduct);   // update one
+router.delete("/:id", deleteProduct); // delete one</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="typical-controllers">Typical controllers (Product model)</h2>
+                <p>Each controller forwards errors with <code>next(error)</code> so the central error handler responds.</p>
+                <pre class="code-block" data-lang="javascript"><code>// GET all
+const getProducts = async (req, res, next) =&gt; {
+    try {
+        const products = await Product.find();
+        res.status(200).json(products);   // 200 OK + array
+    } catch (error) {
+        next(error);   // hand off to the central error handler
+    }
+};
+
+// CREATE
+const createProduct = async (req, res, next) =&gt; {
+    try {
+        const product = await Product.create(req.body);  // validate first in real code
+        res.status(201).json(product);   // 201 Created
+    } catch (error) {
+        next(error);
+    }
+};</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// GET one
+const getProduct = async (req, res, next) =&gt; {
+    try {
+        const product = await Product.findById(req.params.id);
+
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" }); // no match
+        }
+
+        res.json(product);   // defaults to 200
+    } catch (error) {
+        next(error);
+    }
+};
+
+// UPDATE
+const updateProduct = async (req, res, next) =&gt; {
+    try {
+        const product = await Product.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }   // return updated doc + run schema rules
+        );
+        res.json(product);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// DELETE
+const deleteProduct = async (req, res, next) =&gt; {
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Product deleted" });   // or 204 with no body
+    } catch (error) {
+        next(error);
+    }
+};</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="cors">CORS</h2>
+                <p>The <code>cors</code> middleware lets the browser frontend call your API from a different origin. Setup only here — the full explanation of the browser same-origin policy belongs to <a href="../03-fundamentals/internet-web.html">Internet &amp; Web Fundamentals</a>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const cors = require("cors");
+
+// allow all origins (development)
+app.use(cors());
+
+// allow one specific frontend — safer for production
+app.use(cors({ origin: "http://localhost:5173" }));</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="environment-variables">Environment variables</h2>
+                <p>Read configuration and secrets from the environment. See <a href="nodejs.html#environment-variables">Node.js · Environment variables</a> for full guidance.</p>
+                <pre class="code-block" data-lang="javascript"><code>require("dotenv").config();   // call once, before reading process.env
+
+const PORT = process.env.PORT || 5000;      // fallback keeps dev simple
+const MONGO_URI = process.env.MONGO_URI;    // required; fails fast if unset</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="auth-flow">Auth flow and protect middleware</h2>
+                <p>At a high level: the client logs in, the server verifies credentials and returns a token; the client sends that token on later requests; a <code>protect</code> middleware verifies it and attaches the user to <code>req.user</code>. This page keeps only the shape — the full implementation is owned by <a href="authentication-jwt.html">Authentication &amp; JWT</a>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const protect = (req, res, next) =&gt; {
+    const token = req.headers.authorization?.split(" ")[1];  // "Bearer &lt;token&gt;" -> token
+
+    if (!token) {
+        return res.status(401).json({ message: "Not authorized" });  // not authenticated
+    }
+
+    // verify token, set req.user, then:
+    next();   // authenticated -> continue to the controller
+};
+
+router.get("/profile", protect, getProfile);</code></pre>
+                <p>Full details: <a href="authentication-jwt.html">Authentication &amp; JWT</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="mern-request-flow-recap">MERN request flow recap</h2>
+                <p>This sums up the whole journey in one diagram, from a user action in React to the JSON response and back. Each box maps to a concept covered on this page or on a linked owner page.</p>
+                <pre class="flow">React / RTK Query
+       ↓
+     HTTP
+       ↓
+Express Route
+       ↓
+ Middleware
+       ↓
+ Controller
+       ↓
+  Mongoose
+       ↓
+  MongoDB
+       ↓
+ Controller
+       ↓
+  res.json()
+       ↓
+     React</pre>
+                <p>The complete flow plus API design is owned by <a href="rest-api.html">REST API</a> and <a href="../12-practices/mern-architecture.html">MERN Architecture</a>.</p>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li><code>express()</code> → <code>app.listen()</code> starts the server</li>
+                    <li><code>app.use()</code> registers middleware; call <code>next()</code> to continue</li>
+                    <li>Body parsers: <code>express.json()</code> and <code>express.urlencoded()</code></li>
+                    <li>Verbs: GET, POST, PUT, PATCH, DELETE; status codes live in REST API</li>
+                    <li><code>req.params</code>, <code>req.query</code>, <code>req.body</code>, <code>req.headers</code></li>
+                    <li><code>res.send/json/status/redirect</code></li>
+                    <li><code>express.Router()</code> + <code>app.use("/api/x", router)</code></li>
+                    <li>Thin routes call controllers; errors go to <code>next(error)</code></li>
+                    <li>Central error middleware is <code>(err, req, res, next)</code> — 4 params</li>
+                    <li>CORS opens browser origins; env vars come from <code>.env</code></li>
+                    <li><code>protect</code> guards routes; full JWT in Authentication &amp; JWT</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="nodejs.html"><span class="rt">→ Node.js</span><span class="rc">The runtime and modules Express runs on</span></a>
+                    <a href="rest-api.html"><span class="rt">→ REST API</span><span class="rc">Methods, status codes, pagination, versioning</span></a>
+                    <a href="authentication-jwt.html"><span class="rt">→ Authentication &amp; JWT</span><span class="rc">Full protect and role middleware</span></a>
+                    <a href="../07-database/mongodb-basics.html"><span class="rt">→ MongoDB Basics</span><span class="rc">Models and queries your controllers use</span></a>
+                    <a href="../03-fundamentals/internet-web.html"><span class="rt">→ Internet &amp; Web Fundamentals</span><span class="rc">CORS, HTTP, origins explained</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

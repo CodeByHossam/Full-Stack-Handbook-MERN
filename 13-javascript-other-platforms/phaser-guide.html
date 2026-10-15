@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser 2D Game Development — JavaScript &amp; Other Platforms</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="../index.html"><span class="dot">M</span><span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span></a>
+    <div class="search search-panel"><span class="icon">⌕</span><input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off"><div id="navResults"></div></div>
+    <div class="topbar-actions"><button class="menu-toggle icon-btn" id="menuToggle">☰</button><button class="icon-btn" id="themeToggle">☾</button></div>
+</header>
+<div class="layout">
+    <aside class="sidebar" id="sidebar"><nav id="navTree"></nav><div class="toc"><div class="toc-title">On this page</div><nav id="pageToc"></nav></div></aside>
+    <main class="content">
+        <div class="doc" id="docContent">
+            <nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">/</span><a href="index.html">JS &amp; Other Platforms</a><span class="sep">/</span><span>Phaser Game Development</span></nav>
+            <header class="page-header">
+                <h1>Phaser 2D Game Development</h1>
+                <p class="subtitle">A complete, practical Phaser 3 reference: project setup, the scene lifecycle, assets, sprites, animation, input, physics, collisions, UI, audio, particles, tilemaps, and two finished games.</p>
+                <div class="tag-row"><span class="badge b-primary">Phaser 3</span><span class="badge b-purple">Game Dev</span><span class="badge b-teal">JavaScript</span></div>
+            </header>
+
+            <section class="section">
+                <h2 id="what">What Phaser is</h2>
+                <p><strong>Phaser</strong> is a fast, free, open-source HTML5 game framework for 2D games that run in the browser. It handles the hard parts for you: rendering (WebGL with Canvas fallback), a game loop, sprites, animation, tilemaps, input (keyboard/mouse/touch/gamepad), audio, a physics engine (Arcade + Matter), particles, tweens, and a <em>scene</em> system for organizing game states.</p>
+                <p>You write plain JavaScript (or TypeScript). Phaser does not need a build step, but a bundler like Vite gives you ES modules, fast refresh, and a clean production build.</p>
+                <aside class="callout key"><span class="ct">Key point</span><p>Everything in this page targets <strong>Phaser 3</strong> (the current major version). The API is scene-based: you create objects inside scenes and Phaser calls your lifecycle methods automatically.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="setup">Project setup (Vite + npm)</h2>
+                <pre class="code-block" data-lang="bash"><code>mkdir my-game &amp;&amp; cd my-game
+npm init -y
+npm install phaser
+npm install -D vite</code></pre>
+                <p>Add scripts to <code>package.json</code> and create an <code>index.html</code> that loads your entry module.</p>
+                <pre class="code-block" data-lang="json"><code>{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+}</code></pre>
+                <pre class="code-block" data-lang="html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;My Phaser Game&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="game"&gt;&lt;/div&gt;            &lt;!-- Phaser mounts here --&gt;
+  &lt;script type="module" src="/src/main.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                <h3>Folder structure</h3>
+                <pre class="flow">my-game/
+├─ index.html
+├─ public/
+│  └─ assets/            &lt;-- images, audio, tilemaps (served as-is)
+└─ src/
+   ├─ main.js            &lt;-- config + new Phaser.Game(...)
+   └─ scenes/
+      ├─ BootScene.js
+      ├─ PreloaderScene.js
+      ├─ MenuScene.js
+      └─ GameScene.js</pre>
+                <aside class="callout info"><span class="ct">Note</span><p>Files in <code>public/assets</code> keep their URL path, so an asset at <code>public/assets/player.png</code> is loaded with the key path <code>"assets/player.png"</code>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="config">The game config</h2>
+                <p>The config object tells Phaser how to render, the canvas size, the physics system, scaling behavior, and which scenes to start with.</p>
+                <pre class="code-block" data-lang="javascript"><code>import Phaser from "phaser";
+import BootScene from "./scenes/BootScene.js";
+import PreloaderScene from "./scenes/PreloaderScene.js";
+import MenuScene from "./scenes/MenuScene.js";
+import GameScene from "./scenes/GameScene.js";
+
+const config = {
+  type: Phaser.AUTO,               // WebGL if available, else Canvas
+  parent: "game",                  // DOM element id to mount into
+  width: 960,
+  height: 540,
+  backgroundColor: "#0b1020",
+  pixelArt: true,                  // crisp pixels for retro art (disables AA)
+  physics: {
+    default: "arcade",             // "arcade" (simple, fast) or "matter" (realistic)
+    arcade: {
+      gravity: { y: 900 },         // world gravity (px/s^2); 0 for top-down
+      debug: false                 // draw physics bodies — turn on while learning
+    }
+  },
+  scale: {
+    mode: Phaser.Scale.FIT,        // scale to fit the parent while keeping aspect
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
+  scene: [BootScene, PreloaderScene, MenuScene, GameScene]
+};
+
+new Phaser.Game(config);</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Option</th><th>Meaning</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>type</code></td><td><code>AUTO</code>, <code>WEBGL</code>, <code>CANVAS</code>, or <code>HEADLESS</code> (for tests).</td></tr>
+                            <tr><td><code>width</code>/<code>height</code></td><td>Game canvas size in pixels (the "design resolution").</td></tr>
+                            <tr><td><code>physics.default</code></td><td><code>arcade</code> = AABB, cheap, great for platformers/shooters. <code>matter</code> = full rigid bodies.</td></tr>
+                            <tr><td><code>scale.mode</code></td><td><code>FIT</code> keeps aspect and letterboxes; <code>RESIZE</code> follows the window.</td></tr>
+                            <tr><td><code>scene</code></td><td>Array of scene classes; the first one starts automatically.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="lifecycle">The scene lifecycle (init, preload, create, update…)</h2>
+                <p>A <strong>scene</strong> is a self-contained slice of your game: a menu, a level, a loading screen, a pause overlay. Phaser runs scenes through a fixed lifecycle and calls your methods in order. This is the single most important concept to understand.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Method</th><th>When it runs</th><th>What to put here</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>init(data)</code></td><td>First, before anything loads</td><td>Read data passed from another scene; reset local state (<code>this.score = 0</code>). No game objects yet.</td></tr>
+                            <tr><td><code>preload()</code></td><td>Once, after <code>init</code></td><td>Queue assets with <code>this.load.*</code>. Phaser loads them and shows progress. Create objects in <code>create</code>, not here.</td></tr>
+                            <tr><td><code>create(data)</code></td><td>Once, when all assets are ready</td><td>Build the world: add sprites, groups, animations, input, physics colliders, UI.</td></tr>
+                            <tr><td><code>update(time, delta)</code></td><td>Every frame (~60/s)</td><td>Per-frame logic: read input, move entities, check win/lose. <code>delta</code> is ms since last frame.</td></tr>
+                            <tr><td><code>render()</code></td><td>Every frame, after <code>update</code></td><td>Rarely needed. For custom drawing over the scene (usually use Graphics instead).</td></tr>
+                            <tr><td><code>shutdown()</code></td><td>When the scene stops/restarts</td><td>Remove timers, listeners, and references to avoid memory leaks.</td></tr>
+                            <tr><td><code>destroy()</code></td><td>When the scene is destroyed</td><td>Final cleanup.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="javascript"><code>class GameScene extends Phaser.Scene {
+  constructor() {
+    super("GameScene");            // unique key used by this.scene.start("GameScene")
+  }
+
+  init(data) {
+    // Reset per-run state. data comes from this.scene.start("GameScene", {...})
+    this.score = data.score || 0;
+    this.lives = 3;
+  }
+
+  preload() {
+    // Queue assets. Keys are how you reference them later.
+    this.load.image("sky", "assets/sky.png");
+    this.load.image("ground", "assets/platform.png");
+    this.load.spritesheet("player", "assets/player.png", { frameWidth: 32, frameHeight: 48 });
+    this.load.audio("jump", ["assets/jump.ogg", "assets/jump.mp3"]);
+  }
+
+  create() {
+    // Assets are ready. Build the scene.
+    this.add.image(480, 270, "sky");
+    this.player = this.physics.add.sprite(100, 400, "player").setCollideWorldBounds(true);
+
+    // Define an animation from the sprite sheet frames
+    this.anims.create({
+      key: "run",
+      frames: this.anims.generateFrameNumbers("player", { start: 0, end: 3 }),
+      frameRate: 12,
+      repeat: -1
+    });
+
+    this.player.play("run");
+  }
+
+  update(time, delta) {
+    // Runs every frame. time = ms since game start, delta = ms since last frame
+    const cursors = this.cursors;
+    if (cursors.left.isDown) this.player.setVelocityX(-200);
+    else if (cursors.right.isDown) this.player.setVelocityX(200);
+    else this.player.setVelocityX(0);
+  }
+
+  shutdown() {
+    // Clean up when leaving the scene
+    this.load.off("progress");
+  }
+}
+
+export default GameScene;</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Never create game objects (sprites, text, groups) in <code>preload()</code> — assets are not ready yet. Put creation in <code>create()</code>. <code>preload()</code> is only for <code>this.load.*</code> calls.</p></aside>
+                <aside class="callout info"><span class="ct">Note</span><p><code>delta</code> lets you write frame-rate-independent movement: <code>x += speed * (delta / 1000)</code>. Use it whenever you move something without physics velocity.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="scenes">Managing multiple scenes</h2>
+                <p>Split the game into scenes: <strong>Boot</strong> (tiny set-up), <strong>Preloader</strong> (load everything + progress bar), <strong>Menu</strong>, <strong>Game</strong>, <strong>GameOver</strong>, and optionally a <strong>UI/HUD</strong> scene that runs on top of the Game scene.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Start / switch scenes (stops the current scene)
+this.scene.start("MenuScene");
+
+// Pass data to the next scene
+this.scene.start("GameScene", { level: 2 });
+
+// Run a scene on top WITHOUT stopping this one (great for HUD / pause overlays)
+this.scene.launch("HudScene");
+this.scene.pause("GameScene");     // freeze the game scene
+this.scene.resume("GameScene");    // unfreeze it
+this.scene.stop("HudScene");       // remove the overlay
+
+// Sleep keeps the scene in memory (fast to wake) but stops update/render
+this.scene.sleep("GameScene");
+this.scene.wake("GameScene");</code></pre>
+                <h3>Preloader scene with a progress bar</h3>
+                <pre class="code-block" data-lang="javascript"><code>class PreloaderScene extends Phaser.Scene {
+  constructor() { super("PreloaderScene"); }
+
+  preload() {
+    const w = this.scale.width, h = this.scale.height;
+    const bar = this.add.rectangle(w / 2, h / 2, 400, 24, 0x222222).setOrigin(0.5);
+    const fill = this.add.rectangle(w / 2 - 200, h / 2, 0, 20, 0x4ade80).setOrigin(0, 0.5);
+
+    this.load.on("progress", (p) =&gt; fill.width = 400 * p);
+    this.load.on("complete", () =&gt; this.scene.start("MenuScene"));
+
+    // Queue every asset the game needs
+    this.load.image("sky", "assets/sky.png");
+    this.load.spritesheet("player", "assets/player.png", { frameWidth: 32, frameHeight: 48 });
+    this.load.audio("bgm", "assets/bgm.mp3");
+  }
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Loading all assets once in a Preloader scene keeps gameplay smooth and avoids mid-level pauses. Define all your animations there too, so every scene can use them by key.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="assets">Loading assets (images, sheets, atlases, audio, JSON)</h2>
+                <pre class="code-block" data-lang="javascript"><code>// Single image
+this.load.image("logo", "assets/logo.png");
+
+// Sprite sheet — a grid of equally sized frames
+this.load.spritesheet("player", "assets/player.png", { frameWidth: 32, frameHeight: 48 });
+
+// Texture atlas — frames packed with a JSON descriptor (efficient)
+this.load.atlas("tiles", "assets/tiles.png", "assets/tiles.json");
+
+// Audio — provide several formats for browser coverage; Phaser picks one
+this.load.audio("shoot", ["assets/shoot.ogg", "assets/shoot.mp3"]);
+
+// JSON data, tilemaps, bitmap fonts
+this.load.json("levels", "assets/levels.json");
+this.load.tilemapTiledJSON("level1", "assets/level1.json");
+this.load.bitmapFont("pixel", "assets/font.png", "assets/font.xml");</code></pre>
+                <h3>Where to get assets</h3>
+                <ul>
+                    <li><strong>Kenney.nl</strong> — huge library of free, CC0 (public-domain) sprite and audio packs. Best starting point.</li>
+                    <li><strong>OpenGameArt.org</strong> — community art under public-domain/CC licenses.</li>
+                    <li><strong>itch.io</strong> — free and paid game asset packs (check each license).</li>
+                    <li><strong>Tools:</strong> Aseprite or Piskel (pixel art), Tiled (tilemap levels), BFXR / jsfxr (retro sound effects), Audacity (edit audio), Leshy SpriteSheet Tool (pack atlases).</li>
+                </ul>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Always confirm the license of an asset before shipping. CC0/public-domain needs no credit; CC-BY requires attribution; many "free" packs forbid commercial use.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="sprites">Sprites, images, text, and containers</h2>
+                <pre class="code-block" data-lang="javascript"><code>// Image — static, no physics
+this.add.image(480, 270, "sky");
+
+// Sprite — can be animated / have physics
+const hero = this.physics.add.sprite(100, 400, "player");
+hero.setScale(1.5).setFlipX(true).setTint(0xff8800).setDepth(10);
+
+// Text
+this.add.text(16, 16, "Score: 0", { fontSize: "20px", color: "#ffffff" });
+
+// Graphics — draw shapes and lines
+const g = this.add.graphics();
+g.fillStyle(0x4ade80, 1).fillCircle(480, 270, 40);
+
+// Container — group objects so they move together (e.g., a player + health bar)
+const container = this.add.container(100, 400, [hero]);
+container.x += 10;               // moves the whole group</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>Set <code>depth</code> (z-index) to control draw order: higher numbers draw on top. Backgrounds low, players mid, UI high.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="animation">Sprite animation</h2>
+                <p>Animations are defined from sprite-sheet frame ranges or atlas frame names, then played on a sprite by key.</p>
+                <pre class="code-block" data-lang="javascript"><code>// From a sprite sheet: frames 0..3 are the walk cycle
+this.anims.create({
+  key: "walk",
+  frames: this.anims.generateFrameNumbers("player", { start: 0, end: 3 }),
+  frameRate: 10,
+  repeat: -1                       // -1 = loop forever
+});
+
+// From an atlas: list frames by name
+this.anims.create({
+  key: "explode",
+  frames: this.anims.generateFrameNames("tiles", { prefix: "boom_", start: 0, end: 5 }),
+  frameRate: 15,
+  repeat: 0                        // play once
+});
+
+// Play and control
+sprite.play("walk");
+sprite.play("explode").once("animationcomplete", () =&gt; sprite.destroy());
+sprite.anims.pause();
+sprite.anims.stop();
+sprite.setTexture("player", 0);    // reset to a single frame</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Define animations once (usually in Preloader or a shared setup) and reference them by key everywhere. Playing a not-yet-created animation silently does nothing — a common bug.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="input">Input: keyboard, pointer, drag</h2>
+                <pre class="code-block" data-lang="javascript"><code>// Keyboard
+this.cursors = this.input.keyboard.createCursorKeys();          // up/down/left/right/space
+this.keys = this.input.keyboard.addKeys("W,A,S,D,SPACE,ESC");
+
+// In update(): this.cursors.left.isDown, this.keys.W.isDown, Phaser.Input.Keyboard.JustDown(this.keys.SPACE)
+
+// Pointer (mouse/touch)
+this.input.on("pointerdown", (pointer) =&gt; {
+  console.log("clicked at", pointer.x, pointer.y);
+});
+
+// Make a game object interactive (buttons, clickable sprites)
+const btn = this.add.text(480, 300, "START").setOrigin(0.5).setInteractive();
+btn.on("pointerover", () =&gt; btn.setColor("#ffff00"));
+btn.on("pointerout",  () =&gt; btn.setColor("#ffffff"));
+btn.on("pointerup",   () =&gt; this.scene.start("GameScene"));
+
+// Drag a sprite
+this.input.setDraggable(hero);
+this.input.on("drag", (p, obj, dragX, dragY) =&gt; { obj.x = dragX; obj.y = dragY; });</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="movement">Movement, velocity, and the camera</h2>
+                <pre class="code-block" data-lang="javascript"><code>update() {
+  const speed = 220, jump = -520;
+  if (this.cursors.left.isDown) {
+    this.player.setVelocityX(-speed);
+    this.player.setFlipX(true);
+  } else if (this.cursors.right.isDown) {
+    this.player.setVelocityX(speed);
+    this.player.setFlipX(false);
+  } else {
+    this.player.setVelocityX(0);
+  }
+
+  // Jump only when standing on the ground
+  if (this.cursors.up.isDown &amp;&amp; this.player.body.blocked.down) {
+    this.player.setVelocityY(jump);
+    this.jumpSound.play();
+  }
+}</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// Camera: follow the player smoothly, keep them inside the world, add effects
+this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+this.cameras.main.setBounds(0, 0, 3200, 600);        // camera cannot leave the level
+this.physics.world.setBounds(0, 0, 3200, 600);       // player cannot leave the world
+this.cameras.main.setZoom(1.2);
+this.cameras.main.shake(200, 0.01);                  // screen shake on impact
+this.cameras.main.flash(150, 255, 0, 0);             // red flash</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="physics">Physics and collisions (Arcade)</h2>
+                <p>Arcade physics gives every dynamic body a velocity and gravity, and detects axis-aligned collisions. It is fast and perfect for platformers and top-down shooters.</p>
+                <pre class="code-block" data-lang="javascript"><code>create() {
+  // Static group — platforms do not move
+  this.platforms = this.physics.add.staticGroup();
+  const ground = this.platforms.create(480, 520, "ground");
+  ground.setScale(2).refreshBody();          // refreshBody() after resizing a static body
+
+  // Dynamic player
+  this.player = this.physics.add.sprite(100, 300, "player");
+  this.player.setBounce(0.1).setCollideWorldBounds(true);
+
+  // Colliders: solid collision (player stands on platforms)
+  this.physics.add.collider(this.player, this.platforms);
+
+  // Overlap: detect touching WITHOUT blocking (coins, triggers)
+  this.coins = this.physics.add.group({ key: "coin", repeat: 9, setXY: { x: 80, y: 400, stepX: 80 } });
+  this.physics.add.collider(this.coins, this.platforms);
+  this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
+}
+
+collectCoin(player, coin) {
+  coin.disableBody(true, true);   // hide + remove from physics (great for pooling)
+  this.score += 10;
+  this.scoreText.setText("Score: " + this.score);
+}</code></pre>
+                <h3>Bodies, velocity, and checks</h3>
+                <ul>
+                    <li><code>body.setVelocity(x, y)</code>, <code>setAcceleration</code>, <code>setDrag</code>, <code>setMaxVelocity</code>, <code>setGravityY</code>, <code>setBounce</code>.</li>
+                    <li><code>body.blocked.down</code> / <code>touching.down</code> — true when standing on something.</li>
+                    <li><code>body.onFloor()</code> — convenient ground test for jumps.</li>
+                    <li><code>body.setSize(w, h)</code> / <code>setOffset(x, y)</code> — shrink the hitbox to match the visible sprite.</li>
+                    <li>Switch modes with <code>this.physics.arcade.overlap(...)</code> (non-blocking) vs <code>collider(...)</code> (blocking).</li>
+                </ul>
+                <aside class="callout key"><span class="ct">Key point</span><p>Use <strong>groups</strong> for anything you spawn in numbers (bullets, enemies, coins). Groups give one collider for all children and support object pooling.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="groups">Groups and object pooling</h2>
+                <pre class="code-block" data-lang="javascript"><code>// Physics group for bullets you fire often
+this.bullets = this.physics.add.group({
+  classType: Phaser.Physics.Arcade.Image,
+  maxSize: 30,                       // reuse instead of creating/destroying
+  runChildUpdate: true
+});
+
+function fire(x, y) {
+  const b = this.bullets.get(x, y, "bullet");
+  if (!b) return;                    // pool full
+  b.setActive(true).setVisible(true);
+  b.body.reset(x, y);
+  b.setVelocityY(-500);
+}
+
+// Recycle on hit instead of destroying
+this.physics.add.overlap(this.bullets, this.enemies, (bullet, enemy) =&gt; {
+  bullet.disableBody(true, true);    // returns it to the pool
+  enemy.destroy();
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="ui">UI, HUD, and game states</h2>
+                <pre class="code-block" data-lang="javascript"><code>// HUD text fixed to the camera (scrollFactor 0 keeps it on screen)
+this.scoreText = this.add.text(16, 16, "Score: 0", { fontSize: "18px", color: "#fff" })
+  .setScrollFactor(0).setDepth(100);
+
+this.livesText = this.add.text(16, 40, "Lives: 3", { fontSize: "18px", color: "#fff" })
+  .setScrollFactor(0).setDepth(100);
+
+// A simple health bar with Graphics
+this.healthBar = this.add.graphics().setScrollFactor(0);
+function drawHealth(current, max) {
+  this.healthBar.clear();
+  this.healthBar.fillStyle(0x000000).fillRect(16, 70, 204, 18);
+  this.healthBar.fillStyle(0xff3333).fillRect(18, 72, 200 * (current / max), 14);
+}</code></pre>
+                <h3>Game states: win, lose, pause, restart</h3>
+                <pre class="code-block" data-lang="javascript"><code>gameOver() {
+  this.scene.pause();
+  this.add.text(480, 270, "GAME OVER", { fontSize: "48px", color: "#ff5555" })
+    .setOrigin(0.5).setScrollFactor(0);
+  this.add.text(480, 330, "Press SPACE to restart", { fontSize: "20px" })
+    .setOrigin(0.5).setScrollFactor(0);
+  this.input.keyboard.once("keydown-SPACE", () =&gt; this.scene.restart());
+}
+
+// Pause/resume with ESC
+this.input.keyboard.on("keydown-ESC", () =&gt; {
+  this.scene.pause();
+  this.scene.launch("PauseScene");
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="audio">Audio</h2>
+                <pre class="code-block" data-lang="javascript"><code>// In Preloader: this.load.audio("bgm", ["assets/bgm.mp3"]);
+// In create:
+this.bgm = this.sound.add("bgm", { loop: true, volume: 0.4 });
+this.bgm.play();
+
+// One-shot effects
+this.sound.play("jump", { volume: 0.6 });
+this.sound.play("coin", { rate: 1.2 });   // rate = pitch
+
+// Global controls
+this.sound.mute = true;
+this.sound.volume = 0.5;
+
+// Web Audio often needs a user gesture to start — resume on first input
+this.input.once("pointerdown", () =&gt; this.sound.context.resume());</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Browsers block autoplay audio until the user interacts. Always resume the audio context on the first click/tap/keypress.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="particles-tweens">Particles and tweens</h2>
+                <pre class="code-block" data-lang="javascript"><code>// Particles — explosions, dust, sparkles
+const emitter = this.add.particles(0, 0, "spark", {
+  speed: { min: 80, max: 220 },
+  lifespan: 500,
+  quantity: 20,
+  scale: { start: 1, end: 0 },
+  emitting: false
+});
+emitter.explode(30, x, y);
+
+// Tweens — smooth property animation without physics
+this.tweens.add({
+  targets: this.coin,
+  y: "-=20",
+  duration: 400,
+  yoyo: true,
+  repeat: -1
+});
+
+// Fade and destroy a sprite
+this.tweens.add({ targets: enemy, alpha: 0, duration: 300, onComplete: () =&gt; enemy.destroy() });</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="tilemaps">Tilemaps (Tiled)</h2>
+                <p>Design levels in the free <strong>Tiled</strong> editor, export as JSON, load with <code>tilemapTiledJSON</code>, then let Phaser build the collision layer automatically.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Preload: this.load.tilemapTiledJSON("level1", "assets/level1.json");
+//           this.load.image("tiles", "assets/tiles.png");
+
+create() {
+  const map = this.make.tilemap({ key: "level1" });
+  const tileset = map.addTilesetImage("tiles", "tiles");
+  const ground = map.createLayer("ground", tileset);
+  ground.setCollisionByProperty({ collides: true });   // mark tiles in Tiled
+
+  this.physics.add.collider(this.player, ground);
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="save">Saving progress</h2>
+                <pre class="code-block" data-lang="javascript"><code>// localStorage is enough for high scores and settings
+localStorage.setItem("highScore", this.score);
+const best = Number(localStorage.getItem("highScore") || 0);
+
+// For real progression, sync to your MERN backend (see Backend + Security sections)</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="game1">Game 1 — Platformer (full walkthrough)</h2>
+                <p>Goal: run, jump across platforms, collect coins, reach the flag. Uses gravity, static platforms, overlap for coins, and a HUD.</p>
+                <pre class="code-block" data-lang="javascript"><code>class GameScene extends Phaser.Scene {
+  constructor() { super("GameScene"); }
+
+  preload() {
+    this.load.image("sky", "assets/sky.png");
+    this.load.image("ground", "assets/platform.png");
+    this.load.image("coin", "assets/coin.png");
+    this.load.spritesheet("player", "assets/player.png", { frameWidth: 32, frameHeight: 48 });
+  }
+
+  create() {
+    this.add.image(480, 270, "sky");
+
+    // Animations
+    this.anims.create({ key: "run", frames: this.anims.generateFrameNumbers("player", { start: 0, end: 3 }), frameRate: 12, repeat: -1 });
+    this.anims.create({ key: "idle", frames: [{ key: "player", frame: 0 }], frameRate: 1 });
+
+    // World + camera
+    this.physics.world.setBounds(0, 0, 3200, 600);
+    this.cameras.main.setBounds(0, 0, 3200, 600);
+
+    // Platforms
+    this.platforms = this.physics.add.staticGroup();
+    this.platforms.create(400, 568, "ground").setScale(2).refreshBody();
+    this.platforms.create(1200, 450, "ground").refreshBody();
+    this.platforms.create(1800, 350, "ground").refreshBody();
+    this.platforms.create(2600, 500, "ground").setScale(2).refreshBody();
+
+    // Player
+    this.player = this.physics.add.sprite(100, 400, "player").setCollideWorldBounds(true);
+    this.physics.add.collider(this.player, this.platforms);
+    this.player.anims.play("idle");
+
+    // Coins
+    this.coins = this.physics.add.group({ key: "coin", repeat: 11, setXY: { x: 60, y: 0, stepX: 90 } });
+    this.coins.children.iterate(c =&gt; c.setBounceY(Phaser.Math.FloatBetween(0.2, 0.5)));
+    this.physics.add.collider(this.coins, this.platforms);
+    this.physics.add.overlap(this.player, this.coins, this.collect, null, this);
+
+    // Input + HUD
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.score = 0;
+    this.scoreText = this.add.text(16, 16, "Score: 0", { fontSize: "18px", color: "#fff" }).setScrollFactor(0);
+
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+  }
+
+  collect(player, coin) {
+    coin.disableBody(true, true);
+    this.score += 10;
+    this.scoreText.setText("Score: " + this.score);
+    if (this.coins.countActive(true) === 0) {
+      this.add.text(480, 270, "YOU WIN!", { fontSize: "48px", color: "#4ade80" })
+        .setOrigin(0.5).setScrollFactor(0);
+    }
+  }
+
+  update() {
+    const speed = 220;
+    if (this.cursors.left.isDown) {
+      this.player.setVelocityX(-speed).setFlipX(true).anims.play("run", true);
+    } else if (this.cursors.right.isDown) {
+      this.player.setVelocityX(speed).setFlipX(false).anims.play("run", true);
+    } else {
+      this.player.setVelocityX(0).anims.play("idle", true);
+    }
+    if (this.cursors.up.isDown &amp;&amp; this.player.body.blocked.down) {
+      this.player.setVelocityY(-520);
+    }
+  }
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="game2">Game 2 — Top-Down Shooter (full walkthrough)</h2>
+                <p>Goal: move in 8 directions, shoot upward at falling enemies, survive and score. Uses no gravity, a bullet pool, timed enemy spawns, and collisions for damage.</p>
+                <pre class="code-block" data-lang="javascript"><code>class ShooterScene extends Phaser.Scene {
+  constructor() { super("ShooterScene"); }
+
+  preload() {
+    this.load.image("bg", "assets/space.png");
+    this.load.image("ship", "assets/ship.png");
+    this.load.image("bullet", "assets/bullet.png");
+    this.load.image("enemy", "assets/enemy.png");
+    this.load.image("spark", "assets/spark.png");
+  }
+
+  create() {
+    this.add.image(480, 270, "bg");
+    this.score = 0;
+    this.health = 100;
+
+    // Player
+    this.player = this.physics.add.image(480, 480, "ship").setCollideWorldBounds(true);
+    this.player.body.setSize(24, 24);
+
+    // Bullet pool
+    this.bullets = this.physics.add.group({ classType: Phaser.Physics.Arcade.Image, maxSize: 40, runChildUpdate: true });
+    this.physics.add.overlap(this.bullets, this.enemiesGroup(), this.hitEnemy, null, this);
+
+    // Enemy group + spawn timer
+    this.enemies = this.physics.add.group();
+    this.spawn = this.time.addEvent({ delay: 800, loop: true, callback: this.spawnEnemy, callbackScope: this });
+
+    // Damage on contact
+    this.physics.add.overlap(this.player, this.enemies, this.takeDamage, null, this);
+
+    // Particles
+    this.sparks = this.add.particles(0, 0, "spark", { speed: 160, lifespan: 400, scale: { start: 1, end: 0 }, emitting: false });
+
+    // Input
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.keys = this.input.keyboard.addKeys("W,A,S,D,SPACE");
+    this.spaceCooldown = 0;
+
+    this.scoreText = this.add.text(16, 16, "Score: 0", { fontSize: "18px", color: "#fff" }).setScrollFactor(0);
+  }
+
+  enemiesGroup() { return this.enemies; }
+
+  spawnEnemy() {
+    const x = Phaser.Math.Between(40, 920);
+    const e = this.enemies.create(x, -20, "enemy");
+    e.setVelocityY(Phaser.Math.Between(80, 160));
+  }
+
+  hitEnemy(bullet, enemy) {
+    bullet.disableBody(true, true);
+    this.sparks.explode(12, enemy.x, enemy.y);
+    enemy.destroy();
+    this.score += 5;
+    this.scoreText.setText("Score: " + this.score);
+  }
+
+  takeDamage(player, enemy) {
+    enemy.destroy();
+    this.sparks.explode(12, player.x, player.y);
+    this.health -= 10;
+    this.cameras.main.shake(150, 0.01);
+    if (this.health &lt;= 0) return this.gameOver();
+  }
+
+  gameOver() {
+    this.spawn.remove();
+    this.physics.pause();
+    this.add.text(480, 270, "GAME OVER", { fontSize: "48px", color: "#ff5555" }).setOrigin(0.5).setScrollFactor(0);
+    this.input.keyboard.once("keydown-SPACE", () =&gt; this.scene.restart());
+  }
+
+  update(time, delta) {
+    const speed = 260;
+    let vx = 0, vy = 0;
+    if (this.cursors.left.isDown || this.keys.A.isDown) vx = -speed;
+    if (this.cursors.right.isDown || this.keys.D.isDown) vx = speed;
+    if (this.cursors.up.isDown || this.keys.W.isDown) vy = -speed;
+    if (this.cursors.down.isDown || this.keys.S.isDown) vy = speed;
+    this.player.setVelocity(vx, vy);
+
+    this.spaceCooldown -= delta;
+    if (this.keys.SPACE.isDown &amp;&amp; this.spaceCooldown &lt;= 0) {
+      const b = this.bullets.get(this.player.x, this.player.y - 24, "bullet");
+      if (b) {
+        b.setActive(true).setVisible(true);
+        b.body.reset(this.player.x, this.player.y - 24);
+        b.setVelocityY(-600);
+      }
+      this.spaceCooldown = 180;      // ms between shots
+    }
+  }
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>These two games cover ~90% of the techniques in real 2D games: scenes, asset loading, animation, input, gravity vs top-down movement, colliders vs overlaps, groups/pools, camera, particles, tweens, HUD, and game states. Build them, then remix them.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="best-practices">Best practices &amp; optimization</h2>
+                <ul>
+                    <li><strong>One Preloader scene</strong> for all assets; define animations there.</li>
+                    <li><strong>Groups + pooling</strong> for anything spawned in numbers; never create/destroy bullets every frame.</li>
+                    <li><strong>Use texture atlases</strong> to reduce draw calls and HTTP requests.</li>
+                    <li><strong>Keep <code>update()</code> light.</strong> Do not allocate objects every frame; reuse.</li>
+                    <li><strong>Scale assets</strong> appropriately; large images cost memory and GPU bandwidth.</li>
+                    <li><strong>Clean up</strong> in <code>shutdown()</code>: remove timers and listeners to avoid leaks when scenes restart.</li>
+                    <li><strong>Use <code>setDepth</code> and <code>setScrollFactor(0)</code></strong> for HUD.</li>
+                    <li><strong>Build for production</strong> with <code>vite build</code> and serve the static output from any host or CDN.</li>
+                    <li><strong>Test on mobile</strong> — use pointer input and the <code>scale</code> config for touch devices.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="index.html"><span class="rt">→ JS &amp; Other Platforms</span><span class="rc">Section overview and tooling</span></a>
+                    <a href="javascript-tooling-mixed.html"><span class="rt">→ JavaScript Tooling</span><span class="rc">Vite, Electron, Capacitor, extensions</span></a>
+                    <a href="../04-javascript/javascript-basics.html"><span class="rt">→ JavaScript Basics</span><span class="rc">Language fundamentals used throughout</span></a>
+                </div>
+            </footer>
+        </div>
+    </main>
+</div>
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

@@ -35,7 +35,7 @@
                     <input type="search" id="heroSearch" placeholder="Search: JWT, populate, flexbox, docker, useMemo…" autocomplete="off" aria-label="Search the library">
                     <div id="heroResults" class="search-results"></div>
                 </div>
-                <p class="hero-meta">38 pages · 10 categories · works offline</p>
+                <p class="hero-meta">42 pages · 13 categories · works offline</p>
             </section>
 
             <h2 style="font-size:1.3rem; margin:1.5rem 0 .9rem;">Browse by category</h2>
@@ -44,16 +44,20 @@
             <div class="section">
                 <h2 id="reading-path">Recommended reading path</h2>
                 <ol>
+                    <li><strong>Planning &amp; Engineering</strong> — start here: SDLC, requirements, architecture, estimation.</li>
+                    <li><strong>Getting Started</strong> — the MERN Roadmap (18-skill study path).</li>
                     <li><strong>Fundamentals</strong> — Internet &amp; Web → Networking → Data Representation.</li>
                     <li><strong>JavaScript</strong> — Basics → Data Structures → Event Loop.</li>
                     <li><strong>Frontend</strong> — HTML → CSS → React → State/Hooks → Tailwind/GSAP.</li>
                     <li><strong>Backend</strong> — Node.js → Express → REST API → Authentication → File Uploads.</li>
                     <li><strong>Database</strong> — MongoDB Basics → Mongoose Deep Dive → SQL (Prisma/RDS).</li>
-                    <li><strong>Practices</strong> — Programming Principles → Clean Code → MERN Architecture.</li>
-                    <li><strong>Deployment</strong> — Docker → Linux/Nginx/PM2 → SSH.</li>
                     <li><strong>Testing &amp; TypeScript</strong> — harden the code you already write.</li>
+                    <li><strong>Deployment</strong> — Docker → Linux/Nginx/PM2 → SSH.</li>
+                    <li><strong>Security</strong> — lock down the app before it ships.</li>
+                    <li><strong>Practices</strong> — Programming Principles → Clean Code → MERN Architecture.</li>
+                    <li><strong>JavaScript &amp; Other Platforms</strong> — extras: Phaser games, desktop, mobile, tooling.</li>
                 </ol>
-                <p style="margin-top:.6rem;">Begin with the official <a href="01-getting-started/mern-roadmap.html">MERN Roadmap</a> for the full 18-skill study path.</p>
+                <p style="margin-top:.6rem;">Begin with the official <a href="02-getting-started/mern-roadmap.html">MERN Roadmap</a> for the full 18-skill study path.</p>
             </div>
 
             <footer class="doc-footer">
@@ -68,67 +72,71 @@
 (function () {
     var CATALOG_WINDOW = window.__CST_INDEX__; /* defined by nav.js */
     var CATALOG = [
-        { name: "Getting Started", icon: "🚀", bg: "#2563eb", desc: "The full MERN learning path.", pages: [["01-getting-started/mern-roadmap.html", "MERN Roadmap", "18 skill areas across JS, React, Node, DB, deployment"]] },
+        { name: "Planning & Engineering", icon: "🗺️", bg: "#1e40af", desc: "Pre-implementation planning: SDLC, requirements, architecture, estimation.", pages: [
+            ["01-planning/project-planning-engineering.html", "Project Planning & Engineering", "From idea to development readiness"]
+        ] },
+        { name: "Getting Started", icon: "🚀", bg: "#2563eb", desc: "The full MERN learning path.", pages: [["02-getting-started/mern-roadmap.html", "MERN Roadmap", "18 skill areas across JS, React, Node, DB, deployment"]] },
         { name: "Fundamentals", icon: "🌐", bg: "#0d9488", desc: "How the web and computers actually work.", pages: [
-            ["02-fundamentals/internet-web.html", "Internet & Web Fundamentals", "HTTP, DNS, ports, sessions, CORS"],
-            ["02-fundamentals/networking-layers.html", "Networking Layers", "TCP/IP/MAC/DHCP/ARP"],
-            ["02-fundamentals/data-representation.html", "Data Representation", "Binary → UTF-8 → Base64"],
-            ["02-fundamentals/web-request-flow.html", "Web Request Flow", "Browser → server and back"],
-            ["02-fundamentals/terminal.html", "Terminal", "Shells, Node, npm"],
-            ["02-fundamentals/git-github.html", "Git & GitHub", "Full workflow"]
+            ["03-fundamentals/internet-web.html", "Internet & Web Fundamentals", "HTTP, DNS, ports, sessions, CORS"],
+            ["03-fundamentals/networking-layers.html", "Networking Layers", "TCP/IP/MAC/DHCP/ARP"],
+            ["03-fundamentals/data-representation.html", "Data Representation", "Binary → UTF-8 → Base64"],
+            ["03-fundamentals/web-request-flow.html", "Web Request Flow", "Browser → server and back"],
+            ["03-fundamentals/terminal.html", "Terminal", "Shells, Node, npm"],
+            ["03-fundamentals/git-github.html", "Git & GitHub", "Full workflow"]
         ] },
         { name: "JavaScript", icon: "⚡", bg: "#d97706", desc: "The language powering the whole stack.", pages: [
-            ["03-javascript/javascript-basics.html", "JavaScript Basics", "Functions, arrays, async"],
-            ["03-javascript/javascript-data-structures.html", "JS Data Structures", "Array, Set, Map, Stack"],
-            ["03-javascript/javascript-event-loop.html", "Event Loop", "Call stack, tasks & microtasks"]
+            ["04-javascript/javascript-basics.html", "JavaScript Basics", "Functions, arrays, async"],
+            ["04-javascript/javascript-data-structures.html", "JS Data Structures", "Array, Set, Map, Stack"],
+            ["04-javascript/javascript-event-loop.html", "Event Loop", "Call stack, tasks & microtasks"]
         ] },
         { name: "Frontend", icon: "🎨", bg: "#7c3aed", desc: "HTML, CSS, animation, React & state.", pages: [
-            ["04-frontend/html.html", "HTML", "Semantic markup, forms"],
-            ["04-frontend/css.html", "CSS", "Flexbox, Grid, animation"],
-            ["04-frontend/tailwind.html", "Tailwind CSS", "Utility classes"],
-            ["04-frontend/gsap.html", "GSAP", "Tweens & ScrollTrigger"],
-            ["04-frontend/react.html", "React", "Components, JSX, hooks"],
-            ["04-frontend/react-state-hooks.html", "React State & useEffect", "State snapshot model"],
-            ["04-frontend/react-native.html", "React Native", "Mobile apps"],
-            ["04-frontend/redux-toolkit.html", "Redux Toolkit + RTK Query", "Global & server state"]
+            ["05-frontend/html.html", "HTML", "Semantic markup, forms"],
+            ["05-frontend/css.html", "CSS", "Flexbox, Grid, animation"],
+            ["05-frontend/tailwind.html", "Tailwind CSS", "Utility classes"],
+            ["05-frontend/gsap.html", "GSAP", "Tweens & ScrollTrigger"],
+            ["05-frontend/react.html", "React", "Components, JSX, hooks"],
+            ["05-frontend/react-state-hooks.html", "React State & useEffect", "State snapshot model"],
+            ["05-frontend/react-native.html", "React Native", "Mobile apps"],
+            ["05-frontend/redux-toolkit.html", "Redux Toolkit + RTK Query", "Global & server state"]
         ] },
         { name: "Backend", icon: "⚙️", bg: "#475569", desc: "Node, Express, APIs, auth, uploads.", pages: [
-            ["05-backend/nodejs.html", "Node.js", "Runtime & core modules"],
-            ["05-backend/express.html", "Express", "Routes & middleware"],
-            ["05-backend/rest-api.html", "REST API", "Methods & status codes"],
-            ["05-backend/authentication-jwt.html", "Authentication & JWT", "bcrypt, tokens, roles"],
-            ["05-backend/file-uploads.html", "File Uploads", "FormData + Multer"],
-            ["05-backend/file-storage-s3-cloudinary.html", "File Storage: S3 & Cloudinary", "Professional guide"]
+            ["06-backend/nodejs.html", "Node.js", "Runtime & core modules"],
+            ["06-backend/express.html", "Express", "Routes & middleware"],
+            ["06-backend/rest-api.html", "REST API", "Methods & status codes"],
+            ["06-backend/authentication-jwt.html", "Authentication & JWT", "bcrypt, tokens, roles"],
+            ["06-backend/file-uploads.html", "File Uploads", "FormData + Multer"],
+            ["06-backend/file-storage-s3-cloudinary.html", "File Storage: S3 & Cloudinary", "Professional guide"]
         ] },
         { name: "Database", icon: "🗄️", bg: "#16a34a", desc: "MongoDB, Mongoose, and SQL.", pages: [
-            ["06-database/mongodb-basics.html", "MongoDB Basics", "Shell CRUD & operators"],
-            ["06-database/mongodb-mongoose.html", "Mongoose Deep Dive", "Populate & authorization"],
-            ["06-database/database-mongo-sql.html", "Database Complete Reference", "Mongo vs SQL vs Prisma"],
-            ["06-database/sql-rds.html", "AWS RDS MySQL", "Full provisioning guide"]
+            ["07-database/mongodb-basics.html", "MongoDB Basics", "Shell CRUD & operators"],
+            ["07-database/mongodb-mongoose.html", "Mongoose Deep Dive", "Populate & authorization"],
+            ["07-database/database-mongo-sql.html", "Database Complete Reference", "Mongo vs SQL vs Prisma"],
+            ["07-database/sql-rds.html", "AWS RDS MySQL", "Full provisioning guide"]
         ] },
         { name: "Testing", icon: "🧪", bg: "#dc2626", desc: "Vitest, RTL, and Supertest.", pages: [
-            ["07-testing/testing.html", "Testing", "Unit → E2E, API tests"]
+            ["08-testing/testing.html", "Testing", "Unit → E2E, API tests"]
         ] },
         { name: "TypeScript", icon: "🔷", bg: "#1d4ed8", desc: "Static typing for the MERN stack.", pages: [
-            ["08-typescript/typescript.html", "TypeScript", "Types, generics, TS + React/Express"]
+            ["09-typescript/typescript.html", "TypeScript", "Types, generics, TS + React/Express"]
         ] },
         { name: "Deployment", icon: "🚢", bg: "#0891b2", desc: "Docker, Linux servers, and SSH.", pages: [
-            ["09-deployment/docker.html", "Docker & Deployment", "Images, Compose, CI/CD"],
-            ["09-deployment/deploy-linux-nginx.html", "Deploy on Linux", "Node → PM2 → Nginx"],
-            ["09-deployment/ssh-docker.html", "SSH into Docker", "Keys & containers"]
-        ] },
-        { name: "Planning & Engineering", icon: "🗺️", bg: "#1e40af", desc: "Pre-implementation planning: SDLC, requirements, architecture, estimation.", pages: [
-            ["11-planning/project-planning-engineering.html", "Project Planning & Engineering", "From idea to development readiness"]
+            ["10-deployment/docker.html", "Docker & Deployment", "Images, Compose, CI/CD"],
+            ["10-deployment/deploy-linux-nginx.html", "Deploy on Linux", "Node → PM2 → Nginx"],
+            ["10-deployment/ssh-docker.html", "SSH into Docker", "Keys & containers"]
         ] },
         { name: "Security", icon: "🛡️", bg: "#991b1b", desc: "Security principles, threats, defenses for MERN apps.", pages: [
-            ["12-security/mern-security.html", "MERN Security Handbook", "Comprehensive security guide for production MERN apps"]
+            ["11-security/mern-security.html", "MERN Security Handbook", "Comprehensive security guide for production MERN apps"]
         ] },
         { name: "Practices", icon: "🧭", bg: "#065f46", desc: "How to write professional code.", pages: [
-            ["10-practices/programming-principles.html", "Programming Principles", "DRY/KISS/YAGNI"],
-            ["10-practices/clean-code.html", "Clean Code", "Readability rules"],
-            ["10-practices/mern-architecture.html", "MERN Architecture", "Structure & layers"],
-            ["10-practices/problem-solving.html", "Problem Solving", "Algorithm patterns"],
-            ["10-practices/big-o-time-complexity.html", "Big O", "Time & space complexity"],
+            ["12-practices/programming-principles.html", "Programming Principles", "DRY/KISS/YAGNI"],
+            ["12-practices/clean-code.html", "Clean Code", "Readability rules"],
+            ["12-practices/mern-architecture.html", "MERN Architecture", "Structure & layers"],
+            ["12-practices/problem-solving.html", "Problem Solving", "Algorithm patterns"],
+            ["12-practices/big-o-time-complexity.html", "Big O", "Time & space complexity"],
+        ] },
+        { name: "JavaScript & Other Platforms", icon: "🎮", bg: "#9333ea", desc: "JS beyond the browser core: game dev with Phaser, tooling, desktop & mobile.", pages: [
+            ["13-javascript-other-platforms/phaser-guide.html", "Phaser 2D Game Development", "Complete guide + two games"],
+            ["13-javascript-other-platforms/javascript-tooling-mixed.html", "JavaScript Tooling & Mixed Topics", "Vite, Electron, Capacitor, extensions"]
         ] }
     ];
 

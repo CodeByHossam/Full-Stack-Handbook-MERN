@@ -16,7 +16,7 @@ step** and **no external service** — clone it and open `index.html`.
 
 ## Highlights
 
-- **38 topic pages** organized into **10 categories**, from fundamentals to deployment.
+- **42 topic pages** organized into **13 categories**, from planning to deployment.
 - **Instant client-side search** across every page — no server, no index files.
 - **Works fully offline** — no CDNs, no fonts, no analytics, no network calls.
 - **Zero dependencies / no build step** — plain HTML, CSS, and vanilla JavaScript.
@@ -30,83 +30,99 @@ step** and **no external service** — clone it and open `index.html`.
 
 ## Content Map
 
+### Planning & Engineering
+| Page | Description |
+| --- | --- |
+| [Project Planning & Engineering](01-planning/project-planning-engineering.html) | From business idea to development readiness: SDLC, requirements, architecture, estimation, risks |
+
 ### Getting Started
 | Page | Description |
 | --- | --- |
-| [MERN Roadmap](01-getting-started/mern-roadmap.html) | Full learning path: 18 skill areas to master |
+| [MERN Roadmap](02-getting-started/mern-roadmap.html) | Full learning path: 18 skill areas to master |
 
 ### Fundamentals
 | Page | Description |
 | --- | --- |
-| [Internet & Web Fundamentals](02-fundamentals/internet-web.html) | HTTP/HTTPS, DNS, ports, cookies, sessions, CORS, CDN, TLS |
-| [Networking Layers](02-fundamentals/networking-layers.html) | TCP, IP, MAC, DHCP, ARP, encapsulation |
-| [Data Representation & Encoding](02-fundamentals/data-representation.html) | Bits, bytes, binary, hex, ASCII, UTF-8, Base64 |
-| [Web Request Flow](02-fundamentals/web-request-flow.html) | From the browser to the server and back, layer by layer |
-| [Terminal & Command Line](02-fundamentals/terminal.html) | OS, shell (PowerShell/CMD/Bash), Node, npm |
-| [Git & GitHub](02-fundamentals/git-github.html) | A-to-Z Git workflow: add, commit, branch, merge, PR |
+| [Internet & Web Fundamentals](03-fundamentals/internet-web.html) | HTTP/HTTPS, DNS, ports, cookies, sessions, CORS, CDN, TLS |
+| [Networking Layers](03-fundamentals/networking-layers.html) | TCP, IP, MAC, DHCP, ARP, encapsulation |
+| [Data Representation & Encoding](03-fundamentals/data-representation.html) | Bits, bytes, binary, hex, ASCII, UTF-8, Base64 |
+| [Web Request Flow](03-fundamentals/web-request-flow.html) | From the browser to the server and back, layer by layer |
+| [Terminal & Command Line](03-fundamentals/terminal.html) | OS, shell (PowerShell/CMD/Bash), Node, npm |
+| [Git & GitHub](03-fundamentals/git-github.html) | A-to-Z Git workflow: add, commit, branch, merge, PR |
 
 ### JavaScript
 | Page | Description |
 | --- | --- |
-| [JavaScript Basics](03-javascript/javascript-basics.html) | Variables to async/await; functions and callbacks |
-| [JavaScript Data Structures](03-javascript/javascript-data-structures.html) | Array, Object, Set, Map, Stack, Queue, iterators |
-| [JavaScript Event Loop](03-javascript/javascript-event-loop.html) | Single-threaded model, call stack, micro/macro tasks |
+| [JavaScript Basics](04-javascript/javascript-basics.html) | Variables to async/await; functions and callbacks |
+| [JavaScript Data Structures](04-javascript/javascript-data-structures.html) | Array, Object, Set, Map, Stack, Queue, iterators |
+| [JavaScript Event Loop](04-javascript/javascript-event-loop.html) | Single-threaded model, call stack, micro/macro tasks |
 
 ### Frontend
 | Page | Description |
 | --- | --- |
-| [HTML](04-frontend/html.html) | Semantic structure, forms, media, accessibility, SEO |
-| [CSS](04-frontend/css.html) | Selectors, box model, Flexbox, Grid, animation, BEM |
-| [Tailwind CSS](04-frontend/tailwind.html) | Utility-first classes, responsive, dark mode, React |
-| [GSAP](04-frontend/gsap.html) | Tweens, timelines, ScrollTrigger, React integration |
-| [React](04-frontend/react.html) | Components, JSX, state, hooks, events, forms, Router |
-| [React State & useEffect](04-frontend/react-state-hooks.html) | State snapshots, onClick gotchas, when to use effects |
-| [React Native](04-frontend/react-native.html) | Expo, core components, navigation, API, permissions |
-| [Redux Toolkit + RTK Query](04-frontend/redux-toolkit.html) | Store, slices, selectors, queries, mutations, cache tags |
+| [HTML](05-frontend/html.html) | Semantic structure, forms, media, accessibility, SEO |
+| [CSS](05-frontend/css.html) | Selectors, box model, Flexbox, Grid, animation, BEM |
+| [Tailwind CSS](05-frontend/tailwind.html) | Utility-first classes, responsive, dark mode, React |
+| [GSAP](05-frontend/gsap.html) | Tweens, timelines, ScrollTrigger, React integration |
+| [React](05-frontend/react.html) | Components, JSX, state, hooks, events, forms, Router |
+| [React State & useEffect](05-frontend/react-state-hooks.html) | State snapshots, onClick gotchas, when to use effects |
+| [React Native](05-frontend/react-native.html) | Expo, core components, navigation, API, permissions |
+| [Redux Toolkit + RTK Query](05-frontend/redux-toolkit.html) | Store, slices, selectors, queries, mutations, cache tags |
 
 ### Backend
 | Page | Description |
 | --- | --- |
-| [Node.js](05-backend/nodejs.html) | Runtime, npm, modules, fs/path/crypto, env, server setup |
-| [Express](05-backend/express.html) | Routes, middleware, routers, controllers, error handling |
-| [REST API](05-backend/rest-api.html) | HTTP methods, status codes, filtering, pagination, versioning |
-| [Authentication & JWT](05-backend/authentication-jwt.html) | bcrypt, JWT, protect/role middleware, cookies, refresh tokens |
-| [File Uploads](05-backend/file-uploads.html) | FormData, Multer, validation, signed URLs on the client |
-| [File Storage: S3 & Cloudinary](05-backend/file-storage-s3-cloudinary.html) | AWS S3, Cloudinary, Multer, presigned URLs |
+| [Node.js](06-backend/nodejs.html) | Runtime, npm, modules, fs/path/crypto, env, server setup |
+| [Express](06-backend/express.html) | Routes, middleware, routers, controllers, error handling |
+| [REST API](06-backend/rest-api.html) | HTTP methods, status codes, filtering, pagination, versioning |
+| [Authentication & JWT](06-backend/authentication-jwt.html) | bcrypt, JWT, protect/role middleware, cookies, refresh tokens |
+| [File Uploads](06-backend/file-uploads.html) | FormData, Multer, validation, signed URLs on the client |
+| [File Storage: S3 & Cloudinary](06-backend/file-storage-s3-cloudinary.html) | AWS S3, Cloudinary, Multer, presigned URLs |
 
 ### Database
 | Page | Description |
 | --- | --- |
-| [MongoDB Basics](06-database/mongodb-basics.html) | Shell CRUD, operators, indexes, beginner Mongoose |
-| [MongoDB & Mongoose Deep Dive](06-database/mongodb-mongoose.html) | Query vs document, populate, methods/virtuals/statics |
-| [Database Complete Reference](06-database/database-mongo-sql.html) | Atlas + Mongoose vs PostgreSQL/MySQL + Prisma |
-| [AWS RDS MySQL Guide](06-database/sql-rds.html) | Provision RDS, MySQL Workbench, Node.js / mysql2 |
+| [MongoDB Basics](07-database/mongodb-basics.html) | Shell CRUD, operators, indexes, beginner Mongoose |
+| [MongoDB & Mongoose Deep Dive](07-database/mongodb-mongoose.html) | Query vs document, populate, methods/virtuals/statics |
+| [Database Complete Reference](07-database/database-mongo-sql.html) | Atlas + Mongoose vs PostgreSQL/MySQL + Prisma |
+| [AWS RDS MySQL Guide](07-database/sql-rds.html) | Provision RDS, MySQL Workbench, Node.js / mysql2 |
 
 ### Testing
 | Page | Description |
 | --- | --- |
-| [Testing](07-testing/testing.html) | Vitest, React Testing Library, Supertest, API & auth tests |
+| [Testing](08-testing/testing.html) | Vitest, React Testing Library, Supertest, API & auth tests |
 
 ### TypeScript
 | Page | Description |
 | --- | --- |
-| [TypeScript](08-typescript/typescript.html) | Types, interfaces, generics, utility types, TS + React/Express/Mongoose |
+| [TypeScript](09-typescript/typescript.html) | Types, interfaces, generics, utility types, TS + React/Express/Mongoose |
 
 ### Deployment
 | Page | Description |
 | --- | --- |
-| [Docker & Deployment](09-deployment/docker.html) | Images, containers, Dockerfile, Compose, production build |
-| [Deploy on Linux (Nginx/PM2)](09-deployment/deploy-linux-nginx.html) | SSH to Node to PM2 to Nginx to HTTPS, step by step |
-| [SSH into Docker](09-deployment/ssh-docker.html) | SSH keys, containers, Linux prompts, command cheat sheet |
+| [Docker & Deployment](10-deployment/docker.html) | Images, containers, Dockerfile, Compose, production build |
+| [Deploy on Linux (Nginx/PM2)](10-deployment/deploy-linux-nginx.html) | SSH to Node to PM2 to Nginx to HTTPS, step by step |
+| [SSH into Docker](10-deployment/ssh-docker.html) | SSH keys, containers, Linux prompts, command cheat sheet |
+
+### Security
+| Page | Description |
+| --- | --- |
+| [MERN Security Handbook](11-security/mern-security.html) | Comprehensive security guide: auth, access control, injection, API, DB, secrets, OWASP |
 
 ### Practices
 | Page | Description |
 | --- | --- |
-| [Programming Principles](10-practices/programming-principles.html) | DRY/KISS/YAGNI, state, immutability, security, debugging |
-| [Clean Code & Best Practices](10-practices/clean-code.html) | Naming, small functions, error handling, code review checklist |
-| [MERN Architecture](10-practices/mern-architecture.html) | Project structure, layer responsibilities, API/DB design |
-| [Problem Solving](10-practices/problem-solving.html) | Algorithm playbook: patterns, templates, debugging |
-| [Big O / Time Complexity](10-practices/big-o-time-complexity.html) | Complexity classes, space vs time, Big O in practice |
+| [Programming Principles](12-practices/programming-principles.html) | DRY/KISS/YAGNI, state, immutability, security, debugging |
+| [Clean Code & Best Practices](12-practices/clean-code.html) | Naming, small functions, error handling, code review checklist |
+| [MERN Architecture](12-practices/mern-architecture.html) | Project structure, layer responsibilities, API/DB design |
+| [Problem Solving](12-practices/problem-solving.html) | Algorithm playbook: patterns, templates, debugging |
+| [Big O / Time Complexity](12-practices/big-o-time-complexity.html) | Complexity classes, space vs time, Big O in practice |
+
+### JavaScript & Other Platforms
+| Page | Description |
+| --- | --- |
+| [Phaser 2D Game Development](13-javascript-other-platforms/phaser-guide.html) | Complete Phaser 3 guide: scenes, sprites, physics, UI, and two full games |
+| [JavaScript Tooling & Mixed Topics](13-javascript-other-platforms/javascript-tooling-mixed.html) | Vite, Electron, Capacitor, browser extensions |
 
 ---
 
@@ -145,23 +161,26 @@ Then visit `http://localhost:8080`.
 
 ```
 Full-Stack-Handbook-MERN/
-├── index.html                 # Home hub: category grid + search
-├── 01-getting-started/
-├── 02-fundamentals/
-├── 03-javascript/
-├── 04-frontend/
-├── 05-backend/
-├── 06-database/
-├── 07-testing/
-├── 08-typescript/
-├── 09-deployment/
-├── 10-practices/
+├── index.html                       # Home hub: category grid + search
+├── 01-planning/
+├── 02-getting-started/
+├── 03-fundamentals/
+├── 04-javascript/
+├── 05-frontend/
+├── 06-backend/
+├── 07-database/
+├── 08-testing/
+├── 09-typescript/
+├── 10-deployment/
+├── 11-security/
+├── 12-practices/
+├── 13-javascript-other-platforms/
 └── assets/
     ├── css/
-    │   └── style.css          # Shared design system (tokens, layout, components)
+    │   └── style.css                # Shared design system (tokens, layout, components)
     └── js/
-        ├── nav.js             # Single source of truth: catalog + sidebar + search index
-        └── app.js             # Theme, menu, search, table of contents, copy buttons
+        ├── nav.js                   # Single source of truth: catalog + sidebar + search index
+        └── app.js                   # Theme, menu, search, table of contents, copy buttons
 ```
 
 The navigation, sidebar, and search index are all generated from the catalog

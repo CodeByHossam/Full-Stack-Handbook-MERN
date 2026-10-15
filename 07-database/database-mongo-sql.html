@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Complete Reference — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Database</span>
+                <span class="sep">/</span>
+                <span>Database Complete Reference</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Complete MERN Database Reference</h1>
+                <p class="subtitle">MongoDB Atlas + Mongoose vs PostgreSQL/MySQL: setup, code, platform configuration, function-by-function explanations, comparisons, and how to use both in one MERN app.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Database</span>
+                    <span class="badge b-purple">MongoDB + SQL</span>
+                    <span class="badge b-teal">Full Guide</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="introduction">1. Introduction — the "M" in MERN</h2>
+                <p><strong>MERN = MongoDB · Express · React · Node.js.</strong> The "M" stands for MongoDB, but nothing stops you from swapping it with SQL. Understanding both makes you a stronger engineer, because the right database depends on the shape of your data, not on fashion.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Mental model</th><th>Database</th><th>Think of it as</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Document</td><td>MongoDB</td><td>A folder of JSON files</td></tr>
+                            <tr><td>Relational</td><td>SQL (Postgres/MySQL)</td><td>Excel sheets linked by IDs</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>In MERN we connect from Express using an ODM/ORM or a driver:</p>
+                <ul>
+                    <li>MongoDB → Mongoose (ODM)</li>
+                    <li>SQL → raw driver (pg, mysql2) or an ORM (Prisma, Sequelize, TypeORM)</li>
+                </ul>
+                <p>React never talks to the database directly. React calls Express, and Express talks to the database.</p>
+                <pre class="flow">React  --HTTP--&gt;  Express  --driver/ODM--&gt;  MongoDB  |  SQL</pre>
+            </section>
+
+            <section class="section">
+                <h2 id="mongodb-atlas-setup">2. MongoDB Atlas — platform setup</h2>
+                <p>Atlas is MongoDB's fully managed cloud service. The free tier (M0) is perfect for learning and small apps.</p>
+                <h3>Step 1 — Create an account</h3>
+                <p>Go to mongodb.com/atlas, choose Try Free, and sign up with email or Google.</p>
+                <h3>Step 2 — Create a cluster</h3>
+                <ol>
+                    <li>Choose M0 Free (512 MB, shared).</li>
+                    <li>Cloud provider: AWS / GCP / Azure (closest to your users).</li>
+                    <li>Region: for example Frankfurt or N. Virginia.</li>
+                    <li>Cluster name: leave <code>Cluster0</code> or rename to <code>mern-dev</code>.</li>
+                    <li>Click Create Deployment.</li>
+                </ol>
+                <h3>Step 3 — Create a database user</h3>
+                <ul>
+                    <li>Database Access → Add New Database User.</li>
+                    <li>Authentication: Password.</li>
+                    <li>Username: <code>mernUser</code>.</li>
+                    <li>Password: autogenerate and store it safely.</li>
+                    <li>Role: Read and write to any database (dev only — restrict in production).</li>
+                </ul>
+                <h3>Step 4 — Allow network access</h3>
+                <ul>
+                    <li>Network Access → Add IP Address.</li>
+                    <li>Development: allow access from anywhere (<code>0.0.0.0/0</code>).</li>
+                    <li>Production: whitelist only your server's IP.</li>
+                </ul>
+                <h3>Step 5 — Get the connection string</h3>
+                <p>Cluster → Connect → Drivers → Node.js. Copy the URI:</p>
+                <pre class="code-block" data-lang="text"><code>mongodb+srv://mernUser:&lt;password&gt;@cluster0.xxxxx.mongodb.net/?retryWrites=true&amp;w=majority</code></pre>
+                <p>Replace <code>&lt;password&gt;</code> with the real password and add the database name before the <code>?</code>, for example <code>/myAppDB</code>.</p>
+                <h3>Step 6 — Store it as an environment variable</h3>
+                <p>An environment variable keeps credentials out of your source code: the backend reads the URI via <code>process.env.MONGO_URI</code>, so the same code can point at different databases in dev and production. In a <code>.env</code> file each line is one <code>KEY=VALUE</code> pair, with no spaces around the <code>=</code>.</p>
+                <pre class="code-block" data-lang="text"><code>MONGO_URI=mongodb+srv://mernUser:PASSWORD@cluster0.xxxxx.mongodb.net/myAppDB?retryWrites=true&amp;w=majority
+PORT=5000</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Add <code>.env</code> to <code>.gitignore</code> immediately. Never commit credentials. Env handling is covered on the <a href="../06-backend/nodejs.html">Node.js</a> page.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="mongoose-connect">3. Mongoose — install, connect, configure</h2>
+                <p>Mongoose is the ODM (Object Data Modeling) library that gives MongoDB structure, validation, and clean JavaScript APIs.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install mongoose dotenv</code></pre>
+                <h3>config/db.js</h3>
+                <p>A single connection module keeps startup logic in one place. <code>autoIndex</code> builds schema indexes automatically in development but is switched off in production to avoid surprise rebuilds.</p>
+                <pre class="code-block" data-lang="javascript"><code>const mongoose = require("mongoose");
+
+const connectDB = async () =&gt; {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI, {
+            autoIndex: process.env.NODE_ENV !== "production"
+        });
+        console.log("MongoDB connected: " + conn.connection.host);
+    } catch (err) {
+        console.error("MongoDB connection error:", err.message);
+        process.exit(1);
+    }
+};
+
+module.exports = connectDB;</code></pre>
+                <h3>server.js</h3>
+                <p>The entry point loads env vars, opens the database connection once, mounts the routes, and only then starts listening.</p>
+                <pre class="code-block" data-lang="javascript"><code>require("dotenv").config();
+const express = require("express");
+const connectDB = require("./config/db");
+
+const app = express();
+app.use(express.json());
+connectDB();
+
+app.use("/api/users", require("./routes/users"));
+
+app.listen(process.env.PORT || 5000, () =&gt;
+    console.log("Server running on port " + (process.env.PORT || 5000))
+);</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Mongoose manages a connection pool internally. Call <code>connect()</code> once at startup and reuse it everywhere — never connect per request.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="mongoose-schema-crud">4. Mongoose — schema, model, methods, CRUD</h2>
+                <h3>models/User.js</h3>
+                <p>The model is the single source of truth for a document's shape and rules: types, required fields, defaults, and relaxations such as <code>trim</code>/<code>lowercase</code> that run before saving.</p>
+                <pre class="code-block" data-lang="javascript"><code>const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema(
+    {
+        name:  { type: String, required: true, trim: true },
+        email: { type: String, required: true, unique: true, lowercase: true }, // normalized + indexed
+        age:   { type: Number, min: 0, max: 120 },
+        role:  { type: String, enum: ["user", "admin"], default: "user" },
+        posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }]          // reference for populate()
+    },
+    { timestamps: true }   // adds createdAt / updatedAt automatically
+);
+
+userSchema.methods.isAdmin = function () {
+    return this.role === "admin";
+};
+
+userSchema.statics.findByEmail = function (email) {
+    return this.findOne({ email });
+};
+
+userSchema.virtual("displayName").get(function () {
+    return this.name + " (" + this.role + ")";
+});
+
+module.exports = mongoose.model("User", userSchema);</code></pre>
+                <h3>CRUD cheat sheet</h3>
+                <p>These promise-based calls mirror the shell operations. Note the extras that matter in an API: <code>.select()</code> hides fields, <code>.lean()</code> skips Mongoose wrapping on read-only queries, and the update options return the new document while still validating it.</p>
+                <pre class="code-block" data-lang="javascript"><code>const User = require("../models/User");
+
+// CREATE
+const user = await User.create({ name: "Alice", email: "alice@example.com" });
+
+// READ
+const all   = await User.find({ role: "admin" }).limit(10).sort("-createdAt");
+const one   = await User.findById(id).populate("posts");        // replace post ids with documents
+const found = await User.findOne({ email: "alice@example.com" }).lean(); // plain object, faster
+
+// UPDATE
+await User.findByIdAndUpdate(id, { name: "Alice B." }, { new: true, runValidators: true });
+
+// DELETE
+await User.findByIdAndDelete(id);
+
+// AGGREGATION
+const stats = await User.aggregate([
+    { $group: { _id: "$role", count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+]);</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>For a deeper treatment of Query vs Document, populate, authorization, methods/virtuals/statics, and controller patterns, see <a href="mongodb-mongoose.html">MongoDB &amp; Mongoose Deep Dive</a>. Basic shell CRUD and operators live on <a href="mongodb-basics.html">MongoDB Basics</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="express-mongoose-example">5. Express + Mongoose — full example</h2>
+                <h3>routes/users.js</h3>
+                <p>A thin router maps each HTTP verb to a model call and translates errors into status codes. <code>.select("-__v")</code> keeps Mongoose's internal version key out of the response.</p>
+                <pre class="code-block" data-lang="javascript"><code>const express = require("express");
+const User = require("../models/User");
+const router = express.Router();
+
+router.get("/", async (req, res) =&gt; {
+    try {
+        const users = await User.find().select("-__v").lean();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.get("/:id", async (req, res) =&gt; {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: "Not found" });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post("/", async (req, res) =&gt; {
+    try {
+        const user = await User.create(req.body);
+        res.status(201).json(user);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+router.put("/:id", async (req, res) =&gt; {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+        res.json(user);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+router.delete("/:id", async (req, res) =&gt; {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+module.exports = router;</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>Route design, status codes, and REST conventions are owned by the <a href="../06-backend/rest-api.html">REST API</a> page; Express middleware patterns live on the <a href="../06-backend/express.html">Express</a> page.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="react-mongoose-consumption">6. React — consuming the Express + Mongoose API</h2>
+                <p>React fetches over HTTP and stores the JSON in state. It never imports Mongoose or knows what database is behind the API.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { useEffect, useState } from "react";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/users";
+
+export default function Users() {
+    const [users, setUsers] = useState([]);
+
+    useEffect(() =&gt; {
+        axios.get(API).then((r) =&gt; setUsers(r.data));
+    }, []);
+
+    const addUser = async () =&gt; {
+        const { data } = await axios.post(API, {
+            name: "Sara",
+            email: "sara@example.com",
+            role: "user"
+        });
+        setUsers((prev) =&gt; [...prev, data]);
+    };
+
+    const removeUser = async (id) =&gt; {
+        await axios.delete(API + "/" + id);
+        setUsers((prev) =&gt; prev.filter((u) =&gt; u._id !== id));
+    };
+
+    return (
+        &lt;div&gt;
+            &lt;button onClick={addUser}&gt;Add User&lt;/button&gt;
+            &lt;ul&gt;
+                {users.map((u) =&gt; (
+                    &lt;li key={u._id}&gt;
+                        {u.name} — {u.email} ({u.role})
+                        &lt;button onClick={() =&gt; removeUser(u._id)}&gt;x&lt;/button&gt;
+                    &lt;/li&gt;
+                ))}
+            &lt;/ul&gt;
+        &lt;/div&gt;
+    );
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>React only touches HTTP. It does not know whether the backend is Mongo or SQL — that is the beauty of a REST API.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="sql-setup">7. SQL — platform setup (PostgreSQL &amp; MySQL)</h2>
+                <p>Three realistic options:</p>
+                <h3>Option A — Local via Docker (fastest for dev)</h3>
+                <p>Docker starts a disposable database server in a single command — no installer, no system service, and no version conflicts with anything else on your machine. It is the fastest option for local development, but the data lives inside the container, so deleting it erases the database unless you add a volume.</p>
+                <pre class="code-block" data-lang="bash"><code># Postgres
+# -e sets container env vars; -p maps host:container ports; -d runs it detached
+docker run --name pg -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=mydb -p 5432:5432 -d postgres
+
+# MySQL
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=mydb -p 3306:3306 -d mysql:8</code></pre>
+                <h3>Option B — Managed cloud (like Atlas, but for SQL)</h3>
+                <ul>
+                    <li>Neon — serverless Postgres, generous free tier.</li>
+                    <li>Supabase — Postgres + Auth + Storage.</li>
+                    <li>PlanetScale — serverless MySQL.</li>
+                    <li>AWS RDS / Azure SQL — enterprise-grade. See the <a href="sql-rds.html">AWS RDS MySQL Guide</a>.</li>
+                </ul>
+                <h3>Option C — Connection string</h3>
+                <p>A connection string packs the driver, credentials, host, port and database name into one URL, so it is the single value you reuse in code, your <code>.env</code>, and GUI clients. The <code>?sslmode=require</code> query parameter forces an encrypted connection, which most managed hosts expect.</p>
+                <pre class="code-block" data-lang="text"><code>postgresql://user:password@host:5432/mydb?sslmode=require
+mysql://user:password@host:3306/mydb</code></pre>
+                <h3>Env</h3>
+                <p>Keep the URL in an environment variable rather than hard-coding it, so the same codebase can point at a local, staging or production database without changes. <code>DATABASE_URL</code> is the conventional name that the pg driver and Prisma read automatically.</p>
+                <pre class="code-block" data-lang="text"><code>DATABASE_URL=postgresql://user:password@host:5432/mydb?sslmode=require
+PORT=5000</code></pre>
+                <h3>Create the table</h3>
+                <p>SQL needs its structure declared before you can insert anything. This is the same shape as the Mongoose schema above, expressed as a table with typed columns.</p>
+                <pre class="code-block" data-lang="sql"><code>CREATE TABLE users (
+    id         SERIAL PRIMARY KEY,          -- auto-incrementing primary key
+    name       VARCHAR(100) NOT NULL,
+    email      VARCHAR(150) UNIQUE NOT NULL,-- unique constraint enforces no duplicates
+    age        INT,
+    role       VARCHAR(20) DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT NOW()
+);</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="mysql-command-reference">8. MySQL command reference</h2>
+                <p>This is the working vocabulary of MySQL: the statements you type into MySQL Workbench, a shell, or a migration file to create a database, shape a table, and read and write rows. The earlier sections run SQL from Node.js; this section is the raw command set itself, grouped by what each statement does, so you can look up the exact syntax when a driver call is not enough.</p>
+
+                <h3>Database operations</h3>
+                <p>A database (also called a <em>schema</em>) is the container that holds your tables. Create one, switch into it with <code>USE</code>, and confirm which one is active before creating tables — otherwise the table silently lands in the wrong database.</p>
+                <pre class="code-block" data-lang="sql"><code>-- Create a new database (schema)
+CREATE DATABASE appdb;
+
+-- List every database on the server
+SHOW DATABASES;
+
+-- Select the active database for this session
+USE appdb;
+
+-- Print the database currently in use (NULL when none is selected)
+SELECT DATABASE();
+
+-- Delete a database and every table inside it (irreversible)
+DROP DATABASE appdb;</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p><code>DROP DATABASE</code> permanently deletes the schema and all its data in a single statement. There is no undo — verify the name and keep a backup.</p></aside>
+
+                <h3>Transactions — COMMIT, ROLLBACK, AUTOCOMMIT</h3>
+                <p>A transaction groups several writes so they succeed or fail together — essential for money, inventory, or any multi-step change. MySQL runs in <em>autocommit</em> mode by default, meaning every statement is saved the moment you run it. Set <code>AUTOCOMMIT = 0</code> when several statements must be atomic, then <code>COMMIT</code> to save them or <code>ROLLBACK</code> to discard them.</p>
+                <pre class="code-block" data-lang="sql"><code>-- Autocommit ON (the default): each statement saves itself
+SET AUTOCOMMIT = 1;
+
+-- Turn autocommit OFF so you control when changes are saved
+SET AUTOCOMMIT = 0;
+
+-- Wrap several writes so they all land together
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;     -- persist both updates as one unit
+-- ROLLBACK; -- instead, discard everything since the last commit</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>With <code>AUTOCOMMIT = 0</code>, forgetting to <code>COMMIT</code> loses your changes when the session ends, and the open transaction can hold row locks that block other clients.</p></aside>
+
+                <h3>Table operations</h3>
+                <p>A table declares its columns, types, and rules before any row can be inserted — the opposite of MongoDB's flexible documents. <code>DESCRIBE</code> is the fastest way to inspect an existing table, and <code>ALTER TABLE ... ADD CONSTRAINT</code> adds a rule on top of data that is already there.</p>
+                <pre class="code-block" data-lang="sql"><code>-- Define columns, a primary key, and defaults up front
+CREATE TABLE users (
+    id         INT AUTO_INCREMENT PRIMARY KEY,      -- auto-increments per insert
+    name       VARCHAR(255) NOT NULL,
+    email      VARCHAR(255) NOT NULL,
+    age        INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- filled automatically
+);
+
+-- List every table in the active database
+SHOW TABLES;
+
+-- Inspect columns, types, keys, and defaults
+DESCRIBE users;
+
+-- Enforce a rule on existing data: no duplicate emails
+ALTER TABLE users
+ADD CONSTRAINT unique_email UNIQUE (email);
+
+-- Delete the table and all its rows (irreversible)
+DROP TABLE users;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Statement</th><th>Removes</th><th>Undo?</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>DELETE FROM users</code></td><td>Rows matching <code>WHERE</code></td><td>Yes, if inside a transaction</td></tr>
+                            <tr><td><code>TRUNCATE TABLE users</code></td><td>All rows, keeps the table</td><td>No — DDL, cannot roll back</td></tr>
+                            <tr><td><code>DROP TABLE users</code></td><td>The table and its rows</td><td>No — DDL, cannot roll back</td></tr>
+                            <tr><td><code>DROP DATABASE appdb</code></td><td>The database and every table</td><td>No — DDL, cannot roll back</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Column operations</h3>
+                <p>The shape of a table changes as an app grows, and MySQL handles all of it with <code>ALTER TABLE</code>: <code>ADD</code> a column, <code>MODIFY</code> its type, <code>CHANGE</code> to rename and retype it, and <code>DROP</code> to remove it. Each runs in place and rewrites existing data, so test on a copy first.</p>
+                <pre class="code-block" data-lang="sql"><code>-- Add a new column
+ALTER TABLE users
+ADD COLUMN phone_number VARCHAR(15);
+
+-- Change an existing column's data type (keeps the name)
+ALTER TABLE users
+MODIFY COLUMN phone_number INT;
+
+-- Rename a column (repeat its full definition)
+ALTER TABLE users
+CHANGE COLUMN old_column_name new_column_name VARCHAR(255);
+
+-- Remove a column and its data
+ALTER TABLE users
+DROP COLUMN phone_number;</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p><code>CHANGE COLUMN</code> needs the old name, the new name, <em>and</em> the full type. Omit the type and MySQL errors out; supply the wrong type and you silently retype the column.</p></aside>
+
+                <h3>Data operations — INSERT, SELECT, UPDATE, DELETE</h3>
+                <p>These four verbs are the core of daily work: <code>INSERT</code> adds rows, <code>SELECT</code> reads them, <code>UPDATE</code> changes them, and <code>DELETE</code> removes them. To run them from Node.js with safe placeholders instead of literals, see <a href="#express-sql-example">Express + SQL</a>.</p>
+                <pre class="code-block" data-lang="sql"><code>-- Insert one row (column order must match the value order)
+INSERT INTO users (name, email, age)
+VALUES ('John Doe', 'john.doe@example.com', 30);
+
+-- Read every row
+SELECT * FROM users;
+
+-- Read only matching rows
+SELECT * FROM users
+WHERE age &gt; 25;
+
+-- Change matching rows; without WHERE this touches every row
+UPDATE users
+SET name = 'Jane Doe', age = 35
+WHERE id = 1;
+
+-- Remove matching rows; without WHERE this empties the table
+DELETE FROM users
+WHERE id = 1;</code></pre>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>An <code>UPDATE</code> or <code>DELETE</code> with no <code>WHERE</code> applies to <em>every</em> row. Run the same condition as a <code>SELECT</code> first to preview exactly what you are about to change or remove.</p></aside>
+
+                <h3>Advanced queries — ORDER BY, COUNT, GROUP BY, JOIN</h3>
+                <p>These turn raw rows into answers. <code>ORDER BY</code> sorts, <code>COUNT</code> and <code>GROUP BY</code> aggregate, and <code>JOIN</code> combines related tables on a matching key — the relational feature MongoDB reproduces with <code>$lookup</code> and <code>populate()</code> (see <a href="#mongo-vs-sql">MongoDB vs SQL</a>).</p>
+                <pre class="code-block" data-lang="sql"><code>-- Sort rows by a column, descending
+SELECT * FROM users
+ORDER BY age DESC;
+
+-- Count all rows in the table
+SELECT COUNT(*) FROM users;
+
+-- Count rows per age (GROUP BY collapses each distinct value into one row)
+SELECT age, COUNT(*)
+FROM users
+GROUP BY age;
+
+-- Combine two tables on the shared key
+SELECT users.name, orders.order_date
+FROM users
+JOIN orders ON users.id = orders.user_id;</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Join</th><th>Returns</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>INNER JOIN</code></td><td>Only rows with a match in both tables</td></tr>
+                            <tr><td><code>LEFT JOIN</code></td><td>All left rows, plus matches (<code>NULL</code> when none)</td></tr>
+                            <tr><td><code>RIGHT JOIN</code></td><td>All right rows, plus matches</td></tr>
+                            <tr><td><code>FULL JOIN</code></td><td>Not supported in MySQL — emulate with a <code>LEFT JOIN</code> and <code>RIGHT JOIN</code> joined by <code>UNION</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout info"><span class="ct">Note</span><p>To provision a managed MySQL instance and run these commands against it, see the <a href="sql-rds.html">AWS RDS MySQL Guide</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="sql-raw-drivers">9. SQL in Node — raw drivers (pg &amp; mysql2)</h2>
+                <p>The driver is the lowest-level way to talk SQL from Node. No magic, just SQL strings.</p>
+                <pre class="code-block" data-lang="bash"><code># PostgreSQL
+npm install pg dotenv
+
+# MySQL
+npm install mysql2 dotenv</code></pre>
+                <h3>config/db.js (Postgres)</h3>
+                <p>Wrap a <code>Pool</code> in a tiny <code>query()</code> helper so every route uses the same pooled connection instead of opening its own.</p>
+                <pre class="code-block" data-lang="javascript"><code>const { Pool } = require("pg");
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }   // managed hosts often require TLS
+});
+
+module.exports = {
+    query: (text, params) =&gt; pool.query(text, params), // params keep queries injection-safe
+    pool
+};</code></pre>
+                <h3>config/db.js (MySQL)</h3>
+                <p>The MySQL version is identical in spirit: one pool, one <code>query()</code> wrapper.</p>
+                <pre class="code-block" data-lang="javascript"><code>const mysql = require("mysql2/promise");
+
+const pool = mysql.createPool({
+    uri: process.env.DATABASE_URL,
+    waitForConnections: true,   // queue requests when all connections are busy
+    connectionLimit: 10
+});
+
+module.exports = {
+    query: (text, params) =&gt; pool.query(text, params),
+    pool
+};</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>A Pool is a set of reusable connections. Opening a new connection per request will kill your database under load — always use a pool.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="prisma-orm">10. SQL in Node — Prisma ORM (the Mongoose equivalent)</h2>
+                <p>If Mongoose is to MongoDB, Prisma is to SQL.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install @prisma/client
+npm install -D prisma
+npx prisma init</code></pre>
+                <h3>prisma/schema.prisma</h3>
+                <p><code>schema.prisma</code> is Prisma's single source of truth: it declares the datasource, the generated client, and every model in one typed file. <code>prisma migrate</code> turns these models into real tables, so your schema lives in version control instead of hand-written SQL. This block uses Prisma's schema DSL, not JavaScript, so comments are written with <code>//</code>.</p>
+                <pre class="code-block" data-lang="prisma"><code>generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  age       Int?
+  role      Role     @default(USER)
+  posts     Post[]
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id       Int    @id @default(autoincrement())
+  title    String
+  body     String
+  author   User   @relation(fields: [authorId], references: [id])  // foreign key link
+  authorId Int
+}
+
+enum Role {
+  USER
+  ADMIN
+}</code></pre>
+                <h3>Run first migration</h3>
+                <p>A migration applies your schema to the database and records the change as a versioned file. Run it once after editing <code>schema.prisma</code>; the <code>--name</code> flag labels the migration so the history stays readable. Re-run it whenever the models change.</p>
+                <pre class="code-block" data-lang="bash"><code>npx prisma migrate dev --name init</code></pre>
+                <h3>config/prisma.js</h3>
+                <p>Create the client once and share it. Prisma manages its own connection pool, so a single instance is all you need.</p>
+                <pre class="code-block" data-lang="javascript"><code>const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+module.exports = prisma;</code></pre>
+                <h3>CRUD cheat sheet</h3>
+                <p>Prisma calls are typed and read almost like English: <code>where</code> filters, <code>include</code> eager-loads relations (a JOIN), and <code>orderBy</code>/<code>take</code> handle sorting and pagination.</p>
+                <pre class="code-block" data-lang="javascript"><code>const prisma = require("../config/prisma");
+
+// CREATE
+const user = await prisma.user.create({
+    data: { name: "Alice", email: "alice@example.com" }
+});
+
+// READ
+const all = await prisma.user.findMany({
+    where: { role: "ADMIN" },
+    include: { posts: true },        // eager-load the relation (JOIN)
+    orderBy: { createdAt: "desc" },
+    take: 10                         // LIMIT 10
+});
+const one = await prisma.user.findUnique({ where: { id: 1 } });
+
+// UPDATE
+await prisma.user.update({
+    where: { id: 1 },
+    data: { name: "Alice B." }
+});
+
+// DELETE
+await prisma.user.delete({ where: { id: 1 } });
+
+// TRANSACTION
+await prisma.$transaction([
+    prisma.user.update({ where: { id: 1 }, data: { role: "ADMIN" } }),
+    prisma.post.create({ data: { title: "Hi", body: "...", authorId: 1 } })
+]);</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="express-sql-example">11. Express + SQL — full example</h2>
+                <p>Same API shape as the Mongoose version — only the data layer changes.</p>
+                <h3>routes/users.js (with raw pg driver)</h3>
+                <p>This router uses the <code>db.query()</code> helper from <code>config/db.js</code> and returns <code>rows</code> from each result. Values are passed as <code>$1</code>, <code>$2</code> placeholders matched positionally to an array; the driver escapes them, which is what prevents SQL injection.</p>
+                <pre class="code-block" data-lang="javascript"><code>const express = require("express");
+const db = require("../config/db");
+const router = express.Router();
+
+router.get("/", async (req, res) =&gt; {
+    try {
+        const { rows } = await db.query(
+            "SELECT id, name, email, age, role, created_at FROM users ORDER BY created_at DESC"
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.get("/:id", async (req, res) =&gt; {
+    try {
+        const { rows } = await db.query("SELECT * FROM users WHERE id = $1", [req.params.id]);
+        if (!rows[0]) return res.status(404).json({ error: "Not found" });
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post("/", async (req, res) =&gt; {
+    const { name, email, age, role } = req.body;
+    try {
+        const { rows } = await db.query(
+            "INSERT INTO users (name, email, age, role) VALUES ($1,$2,$3,$4) RETURNING *",  // RETURNING * gives back the new row
+            [name, email, age, role || "user"]
+        );
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+router.put("/:id", async (req, res) =&gt; {
+    const { name, email, age, role } = req.body;
+    try {
+        const { rows } = await db.query(
+            "UPDATE users SET name=$1, email=$2, age=$3, role=$4 WHERE id=$5 RETURNING *",
+            [name, email, age, role, req.params.id]
+        );
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+router.delete("/:id", async (req, res) =&gt; {
+    try {
+        await db.query("DELETE FROM users WHERE id = $1", [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+module.exports = router;</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Never build SQL with template strings such as <code>"WHERE id=" + id</code>. Always use parameterized queries (<code>$1</code>, <code>?</code>) — this is the single biggest SQL-injection defense.</p></aside>
+                <h3>With Prisma instead — same routes, cleaner code</h3>
+                <p>The routes no longer contain SQL strings; Prisma builds the queries and parameterizes them for you, which removes the injection risk entirely.</p>
+                <pre class="code-block" data-lang="javascript"><code>const express = require("express");
+const prisma = require("../config/prisma");
+const router = express.Router();
+
+router.get("/", async (req, res) =&gt; {
+    const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
+    res.json(users);
+});
+
+router.post("/", async (req, res) =&gt; {
+    try {
+        const user = await prisma.user.create({ data: req.body });
+        res.status(201).json(user);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+router.put("/:id", async (req, res) =&gt; {
+    const user = await prisma.user.update({
+        where: { id: Number(req.params.id) },
+        data: req.body
+    });
+    res.json(user);
+});
+
+router.delete("/:id", async (req, res) =&gt; {
+    await prisma.user.delete({ where: { id: Number(req.params.id) } });
+    res.json({ success: true });
+});
+
+module.exports = router;</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="react-sql-consumption">12. React — consuming the Express + SQL API</h2>
+                <p>Identical to the Mongoose example. That is the point of clean architecture.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { useEffect, useState } from "react";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/users";
+
+export default function Users() {
+    const [users, setUsers] = useState([]);
+
+    useEffect(() =&gt; {
+        axios.get(API).then((r) =&gt; setUsers(r.data));
+    }, []);
+
+    return (
+        &lt;ul&gt;
+            {users.map((u) =&gt; (
+                &lt;li key={u.id}&gt;{u.name} — {u.email}&lt;/li&gt;
+            ))}
+        &lt;/ul&gt;
+    );
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Notice <code>u._id</code> (Mongo) vs <code>u.id</code> (SQL). That is the only visible difference to the frontend. Standardize your API responses so the UI never has to care.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="function-reference">13. Function-by-function explanation</h2>
+                <h3>Mongoose (MongoDB)</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Function</th><th>What it does</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>mongoose.connect(uri)</code></td><td>Opens the pooled connection to Atlas.</td></tr>
+                            <tr><td><code>new mongoose.Schema({...})</code></td><td>Declares document shape, validation, defaults.</td></tr>
+                            <tr><td><code>mongoose.model("User", schema)</code></td><td>Compiles a schema into a usable Model.</td></tr>
+                            <tr><td><code>Model.create(data)</code></td><td>Inserts one document.</td></tr>
+                            <tr><td><code>Model.find(filter)</code></td><td>Returns an array of matching docs.</td></tr>
+                            <tr><td><code>Model.findOne(filter)</code></td><td>Returns the first match.</td></tr>
+                            <tr><td><code>Model.findById(id)</code></td><td>Find by <code>_id</code>.</td></tr>
+                            <tr><td><code>Model.findByIdAndUpdate(id, data, {new:true})</code></td><td>Updates and returns the new doc.</td></tr>
+                            <tr><td><code>Model.findByIdAndDelete(id)</code></td><td>Deletes by <code>_id</code>.</td></tr>
+                            <tr><td><code>.populate("posts")</code></td><td>Replaces ObjectId refs with full docs (JOIN equivalent).</td></tr>
+                            <tr><td><code>.select("-__v")</code></td><td>Includes / excludes fields.</td></tr>
+                            <tr><td><code>.lean()</code></td><td>Returns plain JS objects (faster, no Mongoose wrapping).</td></tr>
+                            <tr><td><code>Model.aggregate([...])</code></td><td>Aggregation pipeline (group, match, sort, lookup).</td></tr>
+                            <tr><td><code>schema.methods.x</code></td><td>Instance method (on a document).</td></tr>
+                            <tr><td><code>schema.statics.x</code></td><td>Static method (on the Model).</td></tr>
+                            <tr><td><code>schema.virtual("x")</code></td><td>Computed, non-stored field.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>SQL — raw driver (pg / mysql2)</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Function</th><th>What it does</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>new Pool({...})</code></td><td>Creates a reusable connection pool.</td></tr>
+                            <tr><td><code>pool.query(sql, params)</code></td><td>Executes SQL with parameterized values.</td></tr>
+                            <tr><td><code>$1, $2</code> (pg) / <code>?</code> (mysql)</td><td>Safe placeholders — always use these.</td></tr>
+                            <tr><td><code>RETURNING *</code> (pg)</td><td>Returns inserted/updated rows.</td></tr>
+                            <tr><td><code>pool.end()</code></td><td>Closes all connections (on shutdown).</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>SQL — Prisma ORM</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Function</th><th>What it does</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>new PrismaClient()</code></td><td>Creates a typed DB client.</td></tr>
+                            <tr><td><code>prisma.user.findMany({...})</code></td><td>SELECT with filters, order, pagination.</td></tr>
+                            <tr><td><code>prisma.user.findUnique({ where })</code></td><td>SELECT by unique key.</td></tr>
+                            <tr><td><code>prisma.user.create({ data })</code></td><td>INSERT.</td></tr>
+                            <tr><td><code>prisma.user.update({ where, data })</code></td><td>UPDATE.</td></tr>
+                            <tr><td><code>prisma.user.delete({ where })</code></td><td>DELETE.</td></tr>
+                            <tr><td><code>include: { posts: true }</code></td><td>Eager load relation (JOIN).</td></tr>
+                            <tr><td><code>prisma.$transaction([...])</code></td><td>Atomic multi-operation transaction.</td></tr>
+                            <tr><td><code>npx prisma migrate dev</code></td><td>Applies schema changes to the DB and generates the client.</td></tr>
+                            <tr><td><code>npx prisma studio</code></td><td>Visual DB browser.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="mongo-vs-sql">14. MongoDB vs SQL — comparison table</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Aspect</th><th>MongoDB + Mongoose</th><th>SQL (Postgres/MySQL) + pg/Prisma</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Data model</td><td>Documents (JSON)</td><td>Tables + rows</td></tr>
+                            <tr><td>Schema</td><td>Flexible (optional via Mongoose)</td><td>Fixed, defined upfront</td></tr>
+                            <tr><td>Relationships</td><td>Embed or reference + populate</td><td>Foreign keys + JOINs</td></tr>
+                            <tr><td>Transactions</td><td>Supported (4.0+) but less idiomatic</td><td>First-class, ACID by default</td></tr>
+                            <tr><td>Query language</td><td>JS / aggregation pipeline</td><td>SQL</td></tr>
+                            <tr><td>Joins</td><td><code>$lookup</code> / <code>.populate()</code></td><td>Native, optimized</td></tr>
+                            <tr><td>Scaling</td><td>Horizontal (built-in sharding)</td><td>Mostly vertical; sharding harder</td></tr>
+                            <tr><td>Migrations</td><td>Not enforced</td><td>First-class (Prisma Migrate)</td></tr>
+                            <tr><td>Type safety</td><td>Decent with TS</td><td>Excellent (Prisma generates types)</td></tr>
+                            <tr><td>Ideal for</td><td>Evolving schemas, JSON APIs, content</td><td>Relational, financial, analytics</td></tr>
+                            <tr><td>MERN default</td><td>Yes</td><td>Common alternative</td></tr>
+                            <tr><td>Learning curve</td><td>Low</td><td>Medium (SQL knowledge needed)</td></tr>
+                            <tr><td>Hosting</td><td>Atlas (free M0)</td><td>Neon / Supabase / PlanetScale / RDS</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="when-to-use-which">15. When to use which</h2>
+                <h3>Choose MongoDB + Mongoose when</h3>
+                <ul>
+                    <li>Your schema is still evolving (MVP, startup, discovery phase).</li>
+                    <li>Data is naturally document-shaped — posts, comments, nested configs, catalogs.</li>
+                    <li>You want speed of iteration — no migrations, add fields freely.</li>
+                    <li>You need horizontal scale out of the box.</li>
+                    <li>The workload is read-heavy with a flexible shape (CMS, feeds, product catalogs).</li>
+                    <li>Your whole team is JS-only and you want one mental model.</li>
+                </ul>
+                <h3>Choose SQL (Postgres / MySQL) when</h3>
+                <ul>
+                    <li>Data is highly relational — users ↔ orders ↔ items ↔ payments.</li>
+                    <li>You need strict ACID transactions (banking, checkout, bookings).</li>
+                    <li>Reporting and analytics are core — SQL wins.</li>
+                    <li>Data integrity must be enforced by the DB (constraints, foreign keys).</li>
+                    <li>Your team already knows SQL.</li>
+                    <li>Compliance requires rigid schemas (finance, healthcare).</li>
+                    <li>You need complex joins across many tables.</li>
+                </ul>
+                <h3>Choose BOTH (polyglot persistence) when</h3>
+                <ul>
+                    <li>You have transactional and content needs in one app.</li>
+                    <li>Example e-commerce: Postgres for users, orders, payments, inventory; Mongo for product descriptions, reviews, activity logs, and search indexes.</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="using-both">16. How to use BOTH in the same MERN app</h2>
+                <p>A real production pattern: one Express API, each database abstracted behind its own module.</p>
+                <h3>Folder structure</h3>
+                <p>A polyglot app stays maintainable when each database is hidden behind its own module: <code>config/</code> holds the connections, <code>models/</code> holds Mongoose models, <code>repositories/</code> holds SQL query functions, and <code>routes/</code> stay unaware of which driver is underneath. The layout below keeps Mongo access (models) separate from SQL access (repositories).</p>
+                <pre class="code-block" data-lang="text"><code>server/
+  config/
+    mongo.js       (Mongoose connection)
+    postgres.js    (pg Pool connection)
+  models/          (Mongoose models)
+    Product.js
+  repositories/    (SQL access functions)
+    orders.repo.js
+  routes/
+    products.js    (uses Mongo)
+    orders.js      (uses SQL)
+  server.js</code></pre>
+                <h3>config/mongo.js</h3>
+                <p>Each database gets its own connection module, so nothing in the app hard-codes a driver detail.</p>
+                <pre class="code-block" data-lang="javascript"><code>const mongoose = require("mongoose");
+module.exports = () =&gt; mongoose.connect(process.env.MONGO_URI);</code></pre>
+                <h3>config/postgres.js</h3>
+                <p>The SQL pool exposes the same small <code>query()</code> surface used by the SQL routes.</p>
+                <pre class="code-block" data-lang="javascript"><code>const { Pool } = require("pg");
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+module.exports = { query: (t, p) =&gt; pool.query(t, p), pool };</code></pre>
+                <h3>server.js</h3>
+                <p>The entry point wires both databases together: it opens the Mongo connection once at boot, then mounts the product (Mongo) and order (SQL) route groups. The SQL pool connects lazily on its first query, so it is not started here; no route imports a driver directly.</p>
+                <pre class="code-block" data-lang="javascript"><code>require("dotenv").config();
+const express = require("express");
+const connectMongo = require("./config/mongo");
+
+const app = express();
+app.use(express.json());
+
+connectMongo().then(() =&gt; console.log("Mongo ready"));  // open the Mongo pool once at startup
+
+app.use("/api/products", require("./routes/products"));
+app.use("/api/orders",   require("./routes/orders"));
+
+app.listen(5000, () =&gt; console.log("Server on :5000"));</code></pre>
+                <h3>Route using Mongo (products)</h3>
+                <p>This route reads from Mongoose and is unaware that SQL exists elsewhere in the app.</p>
+                <pre class="code-block" data-lang="javascript"><code>const router = require("express").Router();
+const Product = require("../models/Product");
+
+router.get("/", async (req, res) =&gt; {
+    res.json(await Product.find().lean());
+});
+
+module.exports = router;</code></pre>
+                <h3>Route using SQL (orders)</h3>
+                <p>This sister route talks SQL through the pool wrapper referenced across the app by id only.</p>
+                <pre class="code-block" data-lang="javascript"><code>const router = require("express").Router();
+const db = require("../config/postgres");
+
+router.get("/", async (req, res) =&gt; {
+    const { rows } = await db.query("SELECT * FROM orders ORDER BY created_at DESC");
+    res.json(rows);
+});
+
+module.exports = router;</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Golden rules of polyglot persistence:</p>
+                <ul>
+                    <li>One database owns one domain. Never write the same entity to both.</li>
+                    <li>Reference across databases by ID, not by join.</li>
+                    <li>No cross-database transactions. Use the outbox pattern or an event bus (Kafka / RabbitMQ).</li>
+                    <li>Abstract each database behind a module; routes should never know raw driver details.</li>
+                    <li>Document clearly which domain lives where.</li>
+                </ul></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="best-practices-security">17. Best practices &amp; security</h2>
+                <h3>MongoDB / Atlas</h3>
+                <ol>
+                    <li>Never commit <code>MONGO_URI</code> — use <code>.env</code> and a secret manager.</li>
+                    <li>Whitelist IPs in Atlas — avoid <code>0.0.0.0/0</code> in production.</li>
+                    <li>Least-privilege DB users — one user per service, scoped to one database.</li>
+                    <li>Enable backups (Atlas M10+ has continuous backup).</li>
+                    <li>Index the fields you query — email, userId, createdAt.</li>
+                    <li>Validate input with Mongoose + Joi / Zod.</li>
+                    <li>Always paginate — never return unbounded <code>find()</code> results.</li>
+                    <li>Use <code>.lean()</code> on read-only queries for a 2–5x speed boost.</li>
+                    <li>Rotate credentials regularly and enable audit logs.</li>
+                </ol>
+                <h3>SQL (Postgres / MySQL)</h3>
+                <ol>
+                    <li>Parameterized queries only — never concatenate SQL strings.</li>
+                    <li>Use migrations (Prisma Migrate / Knex / Flyway) — no manual <code>ALTER</code> in production.</li>
+                    <li>Index foreign keys and hot <code>WHERE</code> columns.</li>
+                    <li>Connection pooling always (pg Pool, mysql2 pool).</li>
+                    <li>Transactions for multi-step writes — <code>BEGIN ... COMMIT</code>.</li>
+                    <li>Read replicas for heavy read workloads.</li>
+                    <li>Backups + point-in-time recovery enabled.</li>
+                    <li>Principle of least privilege on DB roles.</li>
+                    <li>SSL/TLS enforced on all remote connections (<code>sslmode=require</code>).</li>
+                    <li>Never store plaintext passwords — bcrypt/argon2.</li>
+                </ol>
+                <h3>General MERN rules</h3>
+                <ul>
+                    <li>Keep DB credentials server-side only.</li>
+                    <li>Validate all input at the API boundary.</li>
+                    <li>Rate-limit auth and mutation endpoints.</li>
+                    <li>Log errors, not secrets.</li>
+                    <li>Separate dev / staging / prod databases and credentials.</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="final-cheat-sheet">18. Final cheat sheet</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Need</th><th>Pick</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Fast MVP, evolving schema</td><td>MongoDB + Mongoose</td></tr>
+                            <tr><td>JSON-shaped data (posts, catalogs)</td><td>MongoDB + Mongoose</td></tr>
+                            <tr><td>Content management / feeds</td><td>MongoDB + Mongoose</td></tr>
+                            <tr><td>Horizontal scale easily</td><td>MongoDB + Mongoose</td></tr>
+                            <tr><td>Financial / billing / orders</td><td>SQL + Prisma or pg</td></tr>
+                            <tr><td>Complex joins across tables</td><td>SQL</td></tr>
+                            <tr><td>ACID transactions</td><td>SQL</td></tr>
+                            <tr><td>Reporting / analytics</td><td>SQL</td></tr>
+                            <tr><td>Compliance-heavy schema</td><td>SQL</td></tr>
+                            <tr><td>Both content AND transactions</td><td>Use BOTH (polyglot)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout key"><span class="ct">Key point</span><p>The 10-second decision: shape changes often and queries stay flexible → Mongo; money moves and rules are strict → SQL; both → split by domain, reference by ID, and never join across databases.</p></aside>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>MongoDB is document-shaped; SQL is relational. Learn both and choose by data shape.</li>
+                    <li>Atlas M0 is the free path to a hosted MongoDB; store the URI in <code>.env</code>.</li>
+                    <li>Mongoose: <code>connect</code> once, then schema → model → CRUD, plus populate and aggregation.</li>
+                    <li>SQL: pool connections; raw <code>pg</code>/<code>mysql2</code> with parameterized queries, or Prisma.</li>
+                    <li>MySQL command reference: DDL (<code>CREATE</code>/<code>ALTER</code>/<code>DROP</code>), transactions (<code>COMMIT</code>/<code>ROLLBACK</code>/<code>AUTOCOMMIT</code>), DML, and <code>JOIN</code>/<code>GROUP BY</code> queries.</li>
+                    <li>The Express API looks identical whether the data layer is Mongo or SQL — only the driver changes.</li>
+                    <li>Choose Mongo for evolving/JSON data; SQL for relational, transactional, analytics workloads.</li>
+                    <li>Polyglot: one DB per domain, reference by ID, no cross-DB transactions.</li>
+                    <li>Always pool connections, parameterize SQL, paginate, and keep secrets out of <code>.git</code>.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="mongodb-basics.html"><span class="rt">→ MongoDB Basics</span><span class="rc">Shell CRUD, operators, and beginner Mongoose</span></a>
+                    <a href="mongodb-mongoose.html"><span class="rt">→ MongoDB &amp; Mongoose Deep Dive</span><span class="rc">Populate, authorization, methods/virtuals/statics</span></a>
+                    <a href="sql-rds.html"><span class="rt">→ AWS RDS MySQL Guide</span><span class="rc">Provision a managed MySQL database on AWS</span></a>
+                    <a href="../06-backend/nodejs.html"><span class="rt">→ Node.js</span><span class="rc">Env vars, secrets, and server setup</span></a>
+                    <a href="../12-practices/mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">How the data layer fits the whole stack</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

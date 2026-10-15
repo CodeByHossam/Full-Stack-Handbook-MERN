@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Frontend</span>
+                <span class="sep">/</span>
+                <span>React</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>React</h1>
+                <p class="subtitle">Build user interfaces from components: props, state, events, controlled forms, conditional rendering, Router, Context and performance.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Frontend</span>
+                    <span class="badge b-purple">Components &amp; Hooks</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="overview">The React core idea</h2>
+                <p>A React app is a tree of <strong>components</strong>. Each component receives <strong>props</strong> (data in) and owns <strong>state</strong> (data it manages). When state or props change, React re-renders that part of the UI.</p>
+                <pre class="flow">Component
+   ↓
+Props (parent → child)
+   ↓
+State (owned locally)
+   ↓
+Render (JSX)
+   ↓
+User event
+   ↓
+State update → re-render</pre>
+                <p>The <em>mechanics</em> of state and effects (snapshots, why <code>setState</code> isn't immediate, when to use <code>useEffect</code>) are owned by <a href="react-state-hooks.html">React State &amp; useEffect</a>. This page covers everyday component patterns.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="javascript-for-react">JavaScript you'll use most in React</h2>
+                <p>React is JavaScript. The language fundamentals live on the <a href="../04-javascript/javascript-basics.html">JavaScript Basics</a> page — review them there. The pieces you'll reach for constantly:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Feature</th><th>Used in React for</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>map()</code></td><td>Rendering a list of elements (with a <code>key</code>)</td></tr>
+                            <tr><td><code>filter()</code></td><td>Showing a subset</td></tr>
+                            <tr><td><code>find()</code></td><td>Getting one item by id</td></tr>
+                            <tr><td>spread <code>...</code></td><td>Immutably copying arrays/objects when updating state</td></tr>
+                            <tr><td>destructuring</td><td>Reading props and state: <code>const { name } = user</code></td></tr>
+                            <tr><td>ternary <code>? :</code></td><td>Conditional rendering</td></tr>
+                            <tr><td><code>&amp;&amp;</code></td><td>Rendering only when a condition is true</td></tr>
+                            <tr><td><code>?.</code> and <code>??</code></td><td>Safe access and fallbacks: <code>user?.name ?? "Guest"</code></td></tr>
+                            <tr><td><code>async</code>/<code>await</code></td><td>Fetching data</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout info"><span class="ct">Note</span><p>Don't re-learn <code>map</code>/<code>filter</code>/<code>find</code> here — jump to <a href="../04-javascript/javascript-basics.html">JavaScript Basics</a> for full coverage.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="components-jsx">Components &amp; JSX</h2>
+                <p>A component is a reusable function that returns JSX — markup that looks like HTML but compiles to <code>React.createElement(...)</code> calls, so structure and logic live together in one file. Split the UI into small, single-purpose components and compose them; a component re-renders only when its props or state change.</p>
+                <pre class="code-block" data-lang="javascript"><code>function UserCard({ name, age }) {   // props destructured by name
+    // A component must return ONE root element, so wrap siblings in a fragment
+    return (
+        &lt;div&gt;
+            {/* braces embed any JavaScript expression — here, the props */}
+            &lt;h2&gt;{name}&lt;/h2&gt;
+            &lt;p&gt;{age}&lt;/p&gt;
+        &lt;/div&gt;
+    );
+}</code></pre>
+                <p>JSX uses <code>className</code> instead of <code>class</code> and <code>htmlFor</code> instead of <code>for</code> — see <a href="html.html#react-notes">HTML in React</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="props">Props</h2>
+                <p>Props are data passed from a parent to a child. They are read-only inside the child.</p>
+                <p>Data flows one way (down the tree), so a child can never silently change what its parent passed — that keeps ownership of the data clear. To let a child change parent data, the parent passes a callback prop (for example <code>onSelect</code>) that the child calls.</p>
+                <pre class="code-block" data-lang="javascript"><code>function UserCard({ name, age }) {   // receive props as one object
+    return (
+        &lt;div&gt;
+            &lt;h2&gt;{name}&lt;/h2&gt;
+            &lt;p&gt;{age}&lt;/p&gt;
+        &lt;/div&gt;
+    );
+}
+
+// Parent — strings use quotes; numbers, arrays and variables use braces
+&lt;UserCard name="Alice" age={42} /&gt;</code></pre>
+                <p>Props use array/object destructuring — covered in <a href="../04-javascript/javascript-basics.html">JavaScript Basics</a>.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="state-arrays-objects">State with arrays &amp; objects</h2>
+                <p>Never mutate state directly — always create a new value. This is where the spread operator earns its keep.</p>
+                <pre class="code-block" data-lang="javascript"><code>const [items, setItems] = useState([]);
+
+// Add — spread copies the old array, then append the new item
+setItems((prev) =&gt; [...prev, newItem]);
+
+// Remove — filter returns a new array without the matching item
+setItems((prev) =&gt; prev.filter((item) =&gt; item.id !== id));
+
+// Update one item — map builds a new array, replacing only the match
+setItems((prev) =&gt;
+    prev.map((item) =&gt;
+        item.id === id ? { ...item, name: "New Name" } : item
+    )
+);
+
+// Update one property of an object — spread keeps the untouched fields
+const [user, setUser] = useState({ name: "", age: 0 });
+setUser((prev) =&gt; ({ ...prev, name: "Alice" }));</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Using the updater form <code>setItems(prev =&gt; ...)</code> is safer when the new value depends on the previous one. The full state model is in <a href="react-state-hooks.html">React State &amp; useEffect</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="events">Events</h2>
+                <p>React attaches event handlers as props, using camelCase names (<code>onClick</code>, <code>onChange</code>, <code>onSubmit</code>). You pass a function and React calls it later with a <em>synthetic event</em> that wraps the native one, so the same handler behaves the same across browsers.</p>
+                <pre class="code-block" data-lang="html"><code>&lt;button onClick={handleClick}&gt;Click&lt;/button&gt;</code></pre>
+                <p>React event handlers are rules you must internalize:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Form</th><th>Meaning</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>onClick={handleClick}</code></td><td>Correct: passes the function, React calls it on click</td></tr>
+                            <tr><td><code>onClick={handleClick()}</code></td><td>Wrong: calls the function immediately during render</td></tr>
+                            <tr><td><code>onClick={() =&gt; handleClick(id)}</code></td><td>Correct: wraps in a new function to pass an argument later</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>See <a href="react-state-hooks.html#onclick-execution">React State &amp; useEffect</a> for the full explanation of why.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="forms-controlled-inputs">Forms &amp; controlled inputs</h2>
+                <p>A controlled input has its <code>value</code> driven by state and its updates handled by <code>onChange</code>.</p>
+                <p>Because the field's value comes <em>from</em> state, React is the single source of truth: you can validate, reset, or pre-fill it at any time. An uncontrolled input keeps its own value internally — fine for simple cases, but harder to read or clear.</p>
+                <pre class="code-block" data-lang="javascript"><code>const [name, setName] = useState("");
+
+&lt;input
+    value={name}                                 // state drives the text shown
+    onChange={(e) =&gt; setName(e.target.value)}    // typing writes back to state
+/&gt;</code></pre>
+                <p><code>e.target.value</code> is the text the user typed. For a full form:</p>
+                <pre class="code-block" data-lang="javascript"><code>function Form() {
+    const [email, setEmail] = useState("");
+
+    const handleSubmit = (e) =&gt; {
+        e.preventDefault();   // stop the browser's full-page form reload
+        console.log(email);
+    };
+
+    return (
+        &lt;form onSubmit={handleSubmit}&gt;
+            &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+            &lt;input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) =&gt; setEmail(e.target.value)}
+            /&gt;
+                &lt;button type="submit"&gt;Submit&lt;/button&gt;
+            &lt;/form&gt;
+        );
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="form-to-api">Submitting a form to an API</h2>
+                <p>A controlled form is the front half; sending its data to your Express API is the back half. Track three things in state — the field values, a <code>loading</code> flag, and an <code>error</code> message — so the UI reflects exactly what is happening while the request is in flight.</p>
+                <p><code>e.preventDefault()</code> stops the browser's native full-page submit, <code>JSON.stringify</code> turns the object into a JSON body, and <code>response.ok</code> is <code>false</code> for 4xx/5xx responses. Note that a network failure rejects and lands in <code>catch</code>, but a <code>400</code>/<code>500</code> does <em>not</em> — you must check the status yourself.</p>
+                <pre class="code-block" data-lang="javascript"><code>function MyForm() {
+    const [inputValue, setInputValue] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const handleSubmit = async (e) =&gt; {
+        e.preventDefault();        // stop the browser's full-page reload
+        setLoading(true);          // disable the button and show feedback
+        setError("");
+
+        try {
+            const response = await fetch("/api/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: inputValue })   // send JSON, not a form body
+            });
+
+            if (!response.ok) {
+                // a 4xx/5xx response does NOT throw — check it yourself
+                throw new Error("Request failed with status " + response.status);
+            }
+
+            setInputValue("");     // clear the field on success
+        } catch (err) {
+            setError(err.message);  // store the message and render it below
+        } finally {
+            setLoading(false);     // always re-enable the button
+        }
+    };
+
+    return (
+        &lt;form onSubmit={handleSubmit}&gt;
+            &lt;label htmlFor="name"&gt;Name&lt;/label&gt;
+            &lt;input
+                id="name"
+                value={inputValue}
+                onChange={(e) =&gt; setInputValue(e.target.value)}
+            /&gt;
+            &lt;button type="submit" disabled={loading}&gt;
+                {loading ? "Submitting..." : "Submit"}
+            &lt;/button&gt;
+            {error &amp;&amp; &lt;p className="error"&gt;{error}&lt;/p&gt;}
+        &lt;/form&gt;
+    );
+}</code></pre>
+                <aside class="callout warn"><span class="ct">Watch out</span><p><code>fetch</code> only rejects on network errors. A <code>400</code> or <code>500</code> still resolves, so check <code>response.ok</code> (or the status) before treating the call as successful.</p></aside>
+                <p>With axios the same request is shorter, and axios <em>does</em> reject on non-2xx status codes:</p>
+                <pre class="code-block" data-lang="javascript"><code>import axios from "axios";
+
+await axios.post("/api/submit", { name: inputValue });   // throws on 4xx/5xx</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>For repeated or cached server calls, prefer <a href="redux-toolkit.html#unwrap-error-handling">RTK Query mutations</a> over hand-written fetch. Data fetching on mount lives in <a href="react-state-hooks.html#when-to-use-effect">useEffect</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="conditional-rendering">Conditional rendering</h2>
+                <p>JSX has no <code>if</code> statement — you place ordinary JavaScript expressions inside braces to decide what appears. Use a ternary (<code>? :</code>) when you need one thing <em>or</em> another, and <code>&amp;&amp;</code> when you only want to render something in one case. Returning <code>null</code> renders nothing.</p>
+                <pre class="code-block" data-lang="javascript"><code>{isLoggedIn ? &lt;Dashboard /&gt; : &lt;Login /&gt;}   // either / or
+
+{isAdmin &amp;&amp; &lt;AdminPanel /&gt;}            // only when true</code></pre>
+                <p>Use a ternary for either/or and <code>&amp;&amp;</code> to render only when true. Both are plain JavaScript operators (see <a href="../04-javascript/javascript-basics.html">JavaScript Basics</a>).</p>
+                <aside class="callout err"><span class="ct">Common mistake</span><p><code>{count &amp;&amp; &lt;Badge /&gt;}</code> renders a literal <code>0</code> when <code>count</code> is <code>0</code> (because <code>0</code> is falsy but still rendered). Guard with a boolean: <code>{count &gt; 0 &amp;&amp; &lt;Badge /&gt;}</code>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="rendering-lists">Rendering lists</h2>
+                <p>Turn an array into an array of elements with <code>map()</code>. Each element needs a stable, unique <code>key</code> so React can match items between renders — without it React re-creates DOM nodes and loses input focus and component state. Use a database <code>_id</code>, not the array index, so keys stay stable when order changes.</p>
+                <pre class="code-block" data-lang="javascript"><code>{products.map((product) =&gt; (
+    &lt;ProductCard
+        key={product._id}      // stable identity for this row
+        product={product}
+    /&gt;
+))}</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Always give each list item a stable, unique <code>key</code> (usually a database <code>_id</code>) so React can track items efficiently.</p></aside>
+                <p>The common CRUD pattern on a product list:</p>
+                <pre class="code-block" data-lang="javascript"><code>// Filter
+const available = products.filter((p) =&gt; p.stock &gt; 0);
+
+// Find one
+const product = products.find((p) =&gt; p._id === id);
+
+// Update one
+setProducts((prev) =&gt;
+    prev.map((p) =&gt;
+        p._id === id ? { ...p, stock: p.stock - 1 } : p
+    )
+);
+
+// Delete one
+setProducts((prev) =&gt; prev.filter((p) =&gt; p._id !== id));</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="effects-and-data">useEffect &amp; fetching data</h2>
+                <p><code>useEffect</code> runs side effects after render — API calls being the most common.</p>
+                <pre class="code-block" data-lang="javascript"><code>useEffect(() =&gt; {
+    fetch("/api/users")
+        .then((res) =&gt; res.json())
+        .then((data) =&gt; setUsers(data));
+}, []);   // empty dependency array: run once, after the first render</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>async function getData() {
+    try {
+        const response = await fetch("/api/data");
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error(error);   // network or JSON parsing failed
+    }
+}</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>When effects run, how dependencies work, and why you often <em>don't</em> need an effect are covered in <a href="react-state-hooks.html">React State &amp; useEffect</a>. For server state at scale, see <a href="redux-toolkit.html">Redux Toolkit + RTK Query</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="react-router">React Router</h2>
+                <p>React Router maps URLs to components. The three things you always need are the router, the <code>Routes</code>/<code>Route</code> definitions, and navigation.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install react-router-dom</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>import {
+    BrowserRouter,
+    Routes,
+    Route
+} from "react-router-dom";
+
+function App() {
+    return (
+        &lt;BrowserRouter&gt;
+            &lt;Routes&gt;
+                &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+                &lt;Route path="/products" element={&lt;Products /&gt;} /&gt;
+                {/* :id is a URL parameter, read with useParams() below */}
+                &lt;Route path="/products/:id" element={&lt;ProductDetail /&gt;} /&gt;
+                {/* "*" catches any unmatched URL (a 404 page) */}
+                &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+            &lt;/Routes&gt;
+        &lt;/BrowserRouter&gt;
+    );
+}</code></pre>
+                <p>Navigate between pages with <code>Link</code> and read route parameters with <code>useParams</code>. Use <code>Link</code> instead of a plain anchor so the router swaps components without a full-page reload:</p>
+                <pre class="code-block" data-lang="javascript"><code>import { Link, useParams } from "react-router-dom";
+
+&lt;Link to="/products"&gt;Products&lt;/Link&gt;
+
+function ProductDetail() {
+    const { id } = useParams();   // matches the :id segment in the route path
+    // fetch the product using id
+}</code></pre>
+                <aside class="callout info"><span class="ct">See official docs</span><p>For nested routes, layouts, loaders and protected routes, see the official React Router documentation.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="context">Context</h2>
+                <p>Context shares a value with a subtree without passing props through every level. It is ideal for theme, locale, or the currently authenticated user.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { createContext, useContext, useState } from "react";
+
+const AuthContext = createContext(null);   // null = value before a Provider mounts
+
+export function AuthProvider({ children }) {   // wrap the tree once, near the root
+    const [user, setUser] = useState(null);
+
+    return (
+        // value is what every descendant reads through useContext
+        &lt;AuthContext.Provider value={{ user, setUser }}&gt;
+            {children}
+        &lt;/AuthContext.Provider&gt;
+    );
+}
+
+export function useAuth() {   // custom hook hides the context object from callers
+    return useContext(AuthContext);
+}</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>function Profile() {
+    const { user } = useAuth();
+    return user ? &lt;p&gt;{user.name}&lt;/p&gt; : &lt;p&gt;Guest&lt;/p&gt;;
+}</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Use Context for low-frequency, app-wide values. For large global state (cart, auth with complex updates) prefer <a href="redux-toolkit.html">Redux Toolkit</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="performance">Performance: memo, useMemo, useCallback, lazy</h2>
+                <p>Reach for these <em>after</em> you have measured a real problem — not by default.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Tool</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>React.memo</code></td><td>Skip re-rendering a component when props are unchanged</td></tr>
+                            <tr><td><code>useMemo</code></td><td>Cache an expensive computed value between renders</td></tr>
+                            <tr><td><code>useCallback</code></td><td>Cache a function identity so memoized children don't re-render</td></tr>
+                            <tr><td><code>React.lazy</code> + <code>Suspense</code></td><td>Code-split routes/components so they load on demand</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="javascript"><code>import { useMemo, useCallback, memo, lazy, Suspense } from "react";
+
+const total = useMemo(
+    () =&gt; items.reduce((sum, i) =&gt; sum + i.price, 0),
+    [items]   // recompute only when items changes
+);
+
+const handleClick = useCallback(
+    (id) =&gt; setSelected(id),
+    []        // stable identity so memoized children don't re-render
+);
+
+const Chart = lazy(() =&gt; import("./Chart"));   // fetched only when first rendered
+
+&lt;Suspense fallback={&lt;p&gt;Loading…&lt;/p&gt;}&gt;
+    &lt;Chart /&gt;
+&lt;/Suspense&gt;</code></pre>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Wrapping everything in <code>memo</code>/<code>useMemo</code> adds complexity and can be slower. Measure first, optimize second.</p></aside>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Components receive props (read-only) and own state.</li>
+                    <li>Update state immutably with the spread operator and updater functions.</li>
+                    <li>Event handlers follow one rule: pass a function, don't call it.</li>
+                    <li>Controlled inputs bind <code>value</code> + <code>onChange</code> to state.</li>
+                    <li>Submit forms with <code>fetch</code>/axios and track <code>loading</code> + <code>error</code> state.</li>
+                    <li>Conditional rendering uses <code>? :</code> and <code>&amp;&amp;</code>.</li>
+                    <li>Lists use <code>map()</code> with a stable <code>key</code>.</li>
+                    <li>Router maps URLs to components; Context shares app-wide values.</li>
+                    <li>Optimize with <code>memo</code>, <code>useMemo</code>, <code>useCallback</code> and <code>lazy</code> only when measured.</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="react-state-hooks.html"><span class="rt">→ React State &amp; useEffect</span><span class="rc">State snapshots, onClick rules and effect timing</span></a>
+                    <a href="redux-toolkit.html"><span class="rt">→ Redux Toolkit + RTK Query</span><span class="rc">Global state and server data</span></a>
+                    <a href="../04-javascript/javascript-basics.html"><span class="rt">→ JavaScript Basics</span><span class="rc">The language every React pattern rests on</span></a>
+                    <a href="react-native.html"><span class="rt">→ React Native</span><span class="rc">The same model, rendering native mobile views</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

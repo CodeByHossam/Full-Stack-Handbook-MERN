@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Testing</span>
+                <span class="sep">/</span>
+                <span>Testing</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Testing</h1>
+                <p class="subtitle">Automatically checking that your code works: unit, integration and end-to-end tests with Vitest, React Testing Library and Supertest.</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Testing</span>
+                    <span class="badge b-purple">Vitest + RTL</span>
+                    <span class="badge b-teal">Supertest</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="what-is-testing">What is testing?</h2>
+                <p>Testing means writing code that automatically checks that your other code works. Instead of clicking through the app by hand after every change, a test runner runs your checks and tells you what broke.</p>
+                <p>There are three main levels:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Type</th><th>What it tests</th><th>Scope</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Unit</td><td>One small piece of code in isolation</td><td>Smallest</td></tr>
+                            <tr><td>Integration</td><td>Multiple parts working together</td><td>Medium</td></tr>
+                            <tr><td>End-to-end</td><td>The whole app like a real user</td><td>Largest</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Unit test</h3>
+                <p>Tests one tiny unit, usually a single function. Example: <code>add(2, 3)</code> should return <code>5</code>.</p>
+
+                <h3>Integration test</h3>
+                <p>Tests that several pieces cooperate correctly.</p>
+                <pre class="flow">API
+  ↓
+Controller
+  ↓
+Database</pre>
+
+                <h3>End-to-end test</h3>
+                <p>Drives the real application the way a user would.</p>
+                <pre class="flow">Open website
+  ↓
+Login
+  ↓
+Open products
+  ↓
+Add product to cart
+  ↓
+Checkout</pre>
+
+                <h3>Mapping the levels to a MERN app</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Layer</th><th>Tool</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>React components</td><td>React Testing Library</td></tr>
+                            <tr><td>Node / plain functions</td><td>Vitest (or Jest)</td></tr>
+                            <tr><td>Express API</td><td>Supertest</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout key"><span class="ct">Key point</span><p>Vitest and Jest share almost the same API (<code>test</code>, <code>describe</code>, <code>expect</code>), so what you learn here transfers directly. Examples on this page use Vitest.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="vitest-setup">Vitest install and setup</h2>
+                <p>Vitest is a fast test runner that fits naturally with Vite projects (and works for Node code too).</p>
+                <pre class="code-block" data-lang="bash"><code>npm install -D vitest</code></pre>
+                <p>Add a script to <code>package.json</code>:</p>
+                <pre class="code-block" data-lang="json"><code>"scripts": {
+    "test": "vitest"
+}</code></pre>
+                <p>Run the suite:</p>
+                <pre class="code-block" data-lang="bash"><code>npm test</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>For React component tests you also install <code>@testing-library/react</code> and <code>@testing-library/jest-dom</code>, covered below.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="simple-test">A simple test</h2>
+                <p>Export the function you want to test, then import it into a test file.</p>
+                <pre class="code-block" data-lang="javascript"><code>function add(a, b) {
+    return a + b;
+}</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// add.test.js
+import { test, expect } from "vitest";
+
+test("adds two numbers", () =&gt; {
+    expect(add(2, 3)).toBe(5);
+});</code></pre>
+                <p><code>test</code> declares a single test case with a description and a callback. <code>expect(...)</code> builds an assertion, and the matcher (<code>toBe</code>) defines what must be true.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="describe-groups">Grouping with describe()</h2>
+                <p><code>describe</code> groups related tests so output reads like a spec. Blocks can nest.</p>
+                <pre class="code-block" data-lang="javascript"><code>describe("Calculator", () =&gt; {
+    test("adds numbers", () =&gt; {
+        expect(add(2, 3)).toBe(5);
+    });
+
+    test("multiplies numbers", () =&gt; {
+        expect(multiply(4, 5)).toBe(20);
+    });
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="matchers">Common matchers</h2>
+                <p>A matcher is the method chained after <code>expect(...)</code>. These are the ones you will reach for most often.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Matcher</th><th>Passes when</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>toBe(5)</code></td><td>Value is exactly equal (primitives / same reference)</td></tr>
+                            <tr><td><code>toEqual(object)</code></td><td>Value is deeply equal (objects, arrays)</td></tr>
+                            <tr><td><code>toBeTruthy()</code></td><td>Value is truthy</td></tr>
+                            <tr><td><code>toBeFalsy()</code></td><td>Value is falsy</td></tr>
+                            <tr><td><code>toBeNull()</code></td><td>Value is exactly <code>null</code></td></tr>
+                            <tr><td><code>toContain("apple")</code></td><td>Array or string contains the item</td></tr>
+                            <tr><td><code>toBeGreaterThan(10)</code></td><td>Value is greater than the argument</td></tr>
+                            <tr><td><code>toBeLessThan(100)</code></td><td>Value is less than the argument</td></tr>
+                            <tr><td><code>toHaveProperty("name")</code></td><td>Object has the given property</td></tr>
+                            <tr><td><code>toHaveValue("text")</code></td><td>Input element holds the given value</td></tr>
+                            <tr><td><code>toHaveBeenCalled()</code></td><td>A mock function was called</td></tr>
+                            <tr><td><code>toBeInTheDocument()</code></td><td>Element exists in the DOM (jest-dom)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class="code-block" data-lang="javascript"><code>expect(value).toBe(5);
+expect(value).toEqual(object);
+expect(value).toBeTruthy();
+expect(value).toBeFalsy();
+expect(value).toBeNull();
+expect(array).toContain("apple");
+expect(value).toBeGreaterThan(10);
+expect(value).toBeLessThan(100);</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="testing-functions">Testing functions, arrays and objects</h2>
+                <p>The matcher you pick depends on the value's type: primitives use <code>toBe</code>, membership uses <code>toContain</code>, and objects/arrays need <code>toEqual</code> for a deep comparison.</p>
+                <pre class="code-block" data-lang="javascript"><code>function multiply(a, b) {
+    return a * b;
+}
+
+test("multiply", () =&gt; {
+    expect(multiply(4, 5)).toBe(20);
+});</code></pre>
+                <p>Arrays: use <code>toContain</code> for membership and <code>toEqual</code> for exact content.</p>
+                <pre class="code-block" data-lang="javascript"><code>const fruits = ["apple", "banana", "orange"];
+
+test("contains banana", () =&gt; {
+    expect(fruits).toContain("banana");
+});</code></pre>
+                <p>Objects: <code>toBe</code> would compare references, so use <code>toEqual</code> for a deep comparison.</p>
+                <pre class="code-block" data-lang="javascript"><code>const user = { name: "Alice", age: 42 };
+
+test("user data", () =&gt; {
+    expect(user).toEqual({ name: "Alice", age: 42 });
+});</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="async-tests">Async tests</h2>
+                <p>Make the test callback <code>async</code> and <code>await</code> the promise so the runner waits for the result.</p>
+                <pre class="code-block" data-lang="javascript"><code>test("gets user", async () =&gt; {
+    const user = await getUser();
+
+    expect(user.name).toBe("Alice");
+});</code></pre>
+                <aside class="callout err"><span class="ct">Common mistake</span><p>Forgetting <code>await</code> (or returning the promise) makes the test finish before the assertion runs, so it passes even when it should fail.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="setup-teardown">Setup and teardown with beforeEach / afterEach</h2>
+                <p>Use these hooks to prepare state before each test and clean up after it.</p>
+                <pre class="code-block" data-lang="javascript"><code>beforeEach(() =&gt; {
+    // setup — runs before every test
+});
+
+afterEach(() =&gt; {
+    // cleanup — runs after every test
+});</code></pre>
+                <p><code>beforeAll</code> / <code>afterAll</code> run once for the whole block (useful for an expensive database connection).</p>
+            </section>
+
+            <section class="section">
+                <h2 id="mocks">Mocks with vi.fn()</h2>
+                <p>A mock is a fake function that records its calls and returns canned values instead of doing real work. Use it to stand in for anything slow, external, or side-effectful.</p>
+                <pre class="code-block" data-lang="javascript"><code>const mockFunction = vi.fn();          // create the mock
+
+mockFunction("hello");                  // call it in place of the real dependency
+
+expect(mockFunction).toHaveBeenCalled();      // did it get called at all?
+expect(mockFunction).toHaveBeenCalledWith("hello"); // ...and with these args?</code></pre>
+                <p><strong>Why mock?</strong> Some dependencies are slow, expensive, or unsafe to call during a test: a real API, a real payment system, a real email service, or a real database. Replace them with a mock so the test stays fast, deterministic and offline.</p>
+                <pre class="flow">Real function
+     ↓
+Mock function  (records calls, returns canned values)</pre>
+                <aside class="callout info"><span class="ct">Note</span><p>In Jest the mock helper is <code>jest.fn()</code>. The concept is identical.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="react-testing-library">React Testing Library</h2>
+                <p>RTL renders your component into a virtual DOM and lets you query it the way a user would.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install -D @testing-library/react @testing-library/jest-dom</code></pre>
+                <p>Then render a component and assert on what appears on screen.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { render, screen } from "@testing-library/react";
+
+test("shows hello", () =&gt; {
+    render(&lt;h1&gt;Hello Alice&lt;/h1&gt;);
+
+    expect(screen.getByText("Hello Alice")).toBeInTheDocument();
+});</code></pre>
+                <p><code>toBeInTheDocument()</code> comes from <code>@testing-library/jest-dom</code> and extends the standard matchers with DOM-aware ones. Import it once in your test setup file.</p>
+
+                <h3>Finding elements</h3>
+                <p>Each query targets the element the way a user perceives it — by visible text, by role, or by its label — rather than by fragile CSS classes.</p>
+                <pre class="code-block" data-lang="javascript"><code>screen.getByText("Login");
+screen.getByRole("button");
+screen.getByLabelText("Email");
+screen.getByPlaceholderText("Enter email");</code></pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Query</th><th>Use it for</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>getByText</code></td><td>Visible text content</td></tr>
+                            <tr><td><code>getByRole</code></td><td>Accessible role (button, textbox, heading)</td></tr>
+                            <tr><td><code>getByLabelText</code></td><td>Form input tied to a label</td></tr>
+                            <tr><td><code>getByPlaceholderText</code></td><td>Input identified by placeholder</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout key"><span class="ct">Key point</span><p>Prefer <code>getByRole</code> and <code>getByLabelText</code>: they mirror how assistive technology sees the page, so tests stay accessible-friendly. <code>getBy*</code> throws if not found; <code>queryBy*</code> returns <code>null</code>; <code>findBy*</code> is async for elements that appear later.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="user-event">User interaction with user-event</h2>
+                <p><code>user-event</code> simulates typing, clicking, and other interactions more realistically than fireEvent — it even awaits the resulting UI updates, which is why the tests below are <code>async</code>.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install -D @testing-library/user-event</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>import userEvent from "@testing-library/user-event";
+
+test("button click", async () =&gt; {
+    const user = userEvent.setup();
+
+    render(&lt;MyButton /&gt;);
+
+    await user.click(screen.getByRole("button"));
+});</code></pre>
+                <p>Typing into an input:</p>
+                <pre class="code-block" data-lang="javascript"><code>const input = screen.getByRole("textbox");
+
+await user.type(input, "Alice");
+
+expect(input).toHaveValue("Alice");</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="testing-forms">Testing forms and conditional UI</h2>
+                <p>A full form flow: fill the fields, click submit, then assert on the result.</p>
+                <pre class="code-block" data-lang="javascript"><code>test("login form", async () =&gt; {
+    const user = userEvent.setup();
+
+    render(&lt;LoginForm /&gt;);
+
+    await user.type(screen.getByLabelText("Email"), "test@email.com");
+    await user.type(screen.getByLabelText("Password"), "123456");
+    await user.click(screen.getByRole("button", { name: "Login" }));
+});</code></pre>
+                <p>Components often render one of several states. Test all of them, not just the happy path:</p>
+                <pre class="flow">Loading
+Error
+Success</pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Render the component in each state (loading, error, success) and assert on what the user sees for each one.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="supertest">API testing with Supertest</h2>
+                <p>Supertest exercises an Express app end to end over HTTP without starting a real network server.</p>
+                <pre class="code-block" data-lang="bash"><code>npm install -D supertest</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>import request from "supertest";
+import app from "../app";
+
+test("GET users", async () =&gt; {
+    // request(app) drives the Express app in memory — no network port involved
+    const response = await request(app).get("/api/users");
+
+    expect(response.status).toBe(200);
+});</code></pre>
+                <p>POST with a body, and asserting on the response payload:</p>
+                <pre class="code-block" data-lang="javascript"><code>test("create user", async () =&gt; {
+    const response = await request(app)
+        .post("/api/users")
+        .send({ name: "Alice", email: "test@email.com" });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("name");
+    expect(response.body.name).toBe("Alice");
+});</code></pre>
+                <p>Testing a failure path — an id that does not exist should return <code>404</code>:</p>
+                <pre class="code-block" data-lang="javascript"><code>test("user not found", async () =&gt; {
+    const response = await request(app).get("/api/users/invalid-id");
+
+    expect(response.status).toBe(404);
+});</code></pre>
+                <h3>Testing a protected route</h3>
+                <p>Send the token in the <code>Authorization</code> header using <code>.set()</code>. The middleware behind this header is owned by the <a href="../06-backend/authentication-jwt.html">Authentication &amp; JWT</a> page.</p>
+                <pre class="code-block" data-lang="javascript"><code>const response = await request(app)
+    .get("/api/profile")
+    .set("Authorization", `Bearer ${token}`);  // pass the token like a real browser would</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>For auth tests, cover all branches: register (valid, duplicate email, missing fields, invalid email), login (correct password, wrong password, missing user), protected routes (valid token, missing token, invalid token) and authorization (admin vs normal user).</p></aside>
+                <p>For CRUD resources, test every operation plus the failure cases:</p>
+                <ul>
+                    <li>GET all, GET one, POST, PUT/PATCH, DELETE</li>
+                    <li>Validation errors</li>
+                    <li>Not found (<code>404</code>)</li>
+                    <li>Unauthorized (<code>401</code>)</li>
+                    <li>Duplicate data</li>
+                    <li>Database errors</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="testing-pyramid">The testing pyramid and AAA</h2>
+                <p>Write many fast unit tests, fewer integration tests, and only a handful of expensive end-to-end tests.</p>
+                <pre class="flow">            E2E
+           /   \
+          /     \
+     Integration
+        /       \
+       /         \
+      Unit Tests</pre>
+                <aside class="callout key"><span class="ct">AAA pattern</span><p>Structure each test as <strong>Arrange</strong> → <strong>Act</strong> → <strong>Assert</strong>.</p></aside>
+                <pre class="code-block" data-lang="javascript"><code>// Arrange
+const a = 5;
+const b = 3;
+
+// Act
+const result = add(a, b);
+
+// Assert
+expect(result).toBe(8);</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>Test behavior, not implementation. Do not test that a specific internal function ran — test that the user gets the correct result.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="file-naming">Test file naming</h2>
+                <p>Co-locate a test next to the file it covers. Either <code>.test</code> or <code>.spec</code> is fine — be consistent.</p>
+                <pre class="code-block" data-lang="text"><code>calculator.js
+calculator.test.js
+calculator.spec.js
+
+Login.jsx
+Login.test.jsx</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="coverage">Coverage</h2>
+                <p>Coverage measures how much of your code the tests exercise. Common metrics:</p>
+                <ul>
+                    <li>Statements</li>
+                    <li>Branches</li>
+                    <li>Functions</li>
+                    <li>Lines</li>
+                </ul>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Do not chase 100% blindly. Testing the important behavior matters more than a high number. A page full of trivial assertions can be 100% covered and still miss real bugs.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="tool-comparison">Testing tools at a glance</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Tool</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Vitest</td><td>Unit / integration tests (Vite-native)</td></tr>
+                            <tr><td>Jest</td><td>Unit / integration tests (most common historically)</td></tr>
+                            <tr><td>React Testing Library</td><td>React component behavior</td></tr>
+                            <tr><td>Supertest</td><td>Express API request/response tests</td></tr>
+                            <tr><td>Playwright</td><td>End-to-end browser testing</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 id="mern-test-structure">MERN test directory structure</h2>
+                <p>Keep front-end tests beside their components, and group server tests in a dedicated folder.</p>
+                <pre class="flow">client/
+│
+├── components/
+│   ├── Button.jsx
+│   └── Button.test.jsx
+│
+└── pages/
+    ├── Login.jsx
+    └── Login.test.jsx
+
+server/
+│
+├── controllers/
+├── routes/
+└── tests/
+    └── users.test.js</pre>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>Test types: unit (one unit) → integration (parts together) → E2E (real user flow)</li>
+                    <li>MERN mapping: React Testing Library for components, Vitest/Jest for logic, Supertest for APIs</li>
+                    <li><code>test</code> runs a case, <code>describe</code> groups them, <code>expect(...).matcher()</code> asserts</li>
+                    <li><code>toBe</code> for primitives, <code>toEqual</code> for deep object/array equality</li>
+                    <li>Async tests must <code>await</code>; use <code>beforeEach</code>/<code>afterEach</code> for setup and cleanup</li>
+                    <li>Mock slow or external dependencies with <code>vi.fn()</code></li>
+                    <li>Query React UI by role/label/text; simulate users with <code>userEvent</code></li>
+                    <li>Test loading, error and success states — not just the happy path</li>
+                    <li>Supertest covers GET/POST/failures and protected routes via a Bearer token</li>
+                    <li>Follow the testing pyramid and the Arrange–Act–Assert pattern</li>
+                    <li>Test behavior, not implementation; use coverage as a guide, not a goal</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="../09-typescript/typescript.html"><span class="rt">→ TypeScript</span><span class="rc">Add static types to the code you test</span></a>
+                    <a href="../05-frontend/react.html"><span class="rt">→ React</span><span class="rc">The components RTL renders and asserts on</span></a>
+                    <a href="../06-backend/express.html"><span class="rt">→ Express</span><span class="rc">Build the API that Supertest exercises</span></a>
+                    <a href="../12-practices/clean-code.html"><span class="rt">→ Clean Code</span><span class="rc">Readable, testable functions</span></a>
+                    <a href="../12-practices/mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">Where tests sit in the project structure</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
