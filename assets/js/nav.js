@@ -96,9 +96,13 @@
             pages: [
                 { t: "Overview", p: "03-javascript-other-platforms/index.html", d: "Mixed JS topics and Phaser game dev" },
                 { t: "Phaser: Getting Started", p: "03-javascript-other-platforms/phaser-getting-started.html", d: "Init project, config, scenes" },
-                { t: "Phaser: Sprites, Assets & Animation", p: "03-javascript-other-platforms/phaser-sprites-assets.html", d: "Load assets, sprite sheets, animations" },
+                { t: "Phaser: Scenes, Preload, Create, Update", p: "03-javascript-other-platforms/phaser-scenes-lifecycle.html", d: "Scene lifecycle" },
+                { t: "Phaser: Sprites, Assets, Sprite Sheets & Animation", p: "03-javascript-other-platforms/phaser-sprites-assets.html", d: "Assets, sheets, animations" },
+                { t: "Phaser: Input, Movement & Camera", p: "03-javascript-other-platforms/phaser-input-movement.html", d: "Input, velocity, camera follow" },
                 { t: "Phaser: Physics, Collisions & Groups", p: "03-javascript-other-platforms/phaser-physics-collision.html", d: "Arcade physics, collisions, groups" },
-                { t: "Phaser: Build 2 Games", p: "03-javascript-other-platforms/phaser-build-2-games.html", d: "Platformer & Top-down shooter" }
+                { t: "Phaser: UI, Audio & Game States", p: "03-javascript-other-platforms/phaser-ui-sound.html", d: "UI, audio, states" },
+                { t: "Phaser: Build 2 Complete Games", p: "03-javascript-other-platforms/phaser-build-2-games.html", d: "Platformer & Top-down shooter" },
+                { t: "JavaScript Tooling & Mixed Topics", p: "03-javascript-other-platforms/javascript-tooling-mixed.html", d: "Vite, Electron, Capacitor, Extensions" }
             ]
         },
         {
