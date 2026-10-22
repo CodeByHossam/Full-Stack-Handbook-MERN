@@ -16,7 +16,7 @@ step** and **no external service** — clone it and open `index.html`.
 
 ## Highlights
 
-- **42 topic pages** organized into **13 categories**, from planning to deployment.
+- **43 topic pages** organized into **13 categories**, from planning to deployment.
 - **Instant client-side search** across every page — no server, no index files.
 - **Works fully offline** — no CDNs, no fonts, no analytics, no network calls.
 - **Zero dependencies / no build step** — plain HTML, CSS, and vanilla JavaScript.
@@ -117,6 +117,7 @@ step** and **no external service** — clone it and open `index.html`.
 | [MERN Architecture](12-practices/mern-architecture.html) | Project structure, layer responsibilities, API/DB design |
 | [Problem Solving](12-practices/problem-solving.html) | Algorithm playbook: patterns, templates, debugging |
 | [Big O / Time Complexity](12-practices/big-o-time-complexity.html) | Complexity classes, space vs time, Big O in practice |
+| [Design Patterns](12-practices/design-patterns.html) | All 22 GoF patterns + MERN patterns: what, why, how, when |
 
 ### JavaScript & Other Platforms
 | Page | Description |

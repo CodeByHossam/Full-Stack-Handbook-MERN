@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Patterns — Full-Stack Handbook-MERN</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="../index.html">
+        <span class="dot">M</span>
+        <span>Full-Stack Handbook-MERN<span class="sub"> · Library</span></span>
+    </a>
+    <div class="search search-panel">
+        <span class="icon">⌕</span>
+        <input type="search" id="navSearch" placeholder="Search the library…" autocomplete="off" aria-label="Search the library">
+        <div id="navResults"></div>
+    </div>
+    <div class="topbar-actions">
+        <button class="menu-toggle icon-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light or dark theme">☾</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" id="sidebar">
+        <nav id="navTree"></nav>
+        <div class="toc">
+            <div class="toc-title">On this page</div>
+            <nav id="pageToc"></nav>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="doc" id="docContent">
+
+            <nav class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="sep">/</span>
+                <span>Practices</span>
+                <span class="sep">/</span>
+                <span>Design Patterns</span>
+            </nav>
+
+            <header class="page-header">
+                <h1>Design Patterns</h1>
+                <p class="subtitle">All 22 Gang of Four patterns plus the MERN-specific ones — what each pattern is, why it exists, how to implement it, and when to reach for it (and when not to).</p>
+                <div class="tag-row">
+                    <span class="badge b-primary">Practices</span>
+                    <span class="badge b-purple">22 GoF patterns</span>
+                    <span class="badge b-teal">MERN examples</span>
+                </div>
+            </header>
+
+            <section class="section">
+                <h2 id="what-is-a-design-pattern">What a design pattern actually is</h2>
+                <p><strong>What:</strong> A design pattern is a named, reusable solution to a recurring design problem. It is not code you copy — it is a <em>description</em> of a solution plus the trade-offs behind it. <strong>Why:</strong> Patterns give you a battle-tested answer for a problem someone has already solved dozens of times, and they give the whole team a shared vocabulary instead of an argument. <strong>When:</strong> Use a pattern when you <em>recognize the problem</em> it solves — never because "it sounds professional".</p>
+                <p>The Gang of Four (Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides, 1994) described every pattern with the same four-part anatomy. Learn this anatomy — it applies to every pattern on this page:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Part</th><th>Question it answers</th><th>Example (Observer)</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Problem</strong></td><td>What recurring situation forces this design?</td><td>"I need to notify many parts of the app when one thing changes."</td></tr>
+                            <tr><td><strong>Context</strong></td><td>When does the pattern apply?</td><td>"The subject must notify an unknown number of dependents."</td></tr>
+                            <tr><td><strong>Solution</strong></td><td>What is the structure of the fix?</td><td>"Register listeners, then broadcast events to them."</td></tr>
+                            <tr><td><strong>Consequences</strong></td><td>What do you gain and what do you pay?</td><td>Gains: loose coupling. Pays: subscribers can drift out of sync.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>What a pattern is not:</strong></p>
+                <ul>
+                    <li><strong>Not a library.</strong> You do not install a pattern; you write it (or use a library that implements it).</li>
+                    <li><strong>Not an algorithm.</strong> An algorithm solves a computational problem; a pattern solves a <em>design</em> problem.</li>
+                    <li><strong>Not a framework.</strong> Frameworks call your code; patterns are structures <em>you</em> arrange.</li>
+                    <li><strong>Not a silver bullet.</strong> Every pattern has costs — that is why the Consequences part exists.</li>
+                </ul>
+                <aside class="callout key"><span class="ct">Key point</span><p>A pattern is a <strong>trade-off packaged with a name</strong>. If you cannot name the problem a pattern solves, you are not using it — you are decorating.</p></aside>
+                <p>Two ideas from the original book are worth remembering for every pattern that follows:</p>
+                <ul>
+                    <li><strong>Composition over inheritance</strong> — prefer composing objects over deep class hierarchies. In JavaScript, this mostly means favoring <code>mixins</code>, factory functions, and plain delegation over <code>class A extends B extends C</code>.</li>
+                    <li><strong>Program to the interface, not the implementation</strong> — in JS that means depend on the <em>shape</em> of an object (duck typing) rather than on the concrete class behind it.</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 id="the-three-families">The three families (and the full catalog)</h2>
+                <p>Patterns are grouped by <em>what kind of pressure</em> they relieve:</p>
+                <ul>
+                    <li><strong>Creational</strong> — pressure on <em>object creation</em>. "Which object should I make, and how do I hide the making?"</li>
+                    <li><strong>Structural</strong> — pressure on <em>object composition</em>. "How do objects fit together so that change in one doesn't break another?"</li>
+                    <li><strong>Behavioral</strong> — pressure on <em>object interaction</em>. "Who calls whom, and how is responsibility split?"</li>
+                </ul>
+
+                <h3>Creational</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Pattern</th><th>Intent (one line)</th><th>Typical MERN use</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Singleton</strong></td><td>Guarantee exactly one instance with a global access point</td><td>DB connection, logger, config</td></tr>
+                            <tr><td><strong>Factory Method</strong></td><td>Let a subclass/factory decide which object to instantiate</td><td>Choosing a model or notification channel</td></tr>
+                            <tr><td><strong>Abstract Factory</strong></td><td>Create families of related objects without naming concrete classes</td><td>Mongo vs SQL repository set</td></tr>
+                            <tr><td><strong>Builder</strong></td><td>Assemble a complex object step by step</td><td>Query builder, request/filter builder</td></tr>
+                            <tr><td><strong>Prototype</strong></td><td>Create new objects by copying an existing template</td><td>Default records, cloned configs</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Structural</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Pattern</th><th>Intent (one line)</th><th>Typical MERN use</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Adapter</strong></td><td>Make an incompatible interface fit the one you expect</td><td>Wrapping a third-party payment SDK</td></tr>
+                            <tr><td><strong>Decorator</strong></td><td>Add behavior by wrapping the original object</td><td>Logging / caching / retry wrapper</td></tr>
+                            <tr><td><strong>Facade</strong></td><td>Provide one simple entry point to a complex subsystem</td><td>Checkout service that hides 5 steps</td></tr>
+                            <tr><td><strong>Composite</strong></td><td>Treat single objects and groups of objects uniformly</td><td>Folder trees, permission trees, menus</td></tr>
+                            <tr><td><strong>Proxy</strong></td><td>Stand in for a real object to control access</td><td>Lazy loading, caching, access control</td></tr>
+                            <tr><td><strong>Bridge</strong></td><td>Decouple an abstraction from its implementation</td><td>Notification × channel (email/SMS/push)</td></tr>
+                            <tr><td><strong>Flyweight</strong></td><td>Share heavy objects to save memory</td><td>Icon sprites, shared style maps</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Behavioral</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Pattern</th><th>Intent (one line)</th><th>Typical MERN use</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Strategy</strong></td><td>Swap an interchangeable algorithm at runtime</td><td>Pricing, sorting, discount rules</td></tr>
+                            <tr><td><strong>Observer</strong></td><td>Notify dependents when the subject changes</td><td>Event bus, WebSockets, Redux store</td></tr>
+                            <tr><td><strong>Template Method</strong></td><td>Define the skeleton of an algorithm, let steps vary</td><td>Base controller / report pipeline</td></tr>
+                            <tr><td><strong>Command</strong></td><td>Encapsulate a request as an object</td><td>Job queue, undo stack, task objects</td></tr>
+                            <tr><td><strong>Iterator</strong></td><td>Traverse a collection without exposing its internals</td><td>Cursor pagination, generators</td></tr>
+                            <tr><td><strong>State</strong></td><td>Let an object change behavior when its state changes</td><td>Order lifecycle: pending → paid → shipped</td></tr>
+                            <tr><td><strong>Chain of Responsibility</strong></td><td>Pass a request along a chain of handlers until one handles it</td><td>Express middleware pipeline</td></tr>
+                            <tr><td><strong>Mediator</strong></td><td>Centralize communication between objects</td><td>Chat room, workflow coordinator</td></tr>
+                            <tr><td><strong>Visitor</strong></td><td>Add new operations without changing the classes</td><td>Export/serialize different entity types</td></tr>
+                            <tr><td><strong>Interpreter</strong></td><td>Define a small language and evaluate it</td><td>Rule engine, filter expression parser</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout info"><span class="ct">Note</span><p>There is also a fourth, architectural family — <strong>enterprise patterns</strong> such as MVC, Layered Architecture, Microservices, Event Sourcing, CQRS, and Repository. Those are covered in <a href="mern-architecture.html">MERN Architecture</a> and the patterns in this page are the vocabulary those architectures are built from.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="creational-patterns">Creational patterns</h2>
+
+                <h3 id="singleton">Singleton — one instance, one access point</h3>
+                <p><strong>What:</strong> A pattern that guarantees a class has exactly one instance and provides a global access point to it. <strong>Why:</strong> Some resources are expensive or must be shared and consistent — a database connection pool, a logger, a feature-flag client. Creating them repeatedly wastes resources or breaks state. <strong>When:</strong> Use it when <em>one</em> instance is genuinely required and the resource is process-wide, stateless-ish, and cheap to access.</p>
+                <pre class="code-block" data-lang="javascript"><code>// ---- The classic (and safest in JS): module singleton ----
+// ES modules are cached by the runtime, so the module body runs once.
+class Database {
+  constructor() {
+    this.connected = false;
+  }
+
+  connect() {
+    this.connected = true;
+    return this;
+  }
+}
+
+let instance = null;
+
+export function getDatabase() {
+  if (!instance) {
+    instance = new Database().connect();
+  }
+  return instance;
+}</code></pre>
+                <p><strong>How</strong> — the mechanics are always the same three moves: <strong>private constructor</strong> (so nobody calls <code>new</code> directly), <strong>a static instance holder</strong>, and <strong>a single public getter</strong>. The factory-function version below is the most idiomatic JavaScript because a closure gives you a truly private constructor for free:</p>
+                <pre class="code-block" data-lang="javascript"><code>function createLogger() {
+  let instance = null;
+
+  class Logger {
+    constructor() {
+      this.entries = [];
+    }
+    log(message) {
+      this.entries.push(message);
+      console.log(message);
+    }
+  }
+
+  return {
+    getInstance() {
+      if (!instance) instance = new Logger();
+      return instance;
+    }
+  };
+}
+
+export const logger = createLogger();</code></pre>
+                <p><strong>When to use it in a MERN app:</strong></p>
+                <ul>
+                    <li>The MongoDB / Mongoose connection (normally handled by Mongoose's own caching — do not reinvent it).</li>
+                    <li>Application-wide configuration and feature flags.</li>
+                    <li>A logger or metrics collector that must aggregate across the whole process.</li>
+                    <li>An in-process cache when Redis is overkill (single-server apps only).</li>
+                </ul>
+                <p><strong>When NOT to use it — the honest warning.</strong> Singleton is the most misused pattern in JavaScript:</p>
+                <ul>
+                    <li><strong>Hidden dependencies.</strong> A function that reaches for a global logger can no longer be tested with a fake logger — you have to mutate the real one.</li>
+                    <li><strong>Global mutable state.</strong> Shared state leaks between tests and creates race conditions.</li>
+                    <li><strong>One instance per <em>process</em>, not per system.</strong> Under <code>cluster</code> / PM2 / Docker scaling, you get N singletons, N connection pools, and inconsistent caches.</li>
+                    <li><strong>Tight coupling.</strong> Everything depends on the same object, so it cannot be swapped.</li>
+                </ul>
+                <pre class="code-block" data-lang="javascript"><code>// BAD: hard-wired global, impossible to fake in tests
+function sendWelcomeEmail(user) {
+  logger.log("sending email");
+  mailer.send(user.email);
+}
+
+// GOOD: dependencies passed in (dependency injection).
+// The singleton still exists — it is just created and injected at the edge.
+function sendWelcomeEmail({ mailer, logger }, user) {
+  logger.log("sending email");
+  mailer.send(user.email);
+}
+
+// tests can pass a fake mailer; production passes the real singleton
+const fake = { send: () =&gt; {}, log: () =&gt; {} };
+sendWelcomeEmail(fake, { email: "a@b.c" });</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>In a horizontally scaled Node app, a singleton cache is per container. Use <strong>Redis</strong> (or a Mongo collection) for shared state, and treat the singleton as a thin wrapper around it.</p></aside>
+                <p><strong>Testing a singleton:</strong> expose a <code>reset()</code> (or <code>setInstance()</code>) hook used only by tests, or reset module state with <code>vi.resetModules()</code> / <code>jest.resetModules()</code>. Otherwise the first test pollutes every test after it.</p>
+
+                <h3 id="factory-method">Factory Method</h3>
+                <p><strong>What:</strong> A method (or function) that decides <em>which</em> concrete object to create, instead of the caller calling <code>new</code> directly. <strong>Why:</strong> The caller depends on an interface rather than a class, so you can swap implementations without touching the caller. <strong>When:</strong> Use it when the type of object depends on runtime data (a config value, a request parameter, a channel name) and the list of types is open to extension.</p>
+                <pre class="code-block" data-lang="javascript"><code>class EmailChannel {
+  constructor() { this.type = "email"; }
+  send(to, message) { console.log("email -&gt;", to, message); }
+}
+
+class SmsChannel {
+  constructor() { this.type = "sms"; }
+  send(to, message) { console.log("sms -&gt;", to, message); }
+}
+
+class PushChannel {
+  constructor() { this.type = "push"; }
+  send(to, message) { console.log("push -&gt;", to, message); }
+}
+
+const channels = { email: EmailChannel, sms: SmsChannel, push: PushChannel };
+
+// The factory: one place that knows every concrete class.
+function createChannel(type) {
+  const Channel = channels[type];
+  if (!Channel) throw new Error(`Unknown channel: ${type}`);
+  return new Channel();
+}
+
+// The caller never imports EmailChannel.
+function notifyUser(user, message) {
+  return createChannel(user.preferredChannel).send(user.contact, message);
+}</code></pre>
+                <p><strong>In MERN:</strong> choosing a Mongoose model by name, picking a payment provider (<code>stripe</code> vs <code>paypal</code>), or mapping a route verb to a handler set. A <code>switch</code> inside a factory is often simpler than a class hierarchy — JS does not need the ceremony.</p>
+
+                <h3 id="abstract-factory">Abstract Factory</h3>
+                <p><strong>What:</strong> A factory that produces a <em>family</em> of related objects and guarantees they work together. <strong>Why:</strong> You need a whole consistent set (Mongo repositories + Mongo models), and you want to switch the entire set at once without mixing incompatible parts. <strong>When:</strong> Use it when the product family is known but the concrete family is chosen at runtime — for example, a <code>MONGO</code> vs <code>SQL</code> persistence layer, or <code>stripe</code> vs <code>paypal</code> vs <code>manual</code> payment providers.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Both factories expose the same interface.
+function createMongoProductRepository() {
+  return {
+    async findById(id) {
+      return { id, name: "Mongo Product", price: 10 };
+    },
+    async save(product) {
+      return { ...product, savedIn: "mongo" };
+    }
+  };
+}
+
+function createSqlProductRepository() {
+  return {
+    async findById(id) {
+      return { id, name: "SQL Product", price: 10 };
+    },
+    async save(product) {
+      return { ...product, savedIn: "sql" };
+    }
+  };
+}
+
+function createRepositoryFactory(driver) {
+  const factories = {
+    mongo: createMongoProductRepository,
+    sql: createSqlProductRepository
+  };
+  const factory = factories[driver];
+  if (!factory) throw new Error(`Unsupported driver: ${driver}`);
+  return factory();
+}
+
+// The service depends only on the interface, not on MongoDB or SQL.
+const repo = createRepositoryFactory(process.env.DB_DRIVER);
+const product = await repo.findById("123");</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>The real-world MERN version of this is a <strong>database abstraction layer</strong>: the service layer talks to an interface, and <code>mongo-repository.js</code> or <code>sql-repository.js</code> implements it. See <a href="mern-architecture.html">MERN Architecture</a>.</p></aside>
+
+                <h3 id="builder">Builder</h3>
+                <p><strong>What:</strong> A pattern that assembles a complex object through a series of explicit steps, then produces the finished object. <strong>Why:</strong> Constructor parameter lists with 8 optional arguments are unreadable and easy to get wrong. <strong>When:</strong> Use it when an object has many optional fields, when a step-by-step process must be readable, or when the construction process itself is complex.</p>
+                <pre class="code-block" data-lang="javascript"><code>class ProductQuery {
+  constructor() {
+    this.filters = {};
+    this.options = { limit: 20, sort: "-createdAt", page: 1 };
+  }
+
+  where(field, value) {
+    this.filters[field] = value;
+    return this;                       // fluent: return this
+  }
+
+  category(category) {
+    return this.where("category", category);
+  }
+
+  pricedBetween(min, max) {
+    this.filters.price = { $gte: min, $lte: max };
+    return this;
+  }
+
+  limit(count) {
+    this.options.limit = count;
+    return this;
+  }
+
+  page(number) {
+    this.options.page = number;
+    return this;
+  }
+
+  build() {
+    return {
+      filter: { ...this.filters },
+      options: { ...this.options }
+    };
+  }
+}
+
+// Usage reads like a sentence
+const query = new ProductQuery()
+  .category("laptops")
+  .pricedBetween(500, 2000)
+  .limit(10)
+  .page(2)
+  .build();
+
+const products = await Product.find(query.filter)
+  .sort(query.options.sort)
+  .skip((query.options.page - 1) * query.options.limit)
+  .limit(query.options.limit);</code></pre>
+                <p><strong>In MERN:</strong> Mongoose's own query builder (<code>Model.find().where().sort().limit().select()</code>) is exactly this pattern; so are filter builders for your REST API and report builders in an admin panel.</p>
+
+                <h3 id="prototype">Prototype</h3>
+                <p><strong>What:</strong> Create new objects by copying a prototype instance. <strong>Why:</strong> Cheaper and safer than re-running complex construction, and it lets you pre-load defaults. <strong>When:</strong> Use it when objects of the same kind are expensive to build, when you need many similar records, or when you want a "template object" with defaults.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Copy an existing instance (shallow copy)
+const baseProduct = {
+  name: "Generic product",
+  price: 0,
+  category: "misc",
+  tags: []
+};
+
+function createProduct(overrides = {}) {
+  const product = Object.create(baseProduct);   // prototype = template
+  return Object.assign(product, overrides);     // own properties override
+}
+
+const laptop = createProduct({ name: "Laptop", price: 1200, category: "tech" });
+const phone = createProduct({ name: "Phone", price: 800 });
+
+console.log(laptop.name);      // "Laptop"  (own property)
+console.log(laptop.category);  // "tech"    (own property)
+console.log(phone.category);   // "misc"   (inherited from prototype)</code></pre>
+                <p><strong>Watch out:</strong> shallow copies share nested references. <code>Object.create</code> + <code>Object.assign</code> copies references, so two products can end up sharing the same <code>tags</code> array. Deep-clone the nested parts (or use <code>structuredClone</code>) when they must be independent.</p>
+
+                <h3 id="object-pool">Object Pool</h3>
+                <p><strong>What:</strong> Reuse a fixed set of pre-created objects instead of allocating new ones. <strong>Why:</strong> Allocation and garbage collection cost time and memory under load. <strong>When:</strong> Use it for objects that are expensive to create (DB connections, buffers, workers) and are used in bursts.</p>
+                <pre class="code-block" data-lang="javascript"><code>class ObjectPool {
+  #factory;
+  #available = [];
+  #inUse = new Set();
+
+  constructor(factory, size) {
+    this.#factory = factory;
+    for (let i = 0; i &lt; size; i++) {
+      this.#available.push(factory());
+    }
+  }
+
+  acquire() {
+    const obj = this.#available.pop() ?? this.#factory();
+    this.#inUse.add(obj);
+    return obj;
+  }
+
+  release(obj) {
+    if (!this.#inUse.delete(obj)) return;
+    obj.reset?.();                 // object should reset itself
+    this.#available.push(obj);
+  }
+}
+
+// usage
+const pool = new ObjectPool(() =&gt; ({ reset() {} }), 5);
+const session = pool.acquire();
+try {
+  await session.run();
+} finally {
+  pool.release(session);
+}</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="structural-patterns">Structural patterns</h2>
+
+                <h3 id="adapter">Adapter</h3>
+                <p><strong>What:</strong> A wrapper that converts one interface into the interface your code expects. <strong>Why:</strong> Third-party libraries rarely match your domain model exactly. Adapters isolate that mismatch in one small file instead of leaking it through your whole codebase. <strong>When:</strong> Use it at integration boundaries — a payment SDK, an SMS provider, a legacy API, a different database driver.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Your app speaks this interface
+class PaymentGateway {
+  async charge({ amount, currency, token }) {
+    throw new Error("not implemented");
+  }
+}
+
+// The Stripe SDK speaks a different one
+class StripeSDK {
+  async createPaymentIntent({ amount, currency, payment_method }) {
+    return { id: "pi_123", status: "succeeded" };
+  }
+}
+
+// The adapter translates between them
+class StripePaymentAdapter extends PaymentGateway {
+  constructor(stripe) {
+    super();
+    this.stripe = stripe;
+  }
+
+  async charge({ amount, currency, token }) {
+    const intent = await this.stripe.createPaymentIntent({
+      amount: Math.round(amount * 100),   // dollars -&gt; cents
+      currency,
+      payment_method: token
+    });
+    return { id: intent.id, status: intent.status };
+  }
+}
+
+// The service only ever sees PaymentGateway
+const gateway = new StripePaymentAdapter(stripe);
+await gateway.charge({ amount: 49.99, currency: "usd", token: "tok_abc" });</code></pre>
+                <p><strong>In MERN:</strong> an adapter is the right place to put every vendor quirk — currency conversion, webhook signature checks, error translation into your own <code>AppError</code> types. See <a href="../06-backend/file-storage-s3-cloudinary.html">File Storage: S3 &amp; Cloudinary</a> for a real adapter example.</p>
+
+                <h3 id="decorator">Decorator</h3>
+                <p><strong>What:</strong> Wrap an object to add behavior, keeping the original object untouched. <strong>Why:</strong> It gives you composable, stackable features without touching (or subclassing) the original code. <strong>When:</strong> Use it when you want optional cross-cutting behavior — logging, caching, retries, timing, authorization — that applies to many classes.</p>
+                <pre class="code-block" data-lang="javascript"><code>function withLogging(fn) {
+  return function (...args) {
+    console.log(`[call] ${fn.name}`);
+    const result = fn(...args);
+    console.log(`[done] ${fn.name}`);
+    return result;
+  };
+}
+
+function withCache(fn, ttlMs = 60_000) {
+  const store = new Map();
+  return async function (...args) {
+    const key = JSON.stringify(args);
+    if (store.has(key)) return store.get(key);
+
+    const value = await fn(...args);
+    store.set(key, value);
+    setTimeout(() =&gt; store.delete(key), ttlMs).unref?.();
+    return value;
+  };
+}
+
+async function getProduct(id) {
+  return { id, name: "Laptop" };
+}
+
+// Stack decorators: the last one applied runs first
+const getProductCached = withLogging(withCache(getProduct));
+
+const product = await getProductCached("123");</code></pre>
+                <p><strong>Class-based version</strong> (same idea, explicit):</p>
+                <pre class="code-block" data-lang="javascript"><code>class LoggingProductService {
+  constructor(service) {
+    this.service = service;
+  }
+  async getProduct(id) {
+    console.log("getProduct", id);
+    return this.service.getProduct(id);
+  }
+}</code></pre>
+                <p><strong>In MERN:</strong> Express error-handling middleware, a retry wrapper around an HTTP client, or a <code>validate()</code> wrapper around route handlers are all decorators. Decorators keep features optional — nothing forces you to <code>extends</code> a base class.</p>
+
+                <h3 id="facade">Facade</h3>
+                <p><strong>What:</strong> A single simplified interface in front of a complex subsystem. <strong>Why:</strong> Callers should not need to know the order, the error handling, or the five services involved to complete one business operation. <strong>When:</strong> Use it when a workflow spans several subsystems and you want one obvious entry point.</p>
+                <pre class="code-block" data-lang="javascript"><code>class CheckoutFacade {
+  constructor({ cart, inventory, payments, orders, email }) {
+    this.cart = cart;
+    this.inventory = inventory;
+    this.payments = payments;
+    this.orders = orders;
+    this.email = email;
+  }
+
+  // One call, five coordinated steps
+  async placeOrder(userId) {
+    const cart = await this.cart.get(userId);
+    if (!cart.items.length) throw new Error("Cart is empty");
+
+    const reserved = await this.inventory.reserve(cart.items);
+    const payment = await this.payments.charge(userId, reserved.total);
+    const order = await this.orders.create({ userId, items: reserved.items, payment });
+    await this.email.sendReceipt(userId, order);
+    return order;
+  }
+}
+
+// The controller stays thin
+router.post("/checkout", asyncHandler(async (req, res) =&gt; {
+  const order = await checkoutFacade.placeOrder(req.user.id);
+  res.status(201).json(order);
+}));</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>A facade is exactly the <strong>Service Layer</strong> pattern in a MERN app — and it is also the practical difference between a fat controller and a thin one. See <a href="mern-architecture.html">MERN Architecture</a>.</p></aside>
+
+                <h3 id="composite">Composite</h3>
+                <p><strong>What:</strong> Treat individual objects and compositions of those objects uniformly — the client code cannot tell a leaf from a branch. <strong>Why:</strong> Recursive structures become easy to work with: one method call handles "one node" and "a tree of nodes" the same way. <strong>When:</strong> Use it for trees: category trees, folder trees, permission trees, menus, comments with replies.</p>
+                <pre class="code-block" data-lang="javascript"><code>class FileNode {
+  constructor(name) {
+    this.name = name;
+  }
+  getSize() {
+    return 0;
+  }
+  print(indent = "") {
+    console.log(indent + this.name);
+  }
+}
+
+class File extends FileNode {
+  constructor(name, size) {
+    super(name);
+    this.size = size;
+  }
+  getSize() {
+    return this.size;
+  }
+  print(indent = "") {
+    console.log(`${indent}${this.name} (${this.size}kb)`);
+  }
+}
+
+class Directory extends FileNode {
+  constructor(name) {
+    super(name);
+    this.children = [];
+  }
+  add(node) {
+    this.children.push(node);
+    return this;
+  }
+  getSize() {
+    return this.children.reduce((total, child) =&gt; total + child.getSize(), 0);
+  }
+  print(indent = "") {
+    console.log(indent + this.name + "/");
+    this.children.forEach((child) =&gt; child.print(indent + "  "));
+  }
+}
+
+// The client treats both the same way
+const tree = new Directory("src")
+  .add(new Directory("models").add(new File("user.js", 4)))
+  .add(new File("app.js", 12));
+
+tree.print();
+console.log(tree.getSize());   // 16 — no special-casing anywhere</code></pre>
+
+                <h3 id="proxy">Proxy</h3>
+                <p><strong>What:</strong> A stand-in object that forwards calls to a real object while adding control: lazy creation, caching, access checks, remote calls. <strong>Why:</strong> It lets you add a behavior (like "load only when needed") without changing the real object. <strong>When:</strong> Use it for lazy loading, caching, access control, remote/virtual objects, and rate limiting.</p>
+                <pre class="code-block" data-lang="javascript"><code>class ProductProxy {
+  constructor(id, repository) {
+    this.id = id;
+    this.repository = repository;
+    this._promise = null;      // no query has run yet
+  }
+
+  // The first call loads; later calls reuse the same promise.
+  async load() {
+    if (!this._promise) {
+      this._promise = this.repository.findById(this.id);
+    }
+    return this._promise;
+  }
+}
+
+const product = new ProductProxy("123", repository);
+
+// Only this line triggers the database query — and only once.
+const { name, price } = await product.load();</code></pre>
+                <p><strong>Proxy vs Decorator:</strong> a proxy <em>imitates</em> the real object and controls access to it; a decorator <em>wraps</em> an existing object to add behavior while keeping the same interface. The code looks similar, the intent is different.</p>
+
+                <h3 id="bridge">Bridge</h3>
+                <p><strong>What:</strong> Split an abstraction from its implementation with a separate hierarchy, connected by a bridge. <strong>Why:</strong> Without it, adding a new implementation means editing the abstraction and every subclass — the classic "diamond" explosion. <strong>When:</strong> Use it when two dimensions vary independently (notification type × channel, document type × renderer, UI component × platform).</p>
+                <pre class="code-block" data-lang="javascript"><code>// Implementation hierarchy
+class EmailChannel {
+  send(message) { console.log("email:", message); }
+}
+class SmsChannel {
+  send(message) { console.log("sms:", message); }
+}
+
+// Abstraction hierarchy
+class Notification {
+  constructor(channel) {
+    this.channel = channel;      // the "bridge"
+  }
+  notify(message) {
+    this.channel.send(`[app] ${message}`);
+  }
+}
+
+class Alert extends Notification {}
+class Digest extends Notification {}
+
+// 2 abstractions x 2 implementations = 4 combinations, no subclass explosion
+new Alert(new EmailChannel()).notify("Disk almost full");
+new Digest(new SmsChannel()).notify("Weekly report");
+new Alert(new SmsChannel()).notify("Login from new device");</code></pre>
+
+                <h3 id="flyweight">Flyweight</h3>
+                <p><strong>What:</strong> Share many identical heavy objects instead of creating one per place that needs them. <strong>Why:</strong> Memory. If 10,000 table cells use the same icon object, one shared instance is enough. <strong>When:</strong> Use it when many objects are identical, cheap to create but expensive in memory, and mostly immutable.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Shared, immutable icon metadata
+const iconCache = new Map();
+
+function getIcon(name) {
+  if (!iconCache.has(name)) {
+    iconCache.set(name, { name, svg: `&lt;svg&gt;&lt;use href="#${name}"&gt;&lt;/use&gt;&lt;/svg&gt;` });
+  }
+  return iconCache.get(name);
+}
+
+// 10,000 rows reference the same 5 icon objects
+const rows = Array.from({ length: 10_000 }, (_, i) =&gt; getIcon("star"));
+console.log(new Set(rows).size);   // 1 — not 10,000</code></pre>
+                <p>In a MERN app the same idea appears as a shared map of style objects, a sprite sheet, an in-memory cache of reference data (countries, currencies), or a <code>Map</code>-backed memoization helper.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="behavioral-patterns">Behavioral patterns</h2>
+
+                <h3 id="strategy">Strategy</h3>
+                <p><strong>What:</strong> A family of interchangeable algorithms behind a common interface; the caller picks one at runtime. <strong>Why:</strong> A chain of <code>if/else</code> that grows with every new rule is a classic smell. Strategy turns that chain into independent, testable objects. <strong>When:</strong> Use it when the algorithm varies but the surrounding code doesn't.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Each strategy is a standalone function with the same shape
+const pricingStrategies = {
+  regular: (price) =&gt; price,
+  premium: (price) =&gt; price * 0.9,
+  seasonal: (price, { season }) =&gt; (season === "winter" ? price * 0.8 : price),
+  coupon: (price, { code }) =&gt; (code === "SAVE10" ? price * 0.9 : price)
+};
+
+function calculateTotal(price, strategyName, context = {}) {
+  const strategy = pricingStrategies[strategyName];
+  if (!strategy) throw new Error(`Unknown strategy: ${strategyName}`);
+  return strategy(price, context);
+}
+
+calculateTotal(100, "regular");
+calculateTotal(100, "coupon", { code: "SAVE10" });
+
+// Adding a strategy = adding one entry, no edits to calculateTotal
+pricingStrategies.loyal = (price) =&gt; price * 0.95;</code></pre>
+                <p><strong>In MERN:</strong> pricing and discount rules, sorting and filtering options, pluggable export formats, or swapping a password hasher (bcrypt → argon2) without touching the auth service. In JavaScript, plain functions are usually enough — you rarely need a class per strategy.</p>
+
+                <h3 id="observer">Observer</h3>
+                <p><strong>What:</strong> Define a one-to-many dependency: when the subject changes, all registered dependents are notified automatically. <strong>Why:</strong> Without it, the subject must know every listener and call them one by one — tight coupling and a growing <code>if</code> chain. <strong>When:</strong> Use it when the number of listeners is unknown or changes at runtime, and listeners should be able to subscribe and unsubscribe.</p>
+                <pre class="code-block" data-lang="javascript"><code>class EventEmitter {
+  #listeners = new Map();
+
+  on(event, listener) {
+    if (!this.#listeners.has(event)) this.#listeners.set(event, new Set());
+    this.#listeners.get(event).add(listener);
+    return () =&gt; this.off(event, listener);   // returns an unsubscribe fn
+  }
+
+  off(event, listener) {
+    this.#listeners.get(event)?.delete(listener);
+  }
+
+  emit(event, payload) {
+    this.#listeners.get(event)?.forEach((listener) =&gt; {
+      try {
+        listener(payload);
+      } catch (error) {
+        console.error(`listener for "${event}" failed`, error);  // one bad listener must not break the rest
+      }
+    });
+  }
+}
+
+const bus = new EventEmitter();
+
+const unsubscribe = bus.on("order:created", (order) =&gt; {
+  console.log("send email for", order.id);
+});
+
+bus.on("order:created", (order) =&gt; {
+  console.log("clear cart for", order.id);
+});
+
+bus.emit("order:created", { id: "1" });
+unsubscribe();   // stop listening</code></pre>
+                <p><strong>In MERN:</strong> the <code>events</code> module in Node is exactly this. Use it for domain events inside one service, but remember: <strong>an in-process event bus is not durable</strong>. If the event must not be lost (send an email, charge a card), use a real queue (BullMQ, SQS) or an outbox table instead.</p>
+
+                <h3 id="template-method">Template Method</h3>
+                <p><strong>What:</strong> Define the skeleton of an algorithm in a base function, and let steps be overridden by subclasses or options. <strong>Why:</strong> It guarantees the order of operations while allowing individual steps to vary — the algorithm stays correct even as parts change. <strong>When:</strong> Use it when several classes share the same overall process but differ in one or two steps.</p>
+                <pre class="code-block" data-lang="javascript"><code>class ReportGenerator {
+  // The template: fixed order, overridable steps
+  generate() {
+    const raw = this.collectData();
+    const processed = this.process(raw);
+    const output = this.format(processed);
+    this.deliver(output);
+    return output;
+  }
+
+  collectData() { throw new Error("collectData() must be implemented"); }
+  process(data) { return data; }
+  format(data) { return JSON.stringify(data, null, 2); }
+  deliver(output) { console.log("delivered", output.length, "bytes"); }
+}
+
+class SalesReport extends ReportGenerator {
+  collectData() { return [{ month: "Jan", total: 1200 }]; }
+  process(data) { return data.map((row) =&gt; ({ ...row, tax: row.total * 0.14 })); }
+  format(data) { return data.map((row) =&gt; `${row.month}: ${row.total}`).join("\n"); }
+}
+
+new SalesReport().generate();</code></pre>
+                <p><strong>In MERN:</strong> a shared base controller that always sets headers, parses the body, and calls a handler; or a seed script that always connects → clears → inserts → logs but lets you swap the data source.</p>
+                <aside class="callout info"><span class="ct">Note</span><p>Template Method uses inheritance; the composition-friendly alternative is the <strong>Strategy</strong> pattern (pass the varying steps in as functions). In JavaScript, prefer composition.</p></aside>
+
+                <h3 id="command">Command</h3>
+                <p><strong>What:</strong> Encapsulate a request as an object that can be stored, queued, logged, or undone. <strong>Why:</strong> Turning an action into data lets you schedule it, retry it, serialize it, or reverse it. <strong>When:</strong> Use it for job queues, background tasks, undo/redo, and audit logging of actions.</p>
+                <pre class="code-block" data-lang="javascript"><code>class SendEmailCommand {
+  constructor({ to, subject, body }) {
+    this.to = to;
+    this.subject = subject;
+    this.body = body;
+  }
+
+  execute(mailer) {
+    return mailer.send({ to: this.to, subject: this.subject, body: this.body });
+  }
+}
+
+class DeleteUserCommand {
+  constructor(userId) {
+    this.userId = userId;
+  }
+
+  execute(userService) {
+    return userService.remove(this.userId);
+  }
+}
+
+// Commands are plain data: they can be queued, retried, or logged
+const queue = [new SendEmailCommand({ to: "a@b.c", subject: "Hi", body: "…" })];
+
+for (const command of queue) {
+  await command.execute(mailer);
+}</code></pre>
+                <p><strong>In MERN:</strong> BullMQ jobs are commands in production form — a job payload plus a handler function. This is also the shape of an <strong>outbox</strong> record: write the intent to the database in the same transaction as the data change, then a worker picks it up.</p>
+
+                <h3 id="iterator">Iterator</h3>
+                <p><strong>What:</strong> Provide a way to walk through a collection without exposing its internal structure. <strong>Why:</strong> The client code stops depending on arrays vs Maps vs database cursors; you can change the underlying storage without changing the traversal code. <strong>When:</strong> Use it for paginated data, lazy loading, infinite scroll, and custom collection types.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Async generator-based iterator: no class needed
+async function* paginate(fetchPage, pageSize = 20) {
+  let page = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { items, nextCursor } = await fetchPage(page, pageSize);
+    for (const item of items) {
+      yield item;
+    }
+    hasMore = Boolean(nextCursor);
+    page += 1;
+  }
+}
+
+// usage
+const iterator = paginate(async (page, size) =&gt; {
+  const res = await fetch(`/api/products?page=${page}&amp;limit=${size}`);
+  const data = await res.json();
+  return { items: data.items, nextCursor: data.nextCursor };
+});
+
+for await (const product of iterator) {
+  console.log(product.name);
+}</code></pre>
+                <p><strong>In MERN:</strong> cursor-based pagination on the server, and infinite scroll on the client. A generator keeps memory flat: you never load 10,000 rows into an array.</p>
+
+                <h3 id="state">State</h3>
+                <p><strong>What:</strong> Let an object's behavior change based on its internal state, by swapping the implementation object. <strong>Why:</strong> A status field plus a wall of <code>if (status === …)</code> branches spreads the rules across the class. The State pattern makes each state a first-class object that owns its own transitions. <strong>When:</strong> Use it for workflows with clear states: orders, subscriptions, invoices, deployment pipelines.</p>
+                <pre class="code-block" data-lang="javascript"><code>const orderStates = {
+  pending: {
+    next: ["paid", "cancelled"],
+    pay(order) { order.status = "paid"; return order; },
+    cancel(order) { order.status = "cancelled"; return order; }
+  },
+  paid: {
+    next: ["shipped", "refunded"],
+    ship(order) { order.status = "shipped"; return order; },
+    refund(order) { order.status = "refunded"; return order; }
+  },
+  shipped: { next: ["delivered"] },
+  delivered: { next: [] },
+  cancelled: { next: [] },
+  refunded: { next: [] }
+};
+
+function transition(order, action) {
+  const state = orderStates[order.status];
+  if (!state) throw new Error(`Unknown state: ${order.status}`);
+
+  const handler = state[action];
+  if (!handler) {
+    throw new Error(`Cannot "${action}" an order that is "${order.status}"`);
+  }
+  return handler(order);
+}
+
+const order = { id: "1", status: "pending" };
+transition(order, "pay");      // status -&gt; "paid"
+transition(order, "ship");     // status -&gt; "shipped"
+transition(order, "cancel");   // throws: cannot cancel a shipped order</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Every state object declares its own <code>next</code> states. That single list is usually the best place to document and test your workflow — and it makes illegal transitions impossible to express.</p></aside>
+
+                <h3 id="chain-of-responsibility">Chain of Responsibility</h3>
+                <p><strong>What:</strong> Pass a request along a chain of handlers; each handler either handles it, passes it on, or stops the chain. <strong>Why:</strong> Each concern stays in its own small function instead of one giant function that validates everything. <strong>When:</strong> Use it for request pipelines: middleware, validation, authorization, logging, retries.</p>
+                <pre class="code-block" data-lang="javascript"><code>// A chain of small, focused handlers
+function requestLogger(req, res, next) {
+  console.log(`${req.method} ${req.url}`);
+  next();
+}
+
+function authenticate(req, res, next) {
+  if (!req.headers.authorization) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
+}
+
+function requireRole(role) {
+  return function (req, res, next) {
+    if (req.user.role !== role) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    next();
+  };
+}
+
+function rateLimit(req, res, next) {
+  if (isRateLimited(req.ip)) {
+    return res.status(429).json({ message: "Too many requests" });
+  }
+  next();
+}
+
+// Compose the chain
+const chain = [requestLogger, authenticate, rateLimit, requireRole("admin")];
+
+function runChain(index = 0) {
+  const handler = chain[index];
+  if (!handler) return;
+  handler(req, res, () =&gt; runChain(index + 1));
+}</code></pre>
+                <p><strong>In MERN:</strong> this is literally how Express works — <code>app.use(mw1); app.use(mw2);</code> and the <code>next()</code> callback moves to the next link. Error-handling middleware (4 arguments) is the same pattern with an extra branch.</p>
+
+                <h3 id="mediator">Mediator</h3>
+                <p><strong>What:</strong> Define an object that coordinates communication between a set of objects, so they don't talk to each other directly. <strong>Why:</strong> With many objects calling each other, you get a web of dependencies that is hard to follow and change. <strong>When:</strong> Use it for multi-step workflows where the order of interactions matters (checkout, sign-up) or a chat-style system.</p>
+                <pre class="code-block" data-lang="javascript"><code>class SignupMediator {
+  constructor({ userService, emailService, analytics }) {
+    this.userService = userService;
+    this.emailService = emailService;
+    this.analytics = analytics;
+  }
+
+  async signup(data) {
+    const user = await this.userService.create(data);
+    await this.emailService.sendWelcome(user);
+    this.analytics.track("signup", { userId: user.id });
+    return user;
+  }
+}
+
+// Participants talk to the mediator, not to each other
+const mediator = new SignupMediator({ userService, emailService, analytics });
+await mediator.signup({ email: "a@b.c", password: "…" });</code></pre>
+                <p><strong>In MERN:</strong> a "checkout coordinator" that sequences cart → inventory → payment → order → email, while the individual services stay unaware of each other. The mediator is a natural place to hold the workflow transaction.</p>
+
+                <h3 id="visitor">Visitor</h3>
+                <p><strong>What:</strong> Define a new operation over a set of objects without changing their classes; the operation lives in a separate visitor that is applied to each object. <strong>Why:</strong> Adding "export to CSV" to 10 entity classes means editing 10 files; with Visitor you write one visitor and call it. <strong>When:</strong> Use it when the object structure is stable but you frequently add operations over it (export, reporting, serialization).</p>
+                <pre class="code-block" data-lang="javascript"><code>// Entities expose an accept() method, but know nothing about the operations
+class Order {
+  constructor(total) { this.total = total; }
+  accept(visitor) { return visitor.visitOrder(this); }
+}
+class Product {
+  constructor(price) { this.price = price; }
+  accept(visitor) { return visitor.visitProduct(this); }
+}
+
+// The operations live in the visitor
+class CsvExporter {
+  visitOrder(order) { return `order,${order.total}`; }
+  visitProduct(product) { return `product,${product.price}`; }
+}
+
+const exporter = new CsvExporter();
+const rows = [new Order(99), new Product(19.99)].map((entity) =&gt; entity.accept(exporter));</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Visitor is the most complex pattern in the book: every new entity type forces a change in every visitor, and a new operation forces a change in every entity. In JavaScript you usually get the same benefit with a plain <code>switch</code> on <code>entity.type</code> — reach for Visitor only when the operation set genuinely grows.</p></aside>
+
+                <h3 id="interpreter">Interpreter</h3>
+                <p><strong>What:</strong> Define a small language and a way to evaluate sentences in it. <strong>Why:</strong> It turns a user-defined expression into first-class data that you can parse and run. <strong>When:</strong> Use it for rule engines, formula evaluators, filter expressions, or DSLs (e.g. an email template language, a query language).</p>
+                <pre class="code-block" data-lang="javascript"><code>// A tiny expression language:  price &gt; 100 &amp;&amp; category == "laptop"
+const rules = {
+  "&gt;": (a, b) =&gt; a &gt; b,
+  "&lt;": (a, b) =&gt; a &lt; b,
+  "==": (a, b) =&gt; a === b
+};
+
+function evaluate(expression, context) {
+  // split on the operator, then resolve both sides from the context
+  const [left, operator, right] = expression.split(/\s+/);
+  const rule = rules[operator];
+  if (!rule) throw new Error(`Unsupported operator: ${operator}`);
+
+  const resolve = (token) =&gt; {
+    const key = token.replace(/^"|"$/g, "");   // strip surrounding quotes
+    return key in context ? context[key] : Number(token);
+  };
+
+  return rule(resolve(left), resolve(right));
+}
+
+evaluate('price &gt; 100', { price: 250 });                 // true
+evaluate('category == "laptop"', { category: "laptop" }); // true</code></pre>
+                <p><strong>In MERN:</strong> analytics dashboards where the user types a filter expression, permission rules like <code>role:admin AND org:42</code>, or pricing rules stored in the database.</p>
+            </section>
+
+            <section class="section">
+                <h2 id="mern-patterns">Patterns that are specific to a MERN app</h2>
+                <p>The GoF catalog is about objects. Real web apps have a second layer: <strong>architectural patterns</strong> that decide where code lives and how requests flow. These are the ones you will use every single day.</p>
+
+                <h3 id="repository-pattern">Repository pattern</h3>
+                <p><strong>What:</strong> A dedicated layer that owns all data access for an entity, hiding the database behind a collection-like interface. <strong>Why:</strong> Controllers and services stop knowing about Mongoose, queries, and connection details — so you can swap MongoDB for SQL, add caching, or unit-test a service without a database. <strong>When:</strong> Use it when more than one consumer needs the same data access, or when you want to test business logic without a live DB.</p>
+                <pre class="code-block" data-lang="javascript"><code>// repositories/product.repository.js
+class ProductRepository {
+  constructor(model) {
+    this.model = model;          // Mongoose model — an implementation detail
+  }
+
+  async findById(id) {
+    return this.model.findById(id).lean();
+  }
+
+  async findMany(filter, options) {
+    const query = this.model.find(filter);
+    if (options?.sort) query.sort(options.sort);
+    if (options?.limit) query.limit(options.limit);
+    if (options?.page) query.skip((options.page - 1) * options.limit);
+    return query.lean();
+  }
+
+  async create(data) {
+    return this.model.create(data);
+  }
+}
+
+module.exports = { ProductRepository };</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// services/product.service.js — depends on the interface, not on Mongoose
+class ProductService {
+  constructor(products) {
+    this.products = products;    // injected, so tests pass a fake
+  }
+
+  async list({ category, page = 1, limit = 20 }) {
+    const filter = category ? { category } : {};
+    const items = await this.products.findMany(filter, { page, limit });
+    const total = await this.products.count?.(filter) ?? items.length;
+    return { items, total, page, limit };
+  }
+}
+
+// wiring (composition root)
+const productService = new ProductService(new ProductRepository(ProductModel));</code></pre>
+                <p><strong>The payoff:</strong> a unit test for the service needs no MongoDB at all.</p>
+                <pre class="code-block" data-lang="javascript"><code>const fakeProducts = {
+  findMany: async () =&gt; [{ id: "1", name: "Laptop", price: 1200 }],
+  count: async () =&gt; 1
+};
+
+const service = new ProductService(fakeProducts);
+const result = await service.list({ category: "tech" });
+assert.equal(result.items.length, 1);</code></pre>
+
+                <h3 id="service-layer">Service layer</h3>
+                <p><strong>What:</strong> A layer of plain classes/functions that holds the business rules of the domain, sitting between HTTP and the database. <strong>Why:</strong> HTTP handlers are about status codes and parsing; business rules ("an order can only be cancelled before shipping") belong somewhere reusable, testable, and independent of Express. <strong>When:</strong> Use it in every non-trivial app — even in a small project it becomes the layer you will definitely need later.</p>
+                <pre class="flow">Request
+   |
+   v
+Route (path, method)        — HTTP concerns
+   |
+   v
+Controller (req/res)        — HTTP concerns
+   |
+   v
+Service (business rules)    — domain concerns
+   |
+   v
+Repository (data access)    — persistence concerns
+   |
+   v
+Database</pre>
+                <pre class="code-block" data-lang="javascript"><code>// controllers/order.controller.js
+const orderService = require("../services/order.service");
+
+exports.create = asyncHandler(async (req, res) =&gt; {
+  const order = await orderService.create({
+    userId: req.user.id,
+    items: req.body.items
+  });
+  res.status(201).json(order);
+});</code></pre>
+                <p><strong>Rule of thumb:</strong> if you can delete the HTTP layer and the service still makes sense, the separation is correct. A service should never touch <code>req</code> or <code>res</code>.</p>
+
+                <h3 id="middleware-pattern">Middleware (Chain of Responsibility in Express)</h3>
+                <p><strong>What:</strong> Functions that run before (or after) a route handler, with the ability to end the request or call <code>next()</code>. <strong>Why:</strong> Cross-cutting concerns — logging, auth, validation, rate limiting — would otherwise be copy-pasted into every route. <strong>When:</strong> Use it for anything that applies to many or all routes.</p>
+                <pre class="code-block" data-lang="javascript"><code>// middleware/auth.js
+exports.protect = (req, res, next) =&gt; {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Not authenticated" });
+
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
+
+// middleware/validate.js — a reusable schema validator
+exports.validate = (schema) =&gt; (req, res, next) =&gt; {
+  const { error, value } = schema.validate(req.body);
+  if (error) return res.status(422).json({ message: error.details[0].message });
+  req.body = value;
+  next();
+};</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// routes/product.routes.js
+router.post(
+  "/",
+  protect,                                  // chain of responsibility
+  validate(productSchema),
+  createProduct
+);
+
+router.delete(
+  "/:id",
+  protect,
+  requireRole("admin"),
+  deleteProduct
+);</code></pre>
+                <p><strong>Order matters</strong>: authentication before authorization, validation before business logic, error-handling middleware last. Full details in <a href="../06-backend/express.html">Express</a>.</p>
+
+                <h3 id="dependency-injection">Dependency injection &amp; the container</h3>
+                <p><strong>What:</strong> Objects receive their collaborators from outside instead of creating them with <code>new</code> inside. <strong>Why:</strong> It removes hidden dependencies, makes code testable, and enables a container that knows how to build the whole object graph. <strong>When:</strong> Use it whenever a class has more than one dependency, and always in code you intend to test.</p>
+                <pre class="code-block" data-lang="javascript"><code>// Bad: the class reaches for its own dependency — impossible to fake
+class OrderService {
+  async create(data) {
+    const user = await UserModel.findById(data.userId);
+    await mailer.send(user.email);          // hidden global
+  }
+}
+
+// Good: the dependency arrives from outside
+class OrderService {
+  constructor({ orders, users, mailer, events }) {
+    this.orders = orders;
+    this.users = users;
+    this.mailer = mailer;
+    this.events = events;
+  }
+
+  async create(data) {
+    const user = await this.users.findById(data.userId);
+    const order = await this.orders.create({ ...data, userId: user.id });
+    await this.mailer.send(user.email, "Order confirmed");
+    this.events.emit("order:created", order);
+    return order;
+  }
+}</code></pre>
+                <p>A tiny container removes the wiring boilerplate:</p>
+                <pre class="code-block" data-lang="javascript"><code>class Container {
+  #registry = new Map();
+  #singletons = new Map();
+
+  register(name, factory) {
+    this.#registry.set(name, factory);
+    return this;
+  }
+
+  resolve(name) {
+    if (!this.#registry.has(name)) throw new Error(`Unknown service: ${name}`);
+    if (!this.#singletons.has(name)) {
+      const deps = this.#registry.get(name).dependencies ?? [];
+      const args = deps.map((dep) =&gt; this.resolve(dep));
+      this.#singletons.set(name, this.#registry.get(name).build(...args));
+    }
+    return this.#singletons.get(name);
+  }
+}
+
+// registration
+const container = new Container();
+
+container.register("mailer", {
+  dependencies: [],
+  build: () =&gt; new NodemailerMailer(process.env.SMTP_URL)
+});
+container.register("users", {
+  dependencies: [],
+  build: () =&gt; new UserRepository(UserModel)
+});
+container.register("orders", {
+  dependencies: [],
+  build: () =&gt; new OrderRepository(OrderModel)
+});
+container.register("events", {
+  dependencies: [],
+  build: () =&gt; new EventEmitter()
+});
+container.register("orderService", {
+  dependencies: ["orders", "users", "mailer", "events"],
+  build: (orders, users, mailer, events) =&gt;
+    new OrderService({ orders, users, mailer, events })
+});
+
+const orderService = container.resolve("orderService");</code></pre>
+                <aside class="callout info"><span class="ct">Note</span><p>The container's singletons are the <strong>only</strong> place singletons belong: created once, injected everywhere, replaceable in tests. See <a href="mern-architecture.html">MERN Architecture</a> for folder-level wiring.</p></aside>
+
+                <h3 id="module-pattern">Module pattern</h3>
+                <p><strong>What:</strong> Encapsulate related code behind a single exported interface, hiding internals. <strong>Why:</strong> It is the JavaScript answer to "private members", it gives every file a clear public API, and it prevents accidental cross-file coupling. <strong>When:</strong> Use it for every file — it is the default way to structure JS/TS code.</p>
+                <pre class="code-block" data-lang="javascript"><code>// IIFE version (classic)
+const Cart = (function () {
+  const items = [];
+
+  function add(product) {
+    items.push(product);
+    return items.length;
+  }
+  function clear() {
+    items.length = 0;
+  }
+
+  return { add, clear, get size() { return items.length; } };
+})();
+
+// ES module version (modern default) — the file itself is the encapsulation
+// cart.js
+const items = [];
+export function add(product) { items.push(product); }
+export function clear() { items.length = 0; }
+export function get size() { return items.length; }</code></pre>
+                <p>Note that the ES module version also gives you a <strong>singleton for free</strong>: the module is evaluated once per process, so <code>items</code> is a single shared array. That is the cleanest singleton in JavaScript — no class, no <code>getInstance()</code>.</p>
+
+                <h3 id="redux-observer">Redux as Observer + a state machine</h3>
+                <p><strong>What:</strong> A single store holds the state; every dispatch notifies the reducers and the subscribers. <strong>Why:</strong> Predictable state updates, one source of truth, and a dev-tools time machine — all consequences of the Observer pattern done carefully. <strong>When:</strong> Use Redux Toolkit for genuinely global client state (auth, cart, preferences); use local state or RTK Query for everything else.</p>
+                <pre class="code-block" data-lang="javascript"><code>// A slice is a mini state machine for one domain
+import { createSlice } from "@reduxjs/toolkit";
+
+const cartSlice = createSlice({
+  name: "cart",
+  initialState: { items: [], status: "idle" },   // status = the state machine
+  reducers: {
+    itemAdded(state, action) {
+      state.items.push(action.payload);
+    },
+    itemRemoved(state, action) {
+      state.items = state.items.filter((item) =&gt; item.id !== action.payload);
+    },
+    checkoutStarted(state) {
+      state.status = "loading";
+    },
+    checkoutSucceeded(state) {
+      state.status = "idle";
+      state.items = [];
+    }
+  }
+});
+
+export const { itemAdded, itemRemoved, checkoutStarted } = cartSlice.actions;
+export const selectItemCount = (state) =&gt; state.cart.items.length;
+export default cartSlice.reducer;</code></pre>
+                <p>See <a href="../05-frontend/redux-toolkit.html">Redux Toolkit + RTK Query</a> for the full setup.</p>
+
+                <h3 id="pub-sub-events">Pub/Sub &amp; event-driven services</h3>
+                <p><strong>What:</strong> Publishers emit named events; any number of subscribers react, without knowing who each other are. <strong>Why:</strong> New features can subscribe to an existing event without editing the publisher — the publisher never changes. <strong>When:</strong> Use it for cross-cutting reactions (email on signup, analytics on purchase, cache invalidation on update).</p>
+                <pre class="code-block" data-lang="javascript"><code>// events/order.events.js
+const bus = new EventEmitter();
+
+function publishOrderCreated(order) {
+  bus.emit("order.created", order);
+}
+
+function subscribeToOrderCreated(handler) {
+  bus.on("order.created", handler);
+  return () =&gt; bus.off("order.created", handler);
+}
+
+module.exports = { publishOrderCreated, subscribeToOrderCreated };</code></pre>
+                <pre class="code-block" data-lang="javascript"><code>// subscribers/order-notification.subscriber.js
+const { subscribeToOrderCreated } = require("../events/order.events");
+const { mailer } = require("../config/mailer");
+
+subscribeToOrderCreated(async (order) =&gt; {
+  await mailer.send(order.email, "Your order is confirmed");
+});</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>In-process events are lost if the process crashes and invisible to other services. For anything that must happen reliably, use a durable queue (BullMQ + Redis, SQS, or RabbitMQ) and treat the subscriber as a worker.</p></aside>
+
+                <h3 id="cache-proxy">Cache as a Proxy / Decorator</h3>
+                <p><strong>What:</strong> Wrap a data-access call with a cache that stores results for a short time. <strong>Why:</strong> Caching is a cross-cutting concern — it should be applied to the repository, not sprinkled through controllers. <strong>Why as a pattern:</strong> the wrapper keeps the "where does the data come from" question separate from "do we have it already?". <strong>When:</strong> Use it for expensive, read-mostly queries. Always set a TTL and an invalidation rule.</p>
+                <pre class="code-block" data-lang="javascript"><code>function withCache(repository, { ttl = 60_000, store = new Map() } = {}) {
+  return {
+    async findById(id) {
+      const key = `product:${id}`;
+
+      if (store.has(key)) {
+        const { value, expiresAt } = store.get(key);
+        if (expiresAt &gt; Date.now()) return value;
+      }
+
+      const value = await repository.findById(id);
+      store.set(key, { value, expiresAt: Date.now() + ttl });
+      return value;
+    },
+
+    findMany: (...args) =&gt; repository.findMany(...args)
+  };
+}
+
+// Use it
+const cachedProducts = withCache(new ProductRepository(ProductModel));
+const productService = new ProductService(cachedProducts);</code></pre>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Cache invalidation is where caching goes wrong. A stale cache serving old prices or deleted users is a real bug. Always define: TTL, invalidation on write, and what happens when Redis is down (fail open, usually).</p></aside>
+
+                <h3 id="saga-pattern">Saga / process manager</h3>
+                <p><strong>What:</strong> Break a long business transaction into a sequence of local steps, each with a compensating action if a later step fails. <strong>Why:</strong> You cannot run a distributed ACID transaction across the database, an email provider, and a payment gateway. <strong>When:</strong> Use it when one user action triggers several services and partial failure must be recoverable (place order → charge card → reserve stock → ship).</p>
+                <pre class="code-block" data-lang="javascript"><code>async function placeOrderSaga({ cart, payments, inventory, orders }) {
+  // Step 1: reserve stock (compensate: release)
+  const reservation = await inventory.reserve(cart.items);
+
+  try {
+    // Step 2: charge the card (compensate: refund)
+    const payment = await payments.charge(cart.total, cart.paymentToken);
+
+    try {
+      // Step 3: create the order (no compensation needed — it's the goal)
+      return await orders.create({ cart, payment, reservation });
+    } catch (error) {
+      await payments.refund(payment.id);   // compensate step 2
+      throw error;
+    }
+  } catch (error) {
+    await inventory.release(reservation.id); // compensate step 1
+    throw error;
+  }
+}</code></pre>
+                <p><strong>In MERN:</strong> the same idea appears as a <strong>State machine</strong> stored in the database (order.status + <code>pendingActions[]</code>), where a worker retries the failed step until it succeeds. This is more practical than a pure in-memory saga, because it survives restarts.</p>
+
+                <h3 id="feature-modules">Feature-based modular structure</h3>
+                <p><strong>What:</strong> Organize code by <em>feature</em> (users, products, orders), not by <em>technical layer</em> (routes/, controllers/, services/ everywhere). <strong>Why:</strong> A change to one feature touches one folder, not five folders across the tree. <strong>When:</strong> Use it from the start of any project with more than one feature — it is the structural expression of the Open/Closed Principle and it makes the patterns above easier to apply.</p>
+                <pre class="code-block" data-lang="bash"><code>src/
+├── modules/
+│   ├── products/
+│   │   ├── product.model.js        # data
+│   │   ├── product.repository.js   # data access
+│   │   ├── product.service.js      # business rules
+│   │   ├── product.controller.js   # HTTP
+│   │   ├── product.routes.js       # routing
+│   │   ├── product.validation.js   # validation
+│   │   ├── product.events.js       # pub/sub
+│   │   └── index.js                # public API of the module
+│   └── orders/
+│       └── ...
+├── shared/
+│   ├── middleware/
+│   ├── utils/
+│   └── config/
+└── app.js</code></pre>
+                <p>Each module exports one public surface, so other modules never reach into your internals:</p>
+                <pre class="code-block" data-lang="javascript"><code>// modules/products/index.js
+module.exports = {
+  routes: require("./product.routes"),
+  service: require("./product.service"),
+  repository: require("./product.repository"),
+  events: require("./product.events")
+};
+
+// app.js — the composition root
+const productModule = require("./modules/products");
+app.use("/api/products", productModule.routes);</code></pre>
+            </section>
+
+            <section class="section">
+                <h2 id="choosing-a-pattern">How to choose the right pattern</h2>
+                <p>Never start with "which pattern do I want to use?". Start with the <strong>pressure</strong> you feel:</p>
+                <pre class="flow">"Creating the right object is hard"
+   -&gt; Creational (Factory, Builder, Prototype, Singleton)
+
+"Objects do not fit together"
+   -&gt; Structural (Adapter, Facade, Decorator, Proxy, Composite)
+
+"Who calls whom, and who decides?"
+   -&gt; Behavioral (Strategy, Observer, State, Chain of Responsibility)
+
+"My code is a mess of responsibilities"
+   -&gt; Architectural (Repository, Service Layer, Module, DI container)</pre>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>If the symptom is…</th><th>Look at…</th><th>Because…</th></tr></thead>
+                        <tbody>
+                            <tr><td>A giant <code>if/else</code> picking the algorithm</td><td>Strategy</td><td>Each rule becomes an independent, testable function</td></tr>
+                            <tr><td>One object must call five others after a change</td><td>Observer / Pub-Sub</td><td>Listeners subscribe instead of being called by hand</td></tr>
+                            <tr><td>The same 4 steps repeat in 6 services</td><td>Facade / Service layer</td><td>One entry point owns the sequence</td></tr>
+                            <tr><td>Status fields scattered across the class</td><td>State</td><td>Each state owns its own transitions</td></tr>
+                            <tr><td>Validation/auth copied into every route</td><td>Chain of Responsibility</td><td>Middleware handles it once</td></tr>
+                            <tr><td>A vendor SDK leaks through your whole app</td><td>Adapter</td><td>Translation happens at one boundary</td></tr>
+                            <tr><td>A query is unreadable with 6 optional args</td><td>Builder</td><td>Named steps instead of positional booleans</td></tr>
+                            <tr><td>Business logic is tangled with <code>req</code>/<code>res</code></td><td>Service layer + Repository</td><td>Domain rules become testable in isolation</td></tr>
+                            <tr><td>Tests need a real database</td><td>Repository + Dependency injection</td><td>You inject a fake instead</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <aside class="callout key"><span class="ct">Key point</span><p>The honest answer to "which pattern should I use?" is usually <strong>none yet</strong>. Patterns are for problems you already have. Write the straightforward version first; when the pain appears (a third <code>if</code> branch, a second implementation, an untestable dependency), then extract the pattern.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="antipatterns">Anti-patterns and pattern smells</h2>
+                <p>A pattern applied where it does not belong is an anti-pattern. These are the ones you will actually meet in a MERN codebase:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Anti-pattern</th><th>What it looks like</th><th>Fix</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>God object</strong></td><td>One class with 40 methods handling auth, orders, and email</td><td>Split by responsibility — Service layer, feature modules</td></tr>
+                            <tr><td><strong>Spaghetti code</strong></td><td>Control flow jumps between files; nobody can say what runs when</td><td>Reintroduce separation of concerns and one direction of dependencies</td></tr>
+                            <tr><td><strong>Singleton abuse</strong></td><td>Global state nobody can reset or fake</td><td>Keep the singleton at the edge, inject it inward</td></tr>
+                            <tr><td><strong>Shotgun surgery</strong></td><td>Adding a field to "User" requires editing 12 files</td><td>Group by feature; give entities one owner</td></tr>
+                            <tr><td><strong>Utility bag</strong></td><td><code>utils.js</code> with 90 unrelated functions</td><td>Split by domain; name files after what they do</td></tr>
+                            <tr><td><strong>Magic strings</strong></td><td><code>"admin"</code>, <code>"pending"</code> typed everywhere</td><td>Constants / enums / shared state machine</td></tr>
+                            <tr><td><strong>Premature abstraction</strong></td><td>A "BaseController" with one subclass, built for a hypothetical future</td><td>YAGNI — delete it; abstract on the third real case</td></tr>
+                            <tr><td><strong>Distributed monolith</strong></td><td>Two "services" that must deploy together and share a database</td><td>Merge into one module until a real boundary appears</td></tr>
+                            <tr><td><strong>Leaky abstraction</strong></td><td>Mongoose documents leaking into React components and API responses</td><td>Map at the boundary: <code>.lean()</code>, DTOs, serializers</td></tr>
+                            <tr><td><strong>Callback hell</strong></td><td>Nested callbacks 6 levels deep</td><td><code>async/await</code> + a thin error boundary</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Warning signs that you over-engineered:</strong></p>
+                <ul>
+                    <li>You cannot explain the pattern in one sentence without using the word "flexible".</li>
+                    <li>You added a base class or interface with exactly one implementation.</li>
+                    <li>A new developer cannot guess where to add a new endpoint.</li>
+                    <li>The pattern exists "for future flexibility" but there is no second use case yet.</li>
+                    <li>The file is more about plumbing than about the business problem.</li>
+                </ul>
+                <aside class="callout warn"><span class="ct">Warning</span><p>Patterns are a vocabulary, not a quality score. A codebase with three well-chosen patterns beats one with fifteen textbook ones. Always prefer the simplest design that solves the problem — see <a href="programming-principles.html">Programming Principles</a> (KISS, YAGNI) and <a href="clean-code.html">Clean Code</a>.</p></aside>
+            </section>
+
+            <section class="section">
+                <h2 id="applying-patterns">Applying patterns in real work</h2>
+                <p>A repeatable process for introducing a pattern without wrecking a working codebase:</p>
+                <ol>
+                    <li><strong>Name the pain, not the pattern.</strong> "I have to change the payment provider in 9 files" — not "we need the Adapter pattern".</li>
+                    <li><strong>Check the simple fix first.</strong> A shared function, a constant, or a moved file often solves it faster than a pattern.</li>
+                    <li><strong>Refactor green.</strong> Make the existing tests pass before you start, so you always know the code works.</li>
+                    <li><strong>Introduce the pattern behind the existing API.</strong> Change the internals first, keep the callers working — the pattern is an implementation detail of the module.</li>
+                    <li><strong>Write the test that proves the value.</strong> For a repository: a test that runs without a database. For a strategy: a test per strategy. For a state machine: a test per illegal transition.</li>
+                    <li><strong>Delete the old path.</strong> Never keep both the old and the new implementation "just in case".</li>
+                    <li><strong>Review the trade-off.</strong> Write down what the pattern costs you — that is the part the next developer will need.</li>
+                </ol>
+                <pre class="code-block" data-lang="bash"><code># A practical order of adoption for a MERN codebase
+1. modules/            feature-based folders        (structure)
+2. validation schemas  validate at the boundary     (safety)
+3. error middleware    one error shape for the API   (consistency)
+4. service layer       business rules out of controllers
+5. repository layer    data access behind an interface
+6. dependency injection  services get their deps injected
+7. events / pub-sub    decouple reactions from commands
+8. state machines      explicit lifecycle rules
+9. caching (proxy)     only where measurement shows a need</code></pre>
+                <aside class="callout key"><span class="ct">Key point</span><p>Notice the order: structure first, then boundaries, then patterns. Each step makes the next one easier, and each step is independently valuable. Adding "Factory + Observer + Command" on day one of a new project is how projects become unreadable.</p></aside>
+            </section>
+
+            <section class="section recap">
+                <h2 id="quick-recap">Quick recap</h2>
+                <ul>
+                    <li>A pattern is a named solution to a recurring <em>design</em> problem: Problem, Context, Solution, Consequences</li>
+                    <li>Three families: <strong>Creational</strong> (creation), <strong>Structural</strong> (composition), <strong>Behavioral</strong> (interaction)</li>
+                    <li><strong>Singleton</strong> = one instance, one access point — use it for connections, config, loggers; never for business state</li>
+                    <li><strong>Factory / Abstract Factory</strong> = decide (or switch) which concrete class to build at runtime</li>
+                    <li><strong>Builder</strong> = assemble complex objects with readable named steps</li>
+                    <li><strong>Prototype</strong> = copy a template instead of rebuilding; watch shared references</li>
+                    <li><strong>Adapter</strong> = translate a foreign interface at the boundary</li>
+                    <li><strong>Decorator</strong> = add behavior by wrapping, composably</li>
+                    <li><strong>Facade / Service layer</strong> = one simple entry point for a complex workflow</li>
+                    <li><strong>Composite</strong> = treat one node and a tree of nodes identically</li>
+                    <li><strong>Proxy</strong> = stand in for a real object to control loading, caching, or access</li>
+                    <li><strong>Bridge</strong> = decouple abstraction from implementation when two dimensions vary</li>
+                    <li><strong>Flyweight</strong> = share heavy immutable objects to save memory</li>
+                    <li><strong>Strategy</strong> = interchangeable algorithms; kills the growing <code>if/else</code></li>
+                    <li><strong>Observer</strong> = notify subscribers when the subject changes</li>
+                    <li><strong>Template Method</strong> = fixed skeleton, overridable steps</li>
+                    <li><strong>Command</strong> = a request as an object: queue it, log it, undo it</li>
+                    <li><strong>Iterator</strong> = traverse a collection without exposing its internals</li>
+                    <li><strong>State</strong> = behavior changes with state; each state owns its transitions</li>
+                    <li><strong>Chain of Responsibility</strong> = handlers in a pipeline until one handles it — that is Express middleware</li>
+                    <li><strong>Mediator</strong> = a coordinator that owns multi-step workflows</li>
+                    <li><strong>Visitor</strong> = new operations without changing the classes; use sparingly in JS</li>
+                    <li><strong>Interpreter</strong> = evaluate a small user-defined language</li>
+                    <li>MERN essentials: <strong>Repository</strong>, <strong>Service layer</strong>, <strong>middleware</strong>, <strong>DI container</strong>, <strong>module pattern</strong>, <strong>Redux store</strong>, <strong>pub/sub</strong>, <strong>cache-as-proxy</strong>, <strong>saga</strong></li>
+                    <li>Match the pattern to the pressure you feel, and never to a fashion</li>
+                    <li>Guardrails: no god objects, no spaghetti, no premature abstraction, no singleton abuse</li>
+                    <li>Adopt in order: structure → boundaries → service → repository → DI → events → states → caching</li>
+                </ul>
+            </section>
+
+            <footer class="doc-footer">
+                <div class="related-nav">
+                    <a href="mern-architecture.html"><span class="rt">→ MERN Architecture</span><span class="rc">Where these patterns live in a real folder structure</span></a>
+                    <a href="programming-principles.html"><span class="rt">→ Programming Principles</span><span class="rc">The principles patterns are built on</span></a>
+                    <a href="clean-code.html"><span class="rt">→ Clean Code &amp; Best Practices</span><span class="rc">Keeping patterns readable, not ceremony</span></a>
+                    <a href="problem-solving.html"><span class="rt">→ Problem Solving</span><span class="rc">Algorithm patterns and templates</span></a>
+                    <a href="../08-testing/testing.html"><span class="rt">→ Testing</span><span class="rc">Proving the pattern is worth its cost</span></a>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+</div>
+
+<script src="../assets/js/nav.js" data-base="../"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

@@ -111,6 +111,7 @@
                 { t: "MERN Architecture", p: "12-practices/mern-architecture.html", d: "Project structure, layer responsibilities, API/DB design, production" },
                 { t: "Problem Solving", p: "12-practices/problem-solving.html", d: "Algorithm playbook: patterns, templates, debugging" },
                 { t: "Big O / Time Complexity", p: "12-practices/big-o-time-complexity.html", d: "Complexity classes, space vs time, Big O in MERN" },
+                { t: "Design Patterns", p: "12-practices/design-patterns.html", d: "All 22 GoF patterns + MERN patterns: what, why, how, when" }
 
             ]
         },
