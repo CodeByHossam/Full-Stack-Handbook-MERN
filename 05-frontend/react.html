@@ -389,7 +389,8 @@ export default function App() {
 
                 <h4>1. Loaders — fetch data before rendering a route</h4>
                 <p>A route can declare <code>loader</code>; React Router awaits it before rendering and exposes the result via <code>useLoaderData()</code>.</p>
-                <pre class="code-block" data-lang="javascript"><code>const router = createBrowserRouter([
+                <pre class="code-block" data-lang="javascript"><code>// src/pages/ProductDetail.jsx (loader)
+const router = createBrowserRouter([
   {
     path: "/products/:id",
     element: &lt;ProductDetail /&gt;,
@@ -409,7 +410,8 @@ function ProductDetail() {
 
                 <h4>2. Actions — handle form submissions and mutations</h4>
                 <p>Use <code>action</code> on a route to process <code>&lt;Form&gt;</code> submissions; read results with <code>useActionData()</code>.</p>
-                <pre class="code-block" data-lang="javascript"><code>const router = createBrowserRouter([
+                <pre class="code-block" data-lang="javascript"><code>// src/pages/Login.jsx (action)
+const router = createBrowserRouter([
   {
     path: "/login",
     element: &lt;Login /&gt;,
@@ -436,7 +438,8 @@ function Login() {
 
                 <h4>3. useNavigation — manage navigation loading states</h4>
                 <p><code>useNavigation()</code> exposes <code>navigation.state</code> (<code>"idle" | "loading" | "submitting"</code>) for global spinners/progress bars.</p>
-                <pre class="code-block" data-lang="javascript"><code>import { useNavigation, Outlet } from "react-router-dom";
+                <pre class="code-block" data-lang="javascript"><code>// src/components/Layout.jsx (useNavigation)
+import { useNavigation, Outlet } from "react-router-dom";
 
 function Layout() {
   const navigation = useNavigation();
@@ -450,7 +453,8 @@ function Layout() {
 
                 <h4>4. useFetcher — submit requests without navigating</h4>
                 <p><code>useFetcher()</code> loads/submits data for a route without changing the URL.</p>
-                <pre class="code-block" data-lang="javascript"><code>import { useFetcher } from "react-router-dom";
+                <pre class="code-block" data-lang="javascript"><code>// src/components/NewsletterSignup.jsx (useFetcher)
+import { useFetcher } from "react-router-dom";
 
 function NewsletterSignup() {
   const fetcher = useFetcher();
@@ -467,7 +471,8 @@ function NewsletterSignup() {
 
                 <h4>5. Error boundaries — route-specific error handling</h4>
                 <p>Set <code>errorElement</code> per route (or on the root) to catch render/loader/action errors.</p>
-                <pre class="code-block" data-lang="javascript"><code>import { useRouteError, Link } from "react-router-dom";
+                <pre class="code-block" data-lang="javascript"><code>// src/components/ErrorPage.jsx
+import { useRouteError, Link } from "react-router-dom";
 
 function ErrorPage() {
   const error = useRouteError();
@@ -491,7 +496,8 @@ const router = createBrowserRouter([
 
                 <h4>6. Nested routes — organize layouts and pages</h4>
                 <p>Parent routes render an <code>&lt;Outlet /&gt;</code>; children render inside it for shared layouts.</p>
-                <pre class="code-block" data-lang="javascript"><code>const router = createBrowserRouter([
+                <pre class="code-block" data-lang="javascript"><code>// src/router.jsx (nested routes)
+const router = createBrowserRouter([
   {
     path: "/",
     element: &lt;Layout /&gt;,   // renders &lt;Outlet /&gt; for children
