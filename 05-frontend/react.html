@@ -360,7 +360,8 @@ function ProductDetail() {
             <section class="section">
                 <h2 id="react-router-data-mode">React Router — Data Mode (createBrowserRouter)</h2>
                 <p>Data Mode replaces the declarative <code>&lt;BrowserRouter&gt;</code> + <code>&lt;Routes&gt;</code> tree with a single <code>createBrowserRouter</code> config. It keeps the same components but unlocks data-aware features: loaders, actions, navigation state, fetchers, error boundaries and nested layouts.</p>
-                <pre class="code-block" data-lang="javascript"><code>import { createBrowserRouter, RouterProvider } from "react-router-dom";
+                <pre class="code-block" data-lang="javascript"><code>// src/router.jsx
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
