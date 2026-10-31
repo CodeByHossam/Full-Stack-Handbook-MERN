@@ -52,6 +52,7 @@
                 { t: "Tailwind CSS", p: "05-frontend/tailwind.html", d: "Utility-first classes, responsive, dark mode, React" },
                 { t: "GSAP", p: "05-frontend/gsap.html", d: "Tweens, timelines, ScrollTrigger, React integration" },
                 { t: "React", p: "05-frontend/react.html", d: "Components, JSX, state, hooks, events, forms, Router" },
+                { t: "React Router (Data Mode)", p: "05-frontend/react.html#react-router-data-mode", d: "createBrowserRouter, loaders, actions, guards, error boundaries" },
                 { t: "React State & useEffect", p: "05-frontend/react-state-hooks.html", d: "State snapshots, onClick gotchas, when to use effects" },
                 { t: "React Native", p: "05-frontend/react-native.html", d: "Expo, core components, navigation, API, permissions" },
                 { t: "Redux Toolkit + RTK Query", p: "05-frontend/redux-toolkit.html", d: "Store, slices, selectors, queries, mutations, cache tags" }
