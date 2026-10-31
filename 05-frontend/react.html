@@ -358,6 +358,170 @@ function ProductDetail() {
             </section>
 
             <section class="section">
+                <h2 id="react-router-data-mode">React Router — Data Mode (createBrowserRouter)</h2>
+                <p>Data Mode replaces the declarative <code>&lt;BrowserRouter&gt;</code> + <code>&lt;Routes&gt;</code> tree with a single <code>createBrowserRouter</code> config. It keeps the same components but unlocks data-aware features: loaders, actions, navigation state, fetchers, error boundaries and nested layouts.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: &lt;Layout /&gt;,
+    errorElement: &lt;ErrorPage /&gt;,   // catches render errors for this subtree
+    children: [
+      { index: true, element: &lt;Home /&gt; },
+      { path: "login", element: &lt;Login /&gt; },
+      {
+        element: &lt;ProtectedRoute /&gt;,
+        children: [
+          { path: "dashboard", element: &lt;Dashboard /&gt; },
+        ],
+      },
+    ],
+  },
+]);
+
+export default function App() {
+  return &lt;RouterProvider router={router} /&gt;;
+}</code></pre>
+
+                <h3>Advantages &amp; how to use them</h3>
+
+                <h4>1. Loaders — fetch data before rendering a route</h4>
+                <p>A route can declare <code>loader</code>; React Router awaits it before rendering and exposes the result via <code>useLoaderData()</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const router = createBrowserRouter([
+  {
+    path: "/products/:id",
+    element: &lt;ProductDetail /&gt;,
+    loader: async ({ params }) =&gt; {
+      const res = await fetch(`/api/products/${params.id}`);
+      if (!res.ok) throw new Response("Not found", { status: 404 });
+      return res.json();
+    },
+  },
+]);
+
+function ProductDetail() {
+  const product = useLoaderData();   // data ready before render
+  return &lt;h1&gt;{product.name}&lt;/h1&gt;;
+}</code></pre>
+                <aside class="callout warn"><span class="ct">Caveat with RTK</span><p>When RTK Query already owns fetching/caching/mutations, prefer RTK Query hooks in components and keep loaders only for <em>specific</em> route-level needs (prefetching a critical record, reading a cookie/token, seeding initial state). Never duplicate RTK Query's cache inside a loader.</p></aside>
+
+                <h4>2. Actions — handle form submissions and mutations</h4>
+                <p>Use <code>action</code> on a route to process <code>&lt;Form&gt;</code> submissions; read results with <code>useActionData()</code>.</p>
+                <pre class="code-block" data-lang="javascript"><code>const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: &lt;Login /&gt;,
+    action: async ({ request }) =&gt; {
+      const formData = await request.formData();
+      const email = formData.get("email");
+      // validate + call API; return errors or redirect
+      return { error: "Invalid credentials" };
+    },
+  },
+]);
+
+function Login() {
+  const actionData = useActionData();
+  return (
+    &lt;Form method="post"&gt;
+      &lt;input name="email" /&gt;
+      {actionData?.error &amp;&amp; &lt;p&gt;{actionData.error}&lt;/p&gt;}
+      &lt;button&gt;Sign in&lt;/button&gt;
+    &lt;/Form&gt;
+  );
+}</code></pre>
+                <p>With RTK, mutations still go through RTK Query <code>useMutation</code> hooks; actions are optional glue for native form posts.</p>
+
+                <h4>3. useNavigation — manage navigation loading states</h4>
+                <p><code>useNavigation()</code> exposes <code>navigation.state</code> (<code>"idle" | "loading" | "submitting"</code>) for global spinners/progress bars.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { useNavigation, Outlet } from "react-router-dom";
+
+function Layout() {
+  const navigation = useNavigation();
+  return (
+    &lt;&gt;
+      {navigation.state === "loading" &amp;&amp; &lt;div className="spinner" /&gt;}
+      &lt;Outlet /&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+
+                <h4>4. useFetcher — submit requests without navigating</h4>
+                <p><code>useFetcher()</code> loads/submits data for a route without changing the URL.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { useFetcher } from "react-router-dom";
+
+function NewsletterSignup() {
+  const fetcher = useFetcher();
+  return (
+    &lt;fetcher.Form method="post" action="/newsletter"&gt;
+      &lt;input name="email" /&gt;
+      &lt;button disabled={fetcher.state === "submitting"}&gt;
+        {fetcher.state === "submitting" ? "Sending…" : "Subscribe"}
+      &lt;/button&gt;
+      {fetcher.data?.ok &amp;&amp; &lt;p&gt;Thanks!&lt;/p&gt;}
+    &lt;/fetcher.Form&gt;
+  );
+}</code></pre>
+
+                <h4>5. Error boundaries — route-specific error handling</h4>
+                <p>Set <code>errorElement</code> per route (or on the root) to catch render/loader/action errors.</p>
+                <pre class="code-block" data-lang="javascript"><code>import { useRouteError, Link } from "react-router-dom";
+
+function ErrorPage() {
+  const error = useRouteError();
+  return (
+    &lt;div role="alert"&gt;
+      &lt;h1&gt;Something went wrong&lt;/h1&gt;
+      &lt;p&gt;{error?.statusText || error?.message}&lt;/p&gt;
+      &lt;Link to="/"&gt;Go home&lt;/Link&gt;
+    &lt;/div&gt;
+  );
+}
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: &lt;Layout /&gt;,
+    errorElement: &lt;ErrorPage /&gt;,   // catches errors in this subtree
+    children: [ /* ... */ ],
+  },
+]);</code></pre>
+
+                <h4>6. Nested routes — organize layouts and pages</h4>
+                <p>Parent routes render an <code>&lt;Outlet /&gt;</code>; children render inside it for shared layouts.</p>
+                <pre class="code-block" data-lang="javascript"><code>const router = createBrowserRouter([
+  {
+    path: "/",
+    element: &lt;Layout /&gt;,   // renders &lt;Outlet /&gt; for children
+    children: [
+      { index: true, element: &lt;Home /&gt; },
+      { path: "dashboard", element: &lt;Dashboard /&gt; },
+      {
+        element: &lt;ProtectedRoute /&gt;,   // guard wraps its children
+        children: [
+          { path: "profile", element: &lt;Profile /&gt; },
+        ],
+      },
+    ],
+  },
+]);
+
+function Layout() {
+  return (
+    &lt;&gt;
+      &lt;nav&gt;…&lt;/nav&gt;
+      &lt;main&gt;&lt;Outlet /&gt;&lt;/main&gt;   {/* child route renders here */}
+    &lt;/&gt;
+  );
+}</code></pre>
+
+                <aside class="callout key"><span class="ct">Key point</span><p>Use Data Mode for routing architecture, route guards, navigation state and error boundaries. Keep RTK Query as the single source of truth for data fetching, caching and mutations; use loaders/actions only for route-specific, non-RTK concerns.</p></aside>
+            </section>
+
+
+
+            <section class="section">
                 <h2 id="context">Context</h2>
                 <p>Context shares a value with a subtree without passing props through every level. It is ideal for theme, locale, or the currently authenticated user.</p>
                 <pre class="code-block" data-lang="javascript"><code>import { createContext, useContext, useState } from "react";

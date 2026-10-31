@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Native Deployment (EAS) — Full-Stack Handbook</title>
+    <style>
+      :root {
+        --bg-color: #f9f9f9;
+        --text-color: #333;
+        --sidebar-bg: #fff;
+        --border-color: #eaeaea;
+        --primary: #0055ff;
+        --code-bg: #282c34;
+        --code-text: #abb2bf;
+        --accent-brown: #c68a4c;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: var(--bg-color);
+        margin: 0;
+        display: flex;
+      }
+
+      /* Layout */
+      .sidebar {
+        width: 280px;
+        height: 100vh;
+        background-color: var(--sidebar-bg);
+        border-right: 1px solid var(--border-color);
+        position: fixed;
+        overflow-y: auto;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .content {
+        margin-left: 280px;
+        padding: 40px 60px;
+        max-width: 900px;
+        width: 100%;
+      }
+
+      /* Typography */
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: #111;
+      }
+      h2 {
+        font-size: 1.8rem;
+        margin-top: 40px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+      }
+      h3 {
+        font-size: 1.3rem;
+        margin-top: 30px;
+        color: #222;
+      }
+      p {
+        margin-bottom: 15px;
+      }
+      .subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 30px;
+      }
+
+      /* Navigation */
+      .sidebar nav ul {
+        list-style: none;
+        padding: 0;
+      }
+      .sidebar nav li {
+        margin-bottom: 10px;
+      }
+      .sidebar nav a {
+        text-decoration: none;
+        color: #444;
+        font-weight: 500;
+        display: block;
+        padding: 8px 10px;
+        border-radius: 6px;
+        transition: background 0.2s;
+      }
+      .sidebar nav a:hover {
+        background-color: #f0f0f0;
+        color: var(--primary);
+      }
+
+      /* Code Blocks */
+      pre {
+        background-color: var(--code-bg);
+        color: var(--code-text);
+        padding: 15px 20px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-family: "Fira Code", "Courier New", Courier, monospace;
+        font-size: 0.95rem;
+        margin: 20px 0;
+      }
+      code {
+        font-family: "Fira Code", "Courier New", Courier, monospace;
+        background-color: #eaeaea;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #d14;
+      }
+      pre code {
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+        border-radius: 0;
+        font-size: inherit;
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+      th {
+        background-color: #f4f6f8;
+        font-weight: 600;
+        color: #333;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Callouts */
+      .callout {
+        background-color: #eef5ff;
+        border-left: 4px solid var(--primary);
+        padding: 15px 20px;
+        border-radius: 0 8px 8px 0;
+        margin: 20px 0;
+      }
+      .callout strong {
+        color: var(--primary);
+        display: block;
+        margin-bottom: 5px;
+      }
+      .callout.warning {
+        background-color: #fff8e6;
+        border-left-color: var(--accent-brown);
+      }
+      .callout.warning strong {
+        color: var(--accent-brown);
+      }
+
+      /* Badges */
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+      .badge.primary {
+        background-color: #e0ebff;
+        color: var(--primary);
+      }
+      .badge.purple {
+        background-color: #f3e8ff;
+        color: #7e22ce;
+      }
+      .badge.teal {
+        background-color: #ccfbf1;
+        color: #0f766e;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          height: auto;
+          position: relative;
+          border-right: none;
+          border-bottom: 1px solid var(--border-color);
+        }
+        .content {
+          margin-left: 0;
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <nav>
+        <h3>Contents</h3>
+        <ul>
+          <li><a href="#intro">What is EAS?</a></li>
+          <li><a href="#js-lifecycle">The JavaScript Lifecycle</a></li>
+          <li><a href="#server-needs">Do I Need a Server?</a></li>
+          <li><a href="#expo-go-vs-dev">Expo Go vs. Dev Build</a></li>
+          <li><a href="#step1">1. Account & Setup</a></li>
+          <li><a href="#step2">2. Project Connection</a></li>
+          <li><a href="#step3">3. Building Profiles</a></li>
+          <li><a href="#step4">4. Web Deployment</a></li>
+          <li><a href="#step5">5. Google Play Upload</a></li>
+          <li><a href="#step6">6. Apple App Store Upload</a></li>
+          <li><a href="#troubleshooting">7. Troubleshooting</a></li>
+          <li><a href="#cheatsheet">8. Command Cheatsheet</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header>
+        <h1>Deploy React Native with EAS</h1>
+        <p class="subtitle">
+          A complete, step-by-step guide from account creation to production
+          deployment on Android, iOS, and the Web.
+        </p>
+        <div>
+          <span class="badge primary">Deployment</span>
+          <span class="badge purple">React Native</span>
+          <span class="badge teal">EAS CLI</span>
+        </div>
+      </header>
+
+      <section id="intro">
+        <h2>What is EAS and why do we need it?</h2>
+        <p>
+          <strong>Purpose:</strong> Before you start running commands, you need
+          to understand the tool.
+        </p>
+        <p>
+          <strong>EAS (Expo Application Services)</strong> is Expo's cloud build
+          and submission service. In the past, to compile an Android app you had
+          to install Android Studio locally; to compile an iOS app you had to
+          have a Mac with Xcode. EAS moves compilation to the cloud—you just run
+          one command, and it compiles your code into an installable binary file
+          on Expo's servers, and even submits it directly to Google Play or the
+          App Store for you.
+        </p>
+        <p>
+          <strong>What is EAS CLI?</strong> CLI stands for
+          <em>Command Line Interface</em>. <code>eas-cli</code> is the
+          command-line tool you install on your computer; you interact with EAS
+          services by typing commands in the terminal. It's the "remote control"
+          you use to operate EAS.
+        </p>
+      </section>
+
+      <section id="js-lifecycle">
+        <h2>The JavaScript Lifecycle (Where does your code live?)</h2>
+        <p>
+          <strong>Purpose:</strong> To understand how your app actually runs and
+          where the JavaScript code is stored at each stage.
+        </p>
+        <p>
+          In React Native, the "app" you install is just a native shell (written
+          in Java/Kotlin for Android or Swift for iOS). The actual UI and logic
+          you write in JavaScript/React must be loaded into that shell. Here is
+          where that JavaScript lives depending on your build type:
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>App Type</th>
+              <th>Where is the JavaScript Code?</th>
+              <th>How it is Loaded</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Expo Go</strong></td>
+              <td>On your computer (in your project folder).</td>
+              <td>
+                Expo Go scans a QR code and downloads the JS bundle from your
+                computer's Metro server over Wi-Fi.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Development Build</strong></td>
+              <td>On your computer (in your project folder).</td>
+              <td>
+                The app connects to your computer's Metro server. You get
+                hot-reloading and instant updates.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Preview Build</strong></td>
+              <td><strong>Inside the APK/IPA file.</strong></td>
+              <td>
+                EAS bundles all your JS into a single minified file and bakes it
+                into the app. It runs completely standalone.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Production Build</strong></td>
+              <td><strong>Inside the AAB/IPA file.</strong></td>
+              <td>
+                Same as Preview, but further optimized (Hermes engine, minified,
+                no dev tools) for app store distribution.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="server-needs">
+        <h2>Do I Need to Run a Server on My Computer?</h2>
+        <p>
+          <strong>Purpose:</strong> To know when you can turn off your computer
+          and still use the app.
+        </p>
+        <p>
+          The "server" in question is the <strong>Metro Bundler</strong> (run
+          via <code>npx expo start</code>). It serves your JavaScript code to
+          your phone.
+        </p>
+
+        <ul>
+          <li>
+            <strong>Expo Go &rarr; YES:</strong> The computer must be on,
+            connected to the same Wi-Fi, and running
+            <code>npx expo start</code>. If you turn off the server, the app
+            will show a red error screen ("Could not connect to development
+            server").
+          </li>
+          <li>
+            <strong>Development Build &rarr; YES:</strong> Same as Expo Go. It
+            needs the server to load the JS. This is the trade-off for having
+            hot-reload and debugging tools.
+          </li>
+          <li>
+            <strong>Preview Build &rarr; NO:</strong> The JS is baked inside the
+            APK. You can turn off your computer, go to a different city, and the
+            app will open and work perfectly.
+            <em
+              >Note: API calls to your backend (e.g., Firebase, Node.js server)
+              will still require internet, but the app itself does not need your
+              computer.</em
+            >
+          </li>
+          <li>
+            <strong>Production Build &rarr; NO:</strong> It is a completely
+            standalone app, ready for users who will never have your computer.
+          </li>
+        </ul>
+
+        <div class="callout">
+          <strong>Summary:</strong>
+          If you are testing code actively, use the server. If you want to show
+          the app to a friend, use a Preview build so you don't have to keep
+          your laptop open.
+        </div>
+      </section>
+
+      <section id="expo-go-vs-dev">
+        <h2>The Golden Rule: Expo Go vs. Development Build</h2>
+        <p>
+          <strong>Purpose:</strong> To understand which tool to use during
+          development.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Expo Go (The Sandbox)</th>
+              <th>Development Build (The Real App)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>What is it?</strong></td>
+              <td>
+                A universal app provided by Expo with built-in native libraries.
+              </td>
+              <td>
+                Your own app, compiled by you, containing your icon, name, and
+                required native libraries.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Can it be modified?</strong></td>
+              <td>
+                No. Native code is fixed. You cannot add new native modules or
+                change the icon.
+              </td>
+              <td>
+                Yes. You control all native configuration via
+                <code>app.json</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Limitations</strong></td>
+              <td>
+                Cannot test push notifications, app icons, splash screens, or
+                third-party native libraries.
+              </td>
+              <td>
+                No limitations. Behaves exactly like the final production
+                version.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout">
+          <strong>One-sentence summary</strong>
+          Expo Go is for quick prototyping and learning. When you need to test
+          real app icons, push notifications, or native libraries, you
+          <strong>must</strong> switch to a Development Build.
+        </div>
+      </section>
+
+      <section id="step1">
+        <h2>1. Account Registration & Setup</h2>
+        <p>
+          <strong>Purpose:</strong> To create your developer identity and
+          install the tools needed to communicate with Expo's servers.
+        </p>
+
+        <ol>
+          <li>
+            <strong>Create an Expo account:</strong> This is your identity on
+            EAS. It links your builds, credentials, and app submissions
+            together.
+          </li>
+          <li>
+            <strong>Install EAS CLI:</strong> This is the command-line tool you
+            will use for everything from building to submitting.
+          </li>
+          <li>
+            <strong>Log in:</strong> Authenticates your terminal session so EAS
+            knows who is requesting builds.
+          </li>
+        </ol>
+
+        <pre><code># 1. Register at https://expo.dev/signup
+
+# 2. Install the EAS CLI globally (purpose: enables the `eas` command)
+npm install -g eas-cli
+
+# 3. Verify the installation
+eas --version
+
+# 4. Log in to your Expo account (purpose: authenticate your machine)
+eas login
+
+# 5. Confirm your identity (purpose: ensures you are building under the correct account)
+eas whoami</code></pre>
+
+        <h3>Troubleshooting Setup</h3>
+        <ul>
+          <li>
+            <strong><code>eas: command not found</code>:</strong> Your npm
+            global bin directory isn't in your PATH. Use
+            <code>npx eas-cli</code> instead, or reinstall Node.js.
+          </li>
+          <li>
+            <strong>Login fails / 2FA blocked:</strong> Try
+            <code>eas login --sso</code> or set the
+            <code>EXPO_TOKEN</code> environment variable.
+          </li>
+        </ul>
+      </section>
+
+      <section id="step2">
+        <h2>2. Project Connection & Configuration</h2>
+        <p>
+          <strong>Purpose:</strong> To link your local codebase to a cloud
+          project so EAS knows exactly what to compile and where to send the
+          results.
+        </p>
+
+        <ol>
+          <li>
+            <strong>Initialize EAS project:</strong> Creates a unique
+            <code>projectId</code> on Expo's servers and writes it into your
+            <code>app.json</code>.
+          </li>
+          <li>
+            <strong>Configure native identifiers:</strong> Tells the operating
+            systems (Android/iOS) what your app is called internally. This
+            cannot be changed after publishing.
+          </li>
+        </ol>
+
+        <pre><code># Initialize the EAS project (purpose: links local code to the cloud)
+eas init
+
+# Generate the eas.json configuration file (purpose: defines build profiles)
+eas build:configure</code></pre>
+
+        <p>
+          Next, ensure your <code>app.json</code> has the correct native
+          identifiers:
+        </p>
+        <ul>
+          <li>
+            <code>android.package</code>: Must be a unique reverse domain name
+            (e.g., <code>com.yourcompany.yourapp</code>).
+            <strong>Must be all lowercase.</strong>
+          </li>
+          <li>
+            <code>ios.bundleIdentifier</code>: Must match the Bundle ID
+            registered in App Store Connect.
+          </li>
+        </ul>
+
+        <h3>Understanding the <code>eas.json</code> Profiles</h3>
+        <p>
+          <strong>Purpose:</strong> To define different build types for
+          different stages of testing.
+        </p>
+        <p>
+          Your <code>eas.json</code> defines how the app is built. Here is a
+          typical configuration:
+        </p>
+        <pre><code>{
+  "cli": { "version": ">= 12.0.0" },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    },
+    "production": {}
+  },
+  "submit": { "production": {} }
+}</code></pre>
+        <ul>
+          <li>
+            <strong>development:</strong> Includes the Dev Client for debugging
+            native code.
+          </li>
+          <li>
+            <strong>preview:</strong> Release-mode binary for internal QA.
+            Android outputs an APK for direct installation.
+          </li>
+          <li>
+            <strong>production:</strong> Store-ready version. Android outputs an
+            AAB (for Play Store), iOS outputs an IPA.
+          </li>
+        </ul>
+      </section>
+
+      <section id="step3">
+        <h2>3. Building the App (Dev, Preview, Production)</h2>
+        <p>
+          <strong>Purpose:</strong> To generate installable binary files from
+          your JavaScript code.
+        </p>
+
+        <h3>Development Build</h3>
+        <p>
+          <strong>Purpose:</strong> For daily development, hot-reloading, and
+          testing native libraries.
+        </p>
+        <pre><code>eas build --profile development --platform android
+eas build --profile development --platform ios</code></pre>
+        <p>
+          After building, install the APK/IPA on your device. Then run
+          <code>npx expo start</code> in your terminal to connect the app to
+          your local dev server.
+        </p>
+
+        <h3>Preview Build (Internal Testing)</h3>
+        <p>
+          <strong>Purpose:</strong> Give testers a version close to production
+          for functional acceptance.
+        </p>
+        <pre><code>eas build --profile preview --platform all</code></pre>
+        <p>
+          Android produces an APK you can share directly. iOS requires
+          registering tester device UDIDs via
+          <code>eas device:create</code> first.
+        </p>
+
+        <h3>Production Build (Store Ready)</h3>
+        <p>
+          <strong>Purpose:</strong> Generate the final binary that Google Play
+          and the App Store will accept.
+        </p>
+        <pre><code>eas build --profile production --platform android
+eas build --profile production --platform ios</code></pre>
+        <div class="callout warning">
+          <strong>Crucial Note:</strong> Android Production builds output an
+          <code>.aab</code> (Android App Bundle) file.
+          <strong>You cannot install an AAB directly on a phone.</strong> It
+          must be uploaded to the Google Play Console. If you want to test a
+          production build on your phone, use the <code>preview</code> profile.
+        </div>
+        <p>
+          If you encounter weird build errors, always try adding
+          <code>--clear-cache</code> to the end of the command.
+        </p>
+      </section>
+
+      <section id="step4">
+        <h2>4. Web Deployment</h2>
+        <p>
+          <strong>Purpose:</strong> To export your app as a website and host it
+          for browser testing.
+        </p>
+
+        <pre><code># 1. Export the static web files (creates a /dist folder)
+npx expo export --platform web
+
+# 2. Deploy to EAS Hosting
+eas deploy</code></pre>
+        <p>
+          <code>eas deploy</code> will upload the <code>dist</code> folder and
+          give you a public URL (e.g., <code>https://your-app.expo.app</code>).
+        </p>
+
+        <div class="callout warning">
+          <strong>Important app.json check:</strong> Ensure
+          <code>"web": { "output": "static" }</code> is set in your
+          <code>app.json</code>. If it is set to <code>"server"</code>, EAS
+          Hosting expects a Node.js server to be running and a simple static
+          deploy will fail with a "generated" error.
+        </div>
+      </section>
+
+      <section id="step5">
+        <h2>5. Uploading to Google Play Store</h2>
+        <p>
+          <strong>Purpose:</strong> To create a developer account and publish
+          your Android App Bundle (.aab) to the Play Store.
+        </p>
+
+        <h3>Step 5.1: Create a Google Play Developer Account</h3>
+        <ol>
+          <li>
+            Go to the <strong>Google Play Console</strong> and sign in with your
+            Google account.
+          </li>
+          <li>Pay the <strong>one-time $25 registration fee</strong>.</li>
+          <li>
+            Complete <strong>identity verification</strong> (you may need to
+            upload a government-issued ID).
+          </li>
+          <li>
+            Choose your account type (Personal or Organization).
+            <em
+              >Note: Personal accounts created after Nov 2023 must run a closed
+              test with at least 12 testers for 14 days before applying for
+              production access</em
+            >.
+          </li>
+        </ol>
+
+        <h3>Step 5.2: Create the App in Play Console</h3>
+        <ol>
+          <li>
+            In the Play Console dashboard, click <strong>Create app</strong>.
+          </li>
+          <li>
+            Fill in the App name (max 30 characters), Default language, and
+            App/Game type.
+          </li>
+          <li>
+            Complete the <strong>App content</strong> forms (Privacy Policy, Ads
+            declaration, Content rating, Target audience, Data safety).
+          </li>
+        </ol>
+
+        <h3>Step 5.3: Upload the Build (.aab)</h3>
+        <p><strong>Option A: Using EAS Submit (Automated)</strong></p>
+        <pre><code>eas submit --platform android --latest</code></pre>
+        <p>
+          This uploads your latest production .aab to the Internal Testing
+          track. You need to configure a Google Service Account JSON first (EAS
+          will prompt you).
+        </p>
+
+        <p><strong>Option B: Manual Upload</strong></p>
+        <ol>
+          <li>Download the <code>.aab</code> file from your EAS build page.</li>
+          <li>
+            In Play Console, go to
+            <strong>Test and release > Testing > Internal testing</strong>.
+          </li>
+          <li>Click <strong>Create new release</strong>.</li>
+          <li>Upload the <code>.aab</code>, add release notes, and save.</li>
+          <li>
+            Once tested, promote the release to <strong>Production</strong>.
+          </li>
+        </ol>
+      </section>
+
+      <section id="step6">
+        <h2>6. Uploading to Apple App Store</h2>
+        <p>
+          <strong>Purpose:</strong> To create an Apple Developer account and
+          submit your iOS build (.ipa) to TestFlight and the App Store.
+        </p>
+
+        <h3>Step 6.1: Create an Apple Developer Account</h3>
+        <ol>
+          <li>
+            Go to the <strong>Apple Developer Portal</strong> and sign up.
+          </li>
+          <li>
+            Pay the <strong>annual $99 fee</strong> (required for App Store
+            submission).
+          </li>
+          <li>Accept the developer agreement.</li>
+        </ol>
+
+        <h3>Step 6.2: Create the App Record in App Store Connect</h3>
+        <ol>
+          <li>Go to <strong>App Store Connect</strong> and sign in.</li>
+          <li>
+            Click <strong>Apps</strong> > <strong>+</strong> >
+            <strong>New App</strong>.
+          </li>
+          <li>
+            Fill in the Platform (iOS), App Name, Primary Language, Bundle ID
+            (must match your <code>app.json</code>), and SKU.
+          </li>
+          <li>Click <strong>Create</strong>.</li>
+        </ol>
+
+        <h3>Step 6.3: Upload the Build (.ipa)</h3>
+        <p><strong>Option A: Using EAS Submit (Recommended)</strong></p>
+        <pre><code>eas submit --platform ios --latest</code></pre>
+        <p>
+          This uploads your .ipa to App Store Connect. The build will appear in
+          <strong>TestFlight</strong> after 10-15 minutes of processing.
+        </p>
+
+        <p><strong>Option B: Manual Upload</strong></p>
+        <ol>
+          <li>Download the <code>.ipa</code> from EAS.</li>
+          <li>
+            Use the <strong>Transporter</strong> app (Mac) or
+            <code>xcrun altool</code> to upload the .ipa to App Store Connect.
+          </li>
+          <li>Once processed, it appears in TestFlight.</li>
+        </ol>
+
+        <h3>Step 6.4: Submit for Review</h3>
+        <ol>
+          <li>
+            In App Store Connect, go to your app > <strong>TestFlight</strong>.
+          </li>
+          <li>Select the build you uploaded.</li>
+          <li>
+            Go to the <strong>App Store</strong> tab, fill in all metadata
+            (screenshots, description, keywords).
+          </li>
+          <li>Click <strong>Submit for Review</strong>.</li>
+        </ol>
+      </section>
+
+      <section id="troubleshooting">
+        <h2>7. Most Common Deployment Problems</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Cause</th>
+              <th>Solution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Slug / projectId mismatch</code></td>
+              <td>
+                Project linked to EAS, but <code>slug</code> in
+                <code>app.json</code> was changed.
+              </td>
+              <td>
+                Restore original slug, or delete
+                <code>extra.eas.projectId</code> and re-run
+                <code>eas init</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>App icon has checkerboard on Android</code></td>
+              <td>
+                Adaptive icon <code>adaptive-icon.png</code> has a baked-in grey
+                background, not true transparency.
+              </td>
+              <td>
+                Ensure the foreground image is a true RGBA PNG with transparent
+                background and enough padding.
+              </td>
+            </tr>
+            <tr>
+              <td><code>Web deploy "generated" error</code></td>
+              <td>
+                <code>web.output</code> set to <code>"server"</code> but missing
+                server runtime.
+              </td>
+              <td>
+                Change <code>app.json</code> to
+                <code>"web": { "output": "static" }</code> and redeploy.
+              </td>
+            </tr>
+            <tr>
+              <td><code>Android "App not installed"</code></td>
+              <td>
+                Old version with different signature installed, or storage full.
+              </td>
+              <td>
+                Uninstall the old app completely, then install the new APK.
+              </td>
+            </tr>
+            <tr>
+              <td><code>iOS build fails: No Apple account</code></td>
+              <td>No paid Apple Developer account.</td>
+              <td>Must subscribe ($99/year) to build iOS apps.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="cheatsheet">
+        <h2>8. Command Cheatsheet</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>eas login</code></td>
+              <td>Log in to Expo account</td>
+            </tr>
+            <tr>
+              <td><code>eas init</code></td>
+              <td>Link EAS project</td>
+            </tr>
+            <tr>
+              <td><code>eas build:configure</code></td>
+              <td>Generate <code>eas.json</code></td>
+            </tr>
+            <tr>
+              <td>
+                <code>eas build --platform android --profile preview</code>
+              </td>
+              <td>Build Android test package (APK)</td>
+            </tr>
+            <tr>
+              <td>
+                <code>eas build --platform ios --profile production</code>
+              </td>
+              <td>Build iOS production package (IPA)</td>
+            </tr>
+            <tr>
+              <td><code>npx expo export --platform web</code></td>
+              <td>Export web static files</td>
+            </tr>
+            <tr>
+              <td><code>eas deploy</code></td>
+              <td>Deploy web to EAS Hosting</td>
+            </tr>
+            <tr>
+              <td><code>eas submit --platform android --latest</code></td>
+              <td>Submit latest Android build to Google Play</td>
+            </tr>
+            <tr>
+              <td><code>eas submit --platform ios --latest</code></td>
+              <td>Submit latest iOS build to App Store</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer
+        style="
+          margin-top: 50px;
+          padding-top: 20px;
+          border-top: 1px solid var(--border-color);
+          color: #888;
+          text-align: center;
+        "
+      >
+        <p>
+          React Native Deployment Handbook &mdash; Generated for professional
+          reference.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
